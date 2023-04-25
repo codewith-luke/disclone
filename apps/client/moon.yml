@@ -1,8 +1,8 @@
 language: 'rust'
 
 project: 
-  name: 'server'
-  description: 'main server'
+  name: 'client'
+  description: 'desktop client'
   
 type: 'application'
 
