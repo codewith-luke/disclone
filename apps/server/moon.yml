@@ -1,0 +1,14 @@
+language: 'go'
+
+project: 
+  name: 'server'
+  description: 'main server'
+  
+type: 'application'
+
+env: 
+  ENV: 'development'
+
+tasks:
+  run:
+    command: 'go run main.go'

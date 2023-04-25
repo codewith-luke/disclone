@@ -1,0 +1,14 @@
+language: 'rust'
+
+project: 
+  name: 'server'
+  description: 'main server'
+  
+type: 'application'
+
+env: 
+  ENV: 'development'
+
+tasks:
+  run:
+    command: 'cargo tauri dev'
