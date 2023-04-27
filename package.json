@@ -1,0 +1,6 @@
+{
+	"dependencies": {
+		"@clerk/clerk-js": "^4.38.4",
+		"@solidjs/router": "^0.8.2"
+	}
+}
