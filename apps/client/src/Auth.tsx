@@ -1,6 +1,6 @@
 import Clerk from "@clerk/clerk-js";
 import {Accessor, createContext, createEffect, createResource, JSX, Resource, useContext} from "solid-js";
-import {BeforeLeaveEventArgs, useBeforeLeave, useNavigate} from "@solidjs/router";
+import {BeforeLeaveEventArgs, useBeforeLeave, useLocation, useNavigate, useParams} from "@solidjs/router";
 
 type AuthProps = {
     children: JSX.Element
@@ -42,6 +42,7 @@ function isAuthenticated(clerk: () => Clerk | undefined) {
 }
 
 function Auth(props: AuthProps) {
+    const location = useLocation();
     const navigate = useNavigate();
     const [clerk] = createResource(loadClerk);
 
@@ -53,7 +54,7 @@ function Auth(props: AuthProps) {
     });
 
     createEffect(() => {
-        if (clerk() && !clerk()?.user) {
+        if (!isAuthenticated(clerk) && !UnauthorizedRoutes[location.pathname]) {
             navigate("/login", {replace: true});
         }
     });

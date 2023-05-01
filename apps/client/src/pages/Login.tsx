@@ -1,5 +1,6 @@
 import {onMount} from "solid-js";
 import {useAuth} from "../Auth";
+import {A} from "@solidjs/router";
 
 function Login() {
     const auth = useAuth();
@@ -15,9 +16,8 @@ function Login() {
     });
 
     return (
-        <div class="row">
-            <div ref={loginEl}>
-            </div>
+        <div class="h-full flex row justify-center items-center">
+            <div ref={loginEl}/>
         </div>
     );
 }

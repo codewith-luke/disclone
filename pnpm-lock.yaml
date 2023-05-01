@@ -3,10 +3,14 @@ lockfileVersion: 5.4
 specifiers:
   '@clerk/clerk-js': ^4.38.4
   '@solidjs/router': ^0.8.2
+  solid-headless: ^0.13.1
+  solid-heroicons: ^3.1.1
 
 dependencies:
   '@clerk/clerk-js': 4.38.4
   '@solidjs/router': 0.8.2
+  solid-headless: 0.13.1
+  solid-heroicons: 3.1.1
 
 packages:
 
@@ -487,12 +491,46 @@ packages:
       supports-preserve-symlinks-flag: 1.0.0
     dev: false
 
+  /seroval/0.5.1:
+    resolution: {integrity: sha512-ZfhQVB59hmIauJG5Ydynupy8KHyr5imGNtdDhbZG68Ufh1Ynkv9KOYOAABf71oVbQxJ8VkWnMHAjEHE7fWkH5g==}
+    engines: {node: '>=10'}
+    dev: false
+
   /side-channel/1.0.4:
     resolution: {integrity: sha512-q5XPytqFEIKHkGdiMIrY10mvLRvnQh42/+GoBlFW3b2LXLE2xxJpZFdm94we0BaoV3RwJyGqg5wS7epxTv0Zvw==}
     dependencies:
       call-bind: 1.0.2
       get-intrinsic: 1.2.0
       object-inspect: 1.12.3
+    dev: false
+
+  /solid-headless/0.13.1:
+    resolution: {integrity: sha512-FZJai49YmdBu6oEo8aJGPMQ1Qn8xiW0cnD6vNFDIQWMKJdXEUtDEwz0hTR9aZ7Epq3IkrZs+98E0vNiv1+pZpA==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      solid-js: ^1.2
+    dependencies:
+      solid-use: 0.6.2
+    dev: false
+
+  /solid-heroicons/3.1.1:
+    resolution: {integrity: sha512-wfU/SqxqxWxInvfFlKJfCBPnJ94Zq1GQFiFL3M0KwZzT81lSF5yIC4HA/Czp3DYrn+dUumjO0qdrx8Ab3cy2sA==}
+    dependencies:
+      solid-js: 1.7.3
+    dev: false
+
+  /solid-js/1.7.3:
+    resolution: {integrity: sha512-4hwaF/zV/xbNeBBIYDyu3dcReOZBECbO//mrra6GqOrKy4Soyo+fnKjpZSa0nODm6j1aL0iQRh/7ofYowH+jzw==}
+    dependencies:
+      csstype: 3.1.2
+      seroval: 0.5.1
+    dev: false
+
+  /solid-use/0.6.2:
+    resolution: {integrity: sha512-0ShJ5s+4PIN0pJB/BtsQucsZB+xnUeeTGaxErQDu6USn5jygZWXicAtOEvFbI8gv40xE751uY1Tz7Aib9lxL/Q==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      solid-js: ^1.5
     dev: false
 
   /source-map/0.5.7:
