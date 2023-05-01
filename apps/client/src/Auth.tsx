@@ -1,35 +1,69 @@
 import Clerk from "@clerk/clerk-js";
-import {Accessor, createContext, createResource, JSX, Resource, useContext} from "solid-js";
+import {Accessor, createContext, createEffect, createResource, JSX, Resource, useContext} from "solid-js";
+import {BeforeLeaveEventArgs, useBeforeLeave, useNavigate} from "@solidjs/router";
 
 type AuthProps = {
     children: JSX.Element
 }
 
-export const AuthContext = createContext();
+const UnauthorizedRoutes: {
+    [key: string | number]: string | number
+} = {
+    "/login": "/login",
+    "/signup": "/signup"
+} as const;
+
+const ClerkContext = createContext<Resource<Clerk>>();
 
 export const useAuth = () => {
-    const auth = useContext(AuthContext);
-    if (!auth) {
-        throw new Error("useAuth must be used within an AuthProvider");
+    const ctx = useContext(ClerkContext);
+
+    if (!ctx) {
+        throw new Error("No Clerk context found");
     }
-    return auth as Resource<Clerk>;
+
+    if (!ctx()) {
+        throw new Error("Clerk context not loaded");
+    }
+
+    return ctx as Accessor<Clerk>;
 };
 
+async function loadClerk() {
+    const clerk = new Clerk(
+        "pk_test_ZWFzeS1tb29zZS0xNC5jbGVyay5hY2NvdW50cy5kZXYk"
+    );
+    await clerk.load();
+    return clerk;
+}
+
+function isAuthenticated(clerk: () => Clerk | undefined) {
+    return clerk() && clerk()?.user;
+}
+
 function Auth(props: AuthProps) {
-    const [clerk] = createResource<Clerk>(async () => {
-        const clerk = new Clerk(
-            "pk_test_ZWFzeS1tb29zZS0xNC5jbGVyay5hY2NvdW50cy5kZXYk"
-        );
-        await clerk.load();
-        console.log(clerk.user);
-        return clerk;
+    const navigate = useNavigate();
+    const [clerk] = createResource(loadClerk);
+
+    useBeforeLeave((e: BeforeLeaveEventArgs) => {
+        if (!isAuthenticated(clerk) && !UnauthorizedRoutes[e.to]) {
+            e.preventDefault();
+            navigate("/login", {replace: true});
+        }
+    });
+
+    createEffect(() => {
+        if (clerk() && !clerk()?.user) {
+            navigate("/login", {replace: true});
+        }
     });
 
     return (
-        <AuthContext.Provider value={clerk}>
-            <h1>Home {JSON.stringify(clerk()?.loaded)}</h1>
-            {clerk() && props.children}
-        </AuthContext.Provider>
+        <ClerkContext.Provider value={clerk}>
+            {clerk() && (
+                props.children
+            )}
+        </ClerkContext.Provider>
     );
 }
 

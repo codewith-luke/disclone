@@ -6,7 +6,7 @@ function Home() {
 
     return (
         <div>
-            <h1>Home {JSON.stringify(auth().user)}</h1>
+            <h1>Home {JSON.stringify(auth().loaded)}</h1>
             <A href="/Channels">Channels</A>
         </div>
     );

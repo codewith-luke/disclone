@@ -1,6 +1,8 @@
 import {onMount} from "solid-js";
+import {useAuth} from "../Auth";
 
 function SignUp() {
+    const auth = useAuth();
     let signUpEl: HTMLDivElement | undefined;
 
     onMount(async () => {
@@ -8,6 +10,8 @@ function SignUp() {
             console.error("sign up element not found");
             return;
         }
+
+        auth().mountSignUp(signUpEl);
     });
 
     return (
