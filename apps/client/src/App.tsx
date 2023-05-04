@@ -4,7 +4,7 @@ import "./App.css";
 
 import Auth from "./Auth";
 import Home from "./pages/Home";
-import Layout from "./components/Layout";
+import Layout from "./pages/Layout";
 import Channels from "./pages/Channels";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";

@@ -18,6 +18,10 @@
   -webkit-text-size-adjust: 100%;
 }
 
+body {
+  background: #2f2f2f;
+}
+
 .container {
   margin: 0;
   display: flex;

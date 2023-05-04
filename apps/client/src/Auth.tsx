@@ -1,6 +1,6 @@
 import Clerk from "@clerk/clerk-js";
 import {Accessor, createContext, createEffect, createResource, JSX, Resource, useContext} from "solid-js";
-import {BeforeLeaveEventArgs, useBeforeLeave, useLocation, useNavigate, useParams} from "@solidjs/router";
+import {BeforeLeaveEventArgs, useBeforeLeave, useLocation, useNavigate} from "@solidjs/router";
 
 type AuthProps = {
     children: JSX.Element
