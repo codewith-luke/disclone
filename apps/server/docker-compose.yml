@@ -4,18 +4,16 @@ services:
     container_name: server
     build:
       context: .
-      target: dev
     volumes:
-      - .:/app:rw,delegated
+      - .:/disclone:rw,delegated
     networks:
       - disclone_network
     security_opt:
       - "seccomp:unconfined"
     cap_add:
       - SYS_PTRACE
-    command: dlv --listen=:2345 --headless=true --api-version=2 exec ./server
     ports:
-      - 8000:3000
+      - 8000:8000
       - 2345:2345
 
 networks:

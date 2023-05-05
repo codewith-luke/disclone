@@ -1,23 +1,29 @@
-# Compile stage
-FROM golang:1.18 AS build-env
+# Use the golang offical image
+# Use alpine because smaller images for Luke his HUGE SSD
+FROM golang:1.18-alpine
 
-# Build Delve
-RUN go install github.com/go-delve/delve/cmd/dlv@latest
+# Environment variables
+ENV GO111MODULE="on"
+ENV GOOS="linux"
+ENV CGO_ENABLED=0
 
-ADD . /dockerdev
-WORKDIR /dockerdev
+# Expose ports
+EXPOSE 8080
+EXPOSE 2345
 
-RUN go build -gcflags="all=-N -l" -o /server
+# Install delve and air so we can use them later
+RUN go install github.com/go-delve/delve/cmd/dlv@latest && go install github.com/cosmtrek/air@latest
 
-# Final stage
-FROM debian:buster
+# Set our working directory
+WORKDIR /disclone
 
-EXPOSE 8000 40000
+# Copy mod file so we can install our dependencies in our layer
+COPY go.mod ./
 
-WORKDIR /
+# Install our dependencies
+RUN go mod download && go mod verify
 
-COPY --from=build-env /go/bin/dlv /
-COPY --from=build-env /server /
-RUN chmod +x ./server
+# Copy our project
+COPY . ./
 
-CMD ["/dlv", "--listen=:40000", "--headless=true", "--api-version=2", "--accept-multiclient", "exec", "/server"]
+ENTRYPOINT ["air"]

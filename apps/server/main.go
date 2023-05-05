@@ -10,7 +10,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Test12 World"))
+		w.Write([]byte("Hello Luke <3"))
 	})
 
 	http.ListenAndServe(":8000", r)
