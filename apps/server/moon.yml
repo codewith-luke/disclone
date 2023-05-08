@@ -11,4 +11,4 @@ env:
 
 tasks:
   run:
-    command: 'go run main.go'
+    command: 'air -c .air.toml'

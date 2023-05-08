@@ -1,0 +1,7 @@
+POST http://localhost:8000/webhooks/user/clerk/create
+Content-Type: application/json
+
+{
+  "object": "event",
+  "type": "user.created"
+}
