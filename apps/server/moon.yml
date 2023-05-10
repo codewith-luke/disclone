@@ -9,6 +9,10 @@ type: 'application'
 env:
   ENV: 'development'
 
+tags:
+  - 'app'
+  - 'backend'
+
 tasks:
   run:
     command: 'air -c .air.toml'

@@ -8,18 +8,15 @@ tasks:
   seed_dev:
     command: 'go run main.go --up'
     local: true
-    deps:
-      - '~:run'
+    options:
+      envFile: '/.env'
+
   drop_dev:
     command: 'go run main.go --down'
     local: true
-    deps:
-      - '~:run'
+    options:
+      cache: false
+      envFile: '/.env'
+
   run:
-    command: 'docker-compose up -d db'
-    local: true
-  stop:
-    command: 'docker-compose down -d db'
-    local: true
-
-
+    command: 'echo'
