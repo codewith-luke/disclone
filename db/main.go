@@ -16,7 +16,7 @@ func main() {
 
 	flag.Parse()
 
-	db, err := sql.Open("postgres", "postgres://postgres:pwd@localhost:5432/database?sslmode=disable")
+	db, err := sql.Open("postgres", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable")
 
 	if err != nil {
 		panic(err)

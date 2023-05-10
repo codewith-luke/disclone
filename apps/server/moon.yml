@@ -1,14 +1,16 @@
 language: 'go'
 
-project: 
+project:
   name: 'server'
   description: 'main server'
-  
+
 type: 'application'
 
-env: 
+env:
   ENV: 'development'
 
 tasks:
   run:
     command: 'air -c .air.toml'
+    deps:
+      - 'db:run'

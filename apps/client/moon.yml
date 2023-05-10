@@ -12,3 +12,6 @@ env:
 tasks:
   run:
     command: 'cargo tauri dev'
+    deps:
+      - 'db:run'
+      - 'server:run'

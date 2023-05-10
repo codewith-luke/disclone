@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+  db:
+    container_name: db
+    image: postgres:13.1-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: disclone
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - disclone_network
+    ports:
+      - 5432:5432
+  server:
+    container_name: server
+    build:
+      context: apps/server
+    volumes:
+      - .:/disclone:rw,delegated
+    networks:
+      - disclone_network
+    security_opt:
+      - "seccomp:unconfined"
+    cap_add:
+      - SYS_PTRACE
+    ports:
+      - 8000:8000
+      - 2345:2345
+
+volumes:
+    db:
+
+networks:
+  disclone_network:
+    name: disclone_network
