@@ -1,37 +1,46 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
-	"github.com/golang-migrate/migrate/v4/database"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"sync"
 )
 
 type DB struct {
-	Driver database.Driver
+	Driver *pgxpool.Pool
 }
 
-func NewDB() *DB {
+var (
+	pgInstance *DB
+	pgOnce     sync.Once
+)
+
+func NewDB(ctx context.Context) *DB {
 	user := GetENVKey("DB_USER")
 	pwd := GetENVKey("DB_PWD")
 	host := GetENVKey("DB_HOST")
 	database := GetENVKey("DB_DATABASE")
 	port := GetENVKey("DB_PORT")
 
-	con := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, pwd, host, port, database)
-	db, err := sql.Open("postgres", con)
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, pwd, host, port, database)
 
-	if err != nil {
-		panic(err)
-	}
+	pgOnce.Do(func() {
+		db, err := pgxpool.New(ctx, connString)
+		if err != nil {
+			panic(err)
+		}
 
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
+		pgInstance = &DB{Driver: db}
+	})
 
-	if err != nil {
-		panic(err)
-	}
+	return pgInstance
+}
 
-	return &DB{
-		Driver: driver,
-	}
+func (pg *DB) Ping(ctx context.Context) error {
+	return pg.Driver.Ping(ctx)
+}
+
+func (pg *DB) Close() {
+	pg.Driver.Close()
 }

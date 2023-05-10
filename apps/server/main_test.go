@@ -30,10 +30,15 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 	}
 }
 
-func TestHeartbeat(t *testing.T) {
+func boot() *Server {
 	bootstrapEnvConfig()
 	s := CreateServer()
 	s.MountHandlers()
+	return s
+}
+
+func TestHeartbeat(t *testing.T) {
+	s := boot()
 
 	req, _ := http.NewRequest("GET", "/", nil)
 
@@ -45,8 +50,7 @@ func TestHeartbeat(t *testing.T) {
 }
 
 func TestClerk_No_Body(t *testing.T) {
-	s := CreateServer()
-	s.MountHandlers()
+	s := boot()
 
 	req, _ := http.NewRequest("POST", "/webhooks/user/clerk/create", nil)
 
@@ -58,8 +62,7 @@ func TestClerk_No_Body(t *testing.T) {
 }
 
 func TestUserCreate_Not_Implemented(t *testing.T) {
-	s := CreateServer()
-	s.MountHandlers()
+	s := boot()
 
 	var buf bytes.Buffer
 	json.NewEncoder(&buf).Encode(struct {
@@ -84,10 +87,17 @@ func TestUserCreate_Not_Implemented(t *testing.T) {
 }
 
 func TestUserCreate_Success(t *testing.T) {
-	s := CreateServer()
-	s.MountHandlers()
+	s := boot()
 
 	var buf bytes.Buffer
+	expected := struct {
+		ID           string `json:"id"`
+		EmailAddress string `json:"email_address"`
+	}{
+		ID:           "email_01",
+		EmailAddress: "test@disclone.com",
+	}
+
 	input := ClerkWebhookInput{
 		Object: "event",
 		Type:   "user.created",
@@ -111,8 +121,12 @@ func TestUserCreate_Success(t *testing.T) {
 	checkResponseCode(t, http.StatusOK, actual.Code)
 
 	bodyDecoder := json.NewDecoder(actual.Body)
-	var result ClerkWebhookInput
+	var result struct {
+		ID           string `json:"id"`
+		EmailAddress string `json:"email_address"`
+	}
 	bodyDecoder.Decode(&result)
 
-	require.Equal(t, input, result)
+	require.Equal(t, result.EmailAddress, expected.EmailAddress)
+	require.NotEmpty(t, result.ID)
 }

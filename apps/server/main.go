@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-playground/validator/v10"
+	"github.com/jackc/pgx/v5"
 	"github.com/spf13/viper"
 	"github.com/unrolled/render"
 	"io"
@@ -27,6 +29,7 @@ type RequestConfig struct {
 	Renderer Renderer
 	Request  *http.Request
 	Writer   io.Writer
+	DB       *DB
 }
 
 type ClerkWebhookInput struct {
@@ -43,7 +46,7 @@ type ClerkWebhookData struct {
 
 type ClerkWebhookEmailAddress struct {
 	ID           string `json:"id" validate:"required"`
-	EmailAddress string `json:"email_address" validate:"required"`
+	EmailAddress string `json:"email_address" validate:"required email"`
 }
 
 type Server struct {
@@ -66,6 +69,7 @@ func main() {
 	bootstrapEnvConfig()
 	s := CreateServer()
 	s.MountHandlers()
+	defer s.DB.Close()
 
 	http.ListenAndServe(":8000", s.Router)
 }
@@ -83,13 +87,14 @@ func CreateServer() *Server {
 
 	var Validate = validator.New()
 	var Renderer = render.New()
-	var dbDriver = NewDB()
+	var db = NewDB(context.Background())
 
 	return &Server{
+
 		Validate: Validate,
 		Renderer: Renderer,
 		Router:   r,
-		DB:       dbDriver,
+		DB:       db,
 	}
 }
 
@@ -105,6 +110,7 @@ func (s *Server) MountHandlers() {
 				Renderer: s.Renderer,
 				Request:  r,
 				Writer:   w,
+				DB:       s.DB,
 			}
 
 			err := RunUserCreate(rc, provider)
@@ -128,7 +134,37 @@ func RunUserCreate(rc *RequestConfig, provider string) error {
 			return rc.Renderer.JSON(rc.Writer, http.StatusOK, FormatErrorRes(err))
 		}
 
-		return rc.Renderer.JSON(rc.Writer, http.StatusOK, input)
+		var emailAddress string
+
+		for _, address := range input.Data.EmailAddresses {
+			if address.ID == input.Data.PrimaryEmailAddressID {
+				emailAddress = address.EmailAddress
+			}
+		}
+
+		if emailAddress == "" {
+			return rc.Renderer.JSON(rc.Writer, http.StatusOK, FormatErrorRes(fmt.Errorf("primary email address not found")))
+		}
+
+		query := "INSERT INTO user_provider_mapping (provider_id, provider, email_address) values (@provider_id, @provider, @email_address) RETURNING id, email_address"
+		args := pgx.NamedArgs{
+			"provider_id":   input.Data.ID,
+			"provider":      PROVIDER_CLERK,
+			"email_address": emailAddress,
+		}
+
+		var rID string
+		var rEmail string
+		err = rc.DB.Driver.QueryRow(context.Background(), query, args).Scan(&rID, &rEmail)
+
+		if err != nil {
+			return rc.Renderer.JSON(rc.Writer, http.StatusOK, FormatErrorRes(err))
+		}
+
+		return rc.Renderer.JSON(rc.Writer, http.StatusOK, map[string]string{
+			"id":            rID,
+			"email_address": rEmail,
+		})
 	default:
 		response := map[string]string{
 			"message": "provider not found or not implemented yet",
