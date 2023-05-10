@@ -31,6 +31,7 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 }
 
 func TestHeartbeat(t *testing.T) {
+	bootstrapEnvConfig()
 	s := CreateServer()
 	s.MountHandlers()
 
@@ -90,7 +91,16 @@ func TestUserCreate_Success(t *testing.T) {
 	input := ClerkWebhookInput{
 		Object: "event",
 		Type:   "user.created",
-		Data:   nil,
+		Data: ClerkWebhookData{
+			ID:                    "usr_01",
+			PrimaryEmailAddressID: "email_01",
+			EmailAddresses: []ClerkWebhookEmailAddress{
+				{
+					ID:           "email_01",
+					EmailAddress: "test@disclone.com",
+				},
+			},
+		},
 	}
 
 	json.NewEncoder(&buf).Encode(input)

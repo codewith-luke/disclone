@@ -3,5 +3,15 @@ Content-Type: application/json
 
 {
   "object": "event",
-  "type": "user.created"
+  "type": "user.created",
+  "data": {
+    "id": "usr_01",
+    "primary_email_address_id": "email_01",
+    "email_addresses": [
+      {
+        "id": "email_01",
+        "email_address": "test@disclone.com"
+      }
+    ]
+  }
 }
