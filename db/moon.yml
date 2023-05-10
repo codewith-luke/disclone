@@ -1,0 +1,25 @@
+language: 'go'
+
+project:
+  name: 'database'
+  description: 'main db'
+
+tasks:
+  seed:
+    command: 'go run main.go --up'
+    local: true
+    deps:
+      - '~:run'
+  drop:
+    command: 'go run main.go --down'
+    local: true
+    deps:
+      - '^:run'
+  run:
+    command: 'docker container start disclone'
+    local: true
+  stop:
+    local: true
+    command: 'docker container stop disclone'
+
+
