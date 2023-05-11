@@ -6,3 +6,5 @@
 .idea
 
 apps/server/tmp
+
+*.env*
