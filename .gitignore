@@ -4,3 +4,5 @@
 .moon/docker
 
 .idea
+
+apps/server/tmp
