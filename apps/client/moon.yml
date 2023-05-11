@@ -1,9 +1,9 @@
-language: 'rust'
-
-project: 
+project:
   name: 'client'
   description: 'desktop client'
   
+language: 'rust'
+
 type: 'application'
 
 env: 
@@ -16,5 +16,3 @@ tags:
 tasks:
   run:
     command: 'cargo tauri dev'
-    deps:
-      - 'server:run'

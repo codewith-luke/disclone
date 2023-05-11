@@ -1,6 +1,6 @@
 # Use the golang offical image
 # Use alpine because smaller images for Luke his HUGE SSD
-FROM golang:1.18-alpine
+FROM golang:1.20-alpine
 
 # Environment variables
 ENV GO111MODULE="on"

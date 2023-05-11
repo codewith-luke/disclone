@@ -1,4 +1,5 @@
 version: "3.8"
+
 services:
   db:
     container_name: db
@@ -18,8 +19,10 @@ services:
     container_name: server
     build:
       context: apps/server
+    env_file:
+      - .env
     volumes:
-      - .:/disclone:rw,delegated
+      - ./apps/server:/disclone:rw,delegated
     networks:
       - disclone_network
     security_opt:
