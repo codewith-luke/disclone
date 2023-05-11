@@ -79,25 +79,12 @@ func (up *UserProvider) CreateNewUser(r *http.Request, provider string) (*UserPr
 			return nil, fmt.Errorf("primary email address not found")
 		}
 
-		query := "INSERT INTO user_provider_mapping (provider_id, provider, email_address) values (@provider_id, @provider, @email_address) RETURNING id, email_address"
-		args := pgx.NamedArgs{
-			"provider_id":   input.Data.ID,
-			"provider":      PROVIDER_CLERK,
-			"email_address": emailAddress,
-		}
-
-		var rID string
-		var rEmail string
-		err = up.DB.Driver.QueryRow(context.Background(), query, args).Scan(&rID, &rEmail)
-
-		if err != nil {
-			return nil, err
-		}
+		rID, err := up.insert(input.Data.ID, emailAddress)
 
 		return &UserProviderMapping{
 			ID:           rID,
 			ProviderID:   PROVIDER_CLERK,
-			EmailAddress: rEmail,
+			EmailAddress: emailAddress,
 		}, nil
 	default:
 		return nil, fmt.Errorf("provider not found or not implemented yet")
@@ -122,6 +109,26 @@ func (up *UserProvider) validate(r *http.Request, input any) error {
 	}
 
 	return nil
+}
+
+func (up *UserProvider) insert(userID string, emailAddress string) (string, error) {
+	query := "INSERT INTO user_provider_mapping (provider_id, provider_user_id, email_address) values (@provider_id, @provider_user_id, @email_address) RETURNING id, email_address"
+	args := pgx.NamedArgs{
+		"provider_id":      PROVIDER_CLERK,
+		"provider_user_id": userID,
+		"email_address":    emailAddress,
+	}
+
+	var rID string
+	var rEmail string
+
+	err := up.DB.Driver.QueryRow(context.Background(), query, args).Scan(&rID, &rEmail)
+
+	if err != nil {
+		return "", err
+	}
+
+	return rID, nil
 }
 
 type ClerkClient struct {

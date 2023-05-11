@@ -31,7 +31,7 @@ export const useAuth = () => {
 
 async function loadClerk() {
     const clerk = new Clerk(
-        "pk_test_ZWFzeS1tb29zZS0xNC5jbGVyay5hY2NvdW50cy5kZXYk"
+        "pk_test_Y3V0ZS1jaWNhZGEtMjUuY2xlcmsuYWNjb3VudHMuZGV2JA"
     );
     await clerk.load();
     return clerk;

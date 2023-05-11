@@ -46,15 +46,15 @@ func main() {
 
 func bootstrapEnvConfig() {
 	viper.AutomaticEnv()
-	viper.SetConfigName(".env")
+	viper.SetConfigName(".server.env")
 	viper.SetConfigType("env")
 	viper.AddConfigPath("../../")
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Println("InternalError, could not locate .env file", err)
+			log.Println("InternalError, could not locate .server.env file", err)
 		} else {
-			log.Println("InternalError loading .env file", err)
+			log.Println("InternalError loading .server.env file", err)
 		}
 	}
 }
@@ -132,14 +132,16 @@ func WithAuth(next http.HandlerFunc, clerk *ClerkClient) http.HandlerFunc {
 			return
 		}
 
-		user, err := clerk.client.Users().Read(sessClaims.Claims.Subject)
+		_, err = clerk.client.Users().Read(sessClaims.Claims.Subject)
 
 		if err != nil {
-			panic(err)
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("Unauthorized"))
+			return
 		}
 
-		fmt.Println(user)
+		ctx := context.WithValue(r.Context(), "session", sessClaims.Claims)
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

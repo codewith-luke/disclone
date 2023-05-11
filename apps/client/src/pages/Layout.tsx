@@ -6,6 +6,7 @@ import {A, Outlet} from "@solidjs/router";
 import Logout from "../components/Logout";
 import useUser from "../hooks/user";
 import {invoke} from "@tauri-apps/api";
+import DevTool from "../components/DevTool";
 
 const navigation = [
     {name: 'Dashboard', href: '#', icon: bars_3, current: false},
@@ -25,9 +26,7 @@ export default function Layout() {
     const [sidebarOpen, setSidebarOpen] = createSignal(false)
 
     createResource(async () => {
-        debugger;
         const res = await invoke('greet', { name: 'World' });
-        console.log(res);
     });
 
 
@@ -196,6 +195,7 @@ export default function Layout() {
             <aside
                 class="fixed inset-y-0 left-20 hidden w-96 overflow-y-auto border-r border-gray-200 px-4 py-6 sm:px-6 lg:px-8 xl:block">
                 <div>Hello {user().firstName}</div>
+                <DevTool/>
             </aside>
         </>
     )
