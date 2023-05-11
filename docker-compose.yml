@@ -20,7 +20,7 @@ services:
     build:
       context: apps/server
     env_file:
-      - .env
+      - .server.env
     volumes:
       - ./apps/server:/disclone:rw,delegated
     networks:

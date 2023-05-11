@@ -9,14 +9,14 @@ tasks:
     command: 'go run main.go --up'
     local: true
     options:
-      envFile: '/.env'
+      envFile: '/.server.env'
 
   drop_dev:
     command: 'go run main.go --down'
     local: true
     options:
       cache: false
-      envFile: '/.env'
+      envFile: '/.server.env'
 
   run:
     command: 'echo'
