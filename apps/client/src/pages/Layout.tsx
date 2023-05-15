@@ -184,9 +184,9 @@ export default function Layout() {
                 </a>
             </div>
 
-            <main class="lg:pl-20">
-                <div class="xl:pl-96">
-                    <div class="px-4 py-10 sm:px-6 lg:px-8 lg:py-6">
+            <main class="h-full lg:pl-20">
+                <div class="h-full xl:pl-96">
+                    <div class="h-full px-4 py-10 sm:px-6 lg:px-8 lg:py-6">
                         <Outlet/>
                     </div>
                 </div>

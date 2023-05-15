@@ -1,0 +1,11 @@
+### Simple WebSocket Subscriber
+// It is possible to send messages to server right from the Services tool window
+WEBSOCKET ws://localhost:8000/subscribe
+
+### Simple WebSocket Publisher
+POST http://localhost:8000/publish
+Content-Type: text/plain
+
+hello from server
+
+

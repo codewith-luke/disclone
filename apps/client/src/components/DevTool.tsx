@@ -11,7 +11,7 @@ export default function DevTool() {
         if (!tkn) {
             return
         }
-        debugger;
+
         setToken(tkn);
     })
 

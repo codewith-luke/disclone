@@ -1,14 +1,11 @@
-import {A} from "@solidjs/router";
 import {useAuth} from "../Auth";
+import Chat from "../components/Chat";
 
 function Home() {
     const auth = useAuth();
 
     return (
-        <div>
-            <h1>Home {JSON.stringify(auth().loaded)}</h1>
-            <A href="/Channels">Channels</A>
-        </div>
+        <Chat/>
     );
 }
 

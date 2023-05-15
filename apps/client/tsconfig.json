@@ -1,4 +1,5 @@
 {
+  "include": ["*.d.ts"],
   "compilerOptions": {
     "strict": true,
     "target": "ESNext",

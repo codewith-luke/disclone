@@ -1,6 +1,7 @@
 import {Routes, useRoutes} from "@solidjs/router";
 import {Suspense} from "solid-js";
 import "./App.css";
+import ".";
 
 import Auth from "./Auth";
 import Home from "./pages/Home";
