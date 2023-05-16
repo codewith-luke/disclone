@@ -1,5 +1,6 @@
 import {useAuth} from "../Auth";
-import {createSignal, createResource} from "solid-js";
+import {createResource, createSignal} from "solid-js";
+import ButtonPrimary from "./Button";
 
 export default function DevTool() {
     const auth = useAuth();
@@ -24,12 +25,8 @@ export default function DevTool() {
     }
 
     return (
-        <div>
-            <span class="truncate">{token()}</span>
-            <button type="button" onclick={async () => {
-                copyValue(token() || '');
-            }}>copy
-            </button>
-        </div>
+        <ButtonPrimary value="Copy" type="button" onClick={() => {
+            copyValue(token() || '');}
+        }/>
     )
 }

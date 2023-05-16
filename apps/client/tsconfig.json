@@ -1,5 +1,7 @@
 {
-  "include": ["*.d.ts"],
+  "include": [
+    "./src/index.d.ts"
+  ],
   "compilerOptions": {
     "strict": true,
     "target": "ESNext",

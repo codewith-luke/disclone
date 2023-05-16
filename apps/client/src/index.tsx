@@ -5,6 +5,7 @@ import {Router} from "@solidjs/router";
 import "./styles.css";
 import App from "./App";
 
+
 render(
     () => (
         <Router>

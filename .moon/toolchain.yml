@@ -69,5 +69,3 @@ typescript:
   # Sync a project's project references as import aliases to the `paths`
   # compiler option in each applicable project.
   syncProjectReferencesToPaths: true
-
-rust: {}

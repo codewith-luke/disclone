@@ -1,13 +1,16 @@
-import {createResource, createSignal, For, onMount} from "solid-js";
+import {Icon} from "solid-heroicons";
+import {paperAirplane} from "solid-heroicons/solid";
+import {createSignal, For, onMount} from "solid-js";
 import {useForm} from "../hooks/form";
+import ButtonPrimary from "./Button";
 
 type MessageProps = {
     text: string
 }
 
 export default function Chat() {
-    let chatArea;
-    const [messages, setMessages] = createSignal([]);
+    let chatArea: HTMLDivElement | undefined;
+    const [messages, setMessages] = createSignal<string[]>([]);
     const [expectedMessage, setExpectedMessage] = createSignal(false);
     const {submit, validate} = useForm({
         errorClass: "error-input"
@@ -36,11 +39,15 @@ export default function Chat() {
                     console.error("unexpected message type", typeof ev.data);
                     return;
                 }
+
                 console.log("received message", ev.data);
                 setMessages([...messages(), ev.data]);
 
                 if (expectedMessage()) {
-                    chatArea.scrollIntoView();
+                    if (chatArea !== undefined) {
+                        chatArea.scrollIntoView();
+                    }
+
                     setExpectedMessage(false);
                 }
             });
@@ -62,21 +69,24 @@ export default function Chat() {
             if (resp.status !== 202) {
                 throw new Error(`Unexpected HTTP Status ${resp.status} ${resp.statusText}`)
             }
-        } catch (err) {
-            return `Publish failed: ${err.message}`;
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                return `Publish failed: ${err.message}`;
+            }
         }
     }
 
     return (
-        <div class="flex flex-col justify-between w-full h-full max-w-2xl">
-            <div ref={chatArea} class="flex flex-col">
+        <div class="flex flex-col justify-between w-full h-full">
+            <div ref={chatArea} class="flex flex-col overflow-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-teal-800">
                 <For each={messages()}>
                     {
                         (message) => <Message text={message}/>
                     }
                 </For>
             </div>
-            <div class="mt-6">
+
+            <div class="sticky mt-6">
                 <form use:submit={onSendMessage}
                       reset={true}
                       class="flex">
@@ -85,9 +95,11 @@ export default function Chat() {
                            id="message-input"
                            type="text"
                            minlength="1"
-                           class="flex-grow appearance-none rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-                    <input value="Submit" type="submit"
-                           class="ml-4 px-4 py-2 text-white bg-black rounded-md hover:bg-red-500 focus:outline-none focus:bg-red-500 active:bg-red-500"/>
+                           class="flex-grow appearance-none rounded-md border border-gray-300 bg-contrast px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <ButtonPrimary value="Submit" type="submit">
+                        <Icon path={paperAirplane} class="h-6 w-6 shrink-0" aria-hidden="true"/>
+                    </ButtonPrimary>
                 </form>
             </div>
         </div>

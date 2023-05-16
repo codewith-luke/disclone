@@ -1,13 +1,21 @@
-import {createStore} from "solid-js/store";
+import {createStore, SetStoreFunction} from "solid-js/store";
 
-function checkValid({element, validators = []}, setErrors, errorClass) {
+type Validator = (el: HTMLInputElement) => Promise<string | undefined>;
+type ValidCheck = {
+    element: HTMLInputElement;
+    validators: Validator[];
+}
+
+function checkValid({element, validators = []}: ValidCheck, setErrors: SetStoreFunction<{}>, errorClass: string) {
     return async () => {
         element.setCustomValidity("");
         element.checkValidity();
         let message = element.validationMessage;
+
         if (!message) {
             for (const validator of validators) {
                 const text = await validator(element);
+
                 if (text) {
                     element.setCustomValidity(text);
                     break;
@@ -22,10 +30,14 @@ function checkValid({element, validators = []}, setErrors, errorClass) {
     };
 }
 
-// TODO: fix types
-export function useForm({errorClass}) {
-    const [errors, setErrors] = createStore({}),
-        fields = {};
+type ErrorClass = 'error-input' | undefined;
+type UseFormOptions = {
+    errorClass?: ErrorClass;
+}
+
+export function useForm({errorClass}: UseFormOptions = {}) {
+    const [errors, setErrors] = createStore({});
+    const fields = {};
 
     function validate(ref: HTMLInputElement, accessor: () => (el: HTMLInputElement) => any) {
         const validators = accessor() || [];
