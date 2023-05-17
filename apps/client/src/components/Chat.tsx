@@ -3,18 +3,21 @@ import {paperAirplane} from "solid-heroicons/solid";
 import {createSignal, For, onMount} from "solid-js";
 import {useForm} from "../hooks/form";
 import ButtonPrimary from "./Button";
+import {Portal} from "solid-js/web";
 
 type MessageProps = {
     text: string
 }
 
+type ChatInputProps = {
+    onSubmit: (ref: HTMLFormElement) => Promise<string | void>
+}
+export const CHAT_IDENTIFIER = "chat-input" as const;
+
 export default function Chat() {
     let chatArea: HTMLDivElement | undefined;
     const [messages, setMessages] = createSignal<string[]>([]);
     const [expectedMessage, setExpectedMessage] = createSignal(false);
-    const {submit, validate} = useForm({
-        errorClass: "error-input"
-    });
 
     onMount(() => {
         function dial() {
@@ -22,7 +25,6 @@ export default function Chat() {
 
             conn.addEventListener("close", (ev) => {
                 console.error("websocket disconnected", ev);
-
 
                 if (ev.code !== 1001) {
                     setMessages([...messages(), "Reconnecting in 1s"]);
@@ -77,32 +79,44 @@ export default function Chat() {
     }
 
     return (
-        <div class="flex flex-col justify-between w-full h-full">
-            <div ref={chatArea} class="flex flex-col overflow-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-teal-800">
-                <For each={messages()}>
-                    {
-                        (message) => <Message text={message}/>
-                    }
-                </For>
+        <>
+            <div class="h-full overflow-y-scroll scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-teal-800">
+                <div ref={chatArea}
+                     class="flex flex-col ">
+                    <For each={messages()}>
+                        {
+                            (message) => <Message text={message}/>
+                        }
+                    </For>
+                </div>
             </div>
+            <Portal mount={document.getElementById(CHAT_IDENTIFIER) as HTMLDivElement}>
+                <ChatInput onSubmit={onSendMessage}/>
+            </Portal>
+        </>
+    )
+}
 
-            <div class="sticky mt-6">
-                <form use:submit={onSendMessage}
-                      reset={true}
-                      class="flex">
-                    <input use:validate
-                           name="message"
-                           id="message-input"
-                           type="text"
-                           minlength="1"
-                           class="flex-grow appearance-none rounded-md border border-gray-300 bg-contrast px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <ButtonPrimary value="Submit" type="submit">
-                        <Icon path={paperAirplane} class="h-6 w-6 shrink-0" aria-hidden="true"/>
-                    </ButtonPrimary>
-                </form>
-            </div>
-        </div>
+export function ChatInput(props: ChatInputProps) {
+    const {submit, validate} = useForm({
+        errorClass: "error-input"
+    });
+
+    return (
+        <form use:submit={props.onSubmit}
+              reset={true}
+              class="flex">
+            <input use:validate
+                   name="message"
+                   id="message-input"
+                   type="text"
+                   minlength="1"
+                   class="flex-grow appearance-none rounded-md border border-gray-300 bg-background-secondary px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <ButtonPrimary value="Submit" type="submit">
+                <Icon path={paperAirplane} class="h-6 w-6 shrink-0" aria-hidden="true"/>
+            </ButtonPrimary>
+        </form>
     )
 }
 
