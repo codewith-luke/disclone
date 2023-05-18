@@ -20,7 +20,6 @@ module.exports = {
                 },
                 'second-background': '#32424A',
                 disabled: '#415967',
-                contrast: '#1E272C',
                 active: '#314549',
                 border: '#2A373E',
                 highlight: '#425B67',

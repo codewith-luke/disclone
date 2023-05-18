@@ -25,7 +25,7 @@ export default function DevTool() {
     }
 
     return (
-        <ButtonPrimary value="Copy" type="button" onClick={() => {
+        <ButtonPrimary class="rounded-full w-10 h-10 p-0" value="JWT" type="button" onClick={() => {
             copyValue(token() || '');}
         }/>
     )

@@ -11,6 +11,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@boringer-avatars/solid": "^0.2.1",
     "@clerk/clerk-js": "^4.38.4",
     "@solidjs/router": "^0.8.2",
     "@tauri-apps/api": "^1.2.0",

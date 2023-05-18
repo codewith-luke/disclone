@@ -8,7 +8,7 @@
     line-height: 24px;
     font-weight: 400;
 
-    color: #0f0f0f;
+    color: #FFFFFF;
     background-color: #f6f6f6;
 
     font-synthesis: none;
@@ -85,6 +85,10 @@ button:active {
 input,
 button {
     outline: none;
+}
+
+#chat-input > div {
+    width: 100%;
 }
 
 #greet-input {

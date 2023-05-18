@@ -1,9 +1,7 @@
-import {Icon} from "solid-heroicons";
-import {paperAirplane} from "solid-heroicons/solid";
 import {createSignal, For, onMount} from "solid-js";
 import {useForm} from "../hooks/form";
-import ButtonPrimary from "./Button";
 import {Portal} from "solid-js/web";
+import {Avatar} from "@boringer-avatars/solid";
 
 type MessageProps = {
     text: string
@@ -12,6 +10,7 @@ type MessageProps = {
 type ChatInputProps = {
     onSubmit: (ref: HTMLFormElement) => Promise<string | void>
 }
+
 export const CHAT_IDENTIFIER = "chat-input" as const;
 
 export default function Chat() {
@@ -80,9 +79,12 @@ export default function Chat() {
 
     return (
         <>
-            <div class="h-full overflow-y-scroll scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-teal-800">
+            <div class="h-full overflow-y-scroll scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-teal-800 px-10">
                 <div ref={chatArea}
-                     class="flex flex-col ">
+                     class="space-y-2">
+                    <Message text={"Welcome to the chat!"}/>
+                    <Message
+                        text={"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}/>
                     <For each={messages()}>
                         {
                             (message) => <Message text={message}/>
@@ -105,23 +107,43 @@ export function ChatInput(props: ChatInputProps) {
     return (
         <form use:submit={props.onSubmit}
               reset={true}
-              class="flex">
+              class="flex space-x-4 px-40">
             <input use:validate
                    name="message"
                    id="message-input"
                    type="text"
                    minlength="1"
-                   class="flex-grow appearance-none rounded-md border border-gray-300 bg-background-secondary px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="Message /commands /help"
+                   class="flex-grow text-white rounded-3xl bg-background-secondary px-4 py-2"
             />
-            <ButtonPrimary value="Submit" type="submit">
-                <Icon path={paperAirplane} class="h-6 w-6 shrink-0" aria-hidden="true"/>
-            </ButtonPrimary>
         </form>
     )
 }
 
 function Message(props: MessageProps) {
     return (
-        <p>{props.text}</p>
+        <div class="p-4 space-y-2 max-w-[50%] break-normal">
+            <h3 class="flex flex-row gap-x-1 items-center">
+                <Avatar
+                    size={25}
+                    variant="beam"
+                    name="John Doe"
+                    square={false}
+                    colors={["#FFAD08", "#EDD75A", "#73B06F", "#0C8F8F", "#405059"]}
+                />
+                <span>
+                    User
+                    <span class="ml-4 text-xs text-gray-400">
+                                       {new Date().toLocaleTimeString()}
+                                    </span>
+                </span>
+
+            </h3>
+            <div
+                class="relative inline-flex text-white bg-background-tertiary p-3 rounded-tr-xl rounded-br-xl rounded-bl-xl items-center break-all">
+                {props.text}
+
+            </div>
+        </div>
     )
 }

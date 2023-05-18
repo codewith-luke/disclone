@@ -1,6 +1,9 @@
 lockfileVersion: '6.0'
 
 dependencies:
+  '@boringer-avatars/solid':
+    specifier: ^0.2.1
+    version: 0.2.1
   '@clerk/clerk-js':
     specifier: ^4.38.4
     version: 4.38.4(@babel/core@7.21.8)(react-dom@18.2.0)(react@18.2.0)
@@ -381,6 +384,12 @@ packages:
       '@babel/helper-string-parser': 7.21.5
       '@babel/helper-validator-identifier': 7.19.1
       to-fast-properties: 2.0.0
+
+  /@boringer-avatars/solid@0.2.1:
+    resolution: {integrity: sha512-uH4UL2rhiubLPbFlmrSC+Xh/GrG3rRC6xPkKA8ucayj0U90W3V+nlEyWZkgSxBo2FbeOyAnGMxk6nI6/CzUKvQ==}
+    dependencies:
+      solid-js: 1.7.0
+    dev: false
 
   /@clerk/clerk-js@4.38.4(@babel/core@7.21.8)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-oQycF/GuWw05sekzwXWOdBkZYZf9MoIv4Or8iDbLqzWnV6fcMXju82GtDr4Zlly+mgLxJyE+ORSLud+l4g4OAg==}
