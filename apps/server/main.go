@@ -123,8 +123,10 @@ func (s *Server) MountHandlers() {
 		})
 	})
 
+	chatRouter := newChat(s)
+
 	s.Router.Mount("/webhooks", webhookRouter)
-	newChat(s.Router)
+	s.Router.Mount("/chat", chatRouter.Router)
 }
 
 func WithAuth(next http.HandlerFunc, clerk *ClerkClient) http.HandlerFunc {

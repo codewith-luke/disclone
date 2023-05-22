@@ -1,14 +1,14 @@
 import {Icon} from "solid-heroicons";
 import {arrowLeftOnRectangle} from "solid-heroicons/solid";
-import {useAuth} from "../Auth";
+import {useClerk} from "../Auth";
 import {useNavigate} from "@solidjs/router";
 
 export default function Logout() {
     const navigate = useNavigate();
-    const auth = useAuth();
+    const clerk = useClerk();
 
     async function signOut() {
-        await auth().signOut();
+        await clerk().signOut();
         navigate("/login", {replace: true})
     }
 

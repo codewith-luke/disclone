@@ -1,15 +1,15 @@
-import {useAuth} from "../Auth";
+import {useClerk} from "../Auth";
 
 export type User = {
     firstName: string;
 }
 
 export default function useUser() {
-    const auth = useAuth();
+    const clerk = useClerk();
 
     return () => {
-        if (auth()?.user) {
-            return auth().user as User;
+        if (clerk()?.user) {
+            return clerk().user as User;
         }
 
         return {

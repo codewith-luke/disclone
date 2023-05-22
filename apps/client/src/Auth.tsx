@@ -15,7 +15,7 @@ const UnauthorizedRoutes: {
 
 const ClerkContext = createContext<Resource<Clerk>>();
 
-export const useAuth = () => {
+export const useClerk = () => {
     const ctx = useContext(ClerkContext);
 
     if (!ctx) {

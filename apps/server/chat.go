@@ -15,6 +15,11 @@ import (
 	"nhooyr.io/websocket"
 )
 
+type KeyManager interface {
+	Validate(key string) bool
+	Add() (string, error)
+}
+
 type chatServer struct {
 	// subscriberMessageBuffer controls the max number
 	// of messages that can be queued for a subscriber
@@ -32,23 +37,31 @@ type chatServer struct {
 	// Defaults to log.Printf.
 	logf func(f string, v ...interface{})
 
-	// serveMux routes the various endpoints to the appropriate handler.
-	serveMux *chi.Mux
+	// Router routes the various endpoints to the appropriate handler.
+	Router *chi.Mux
 
 	subscribersMu sync.Mutex
 	subscribers   map[*subscriber]struct{}
+
+	keyManager KeyManager
 }
 
-func newChat(server *chi.Mux) *chatServer {
+func newChat(s *Server) *chatServer {
+	kr := NewKeyRetention()
+	r := chi.NewRouter()
+
 	cs := &chatServer{
-		serveMux:                server,
+		Router:                  r,
 		subscriberMessageBuffer: 16,
 		logf:                    log.Printf,
 		subscribers:             make(map[*subscriber]struct{}),
 		publishLimiter:          rate.NewLimiter(rate.Every(time.Millisecond*100), 8),
+		keyManager:              kr,
 	}
-	cs.serveMux.Get("/subscribe", cs.subscribeHandler)
-	cs.serveMux.Post("/publish", cs.publishHandler)
+
+	cs.Router.Post("/login", WithAuth(cs.login, s.clerk))
+	cs.Router.Get("/subscribe", cs.subscribeHandler)
+	cs.Router.Post("/publish", cs.publishHandler)
 
 	return cs
 }
@@ -59,10 +72,29 @@ type subscriber struct {
 }
 
 func (cs *chatServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	cs.serveMux.ServeHTTP(w, r)
+	cs.Router.ServeHTTP(w, r)
+}
+
+func (cs *chatServer) login(w http.ResponseWriter, r *http.Request) {
+	key, err := cs.keyManager.Add()
+
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+	w.Write([]byte(key))
 }
 
 func (cs *chatServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
+	otp := r.URL.Query().Get("otp")
+
+	if !cs.keyManager.Validate(otp) {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+
 	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 		InsecureSkipVerify: true,
 	})
@@ -123,6 +155,7 @@ func (cs *chatServer) subscribe(ctx context.Context, c *websocket.Conn) error {
 		select {
 		case msg := <-s.msgs:
 			err := writeTimeout(ctx, time.Second*5, c, msg)
+
 			if err != nil {
 				return err
 			}

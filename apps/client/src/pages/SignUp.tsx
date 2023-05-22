@@ -1,9 +1,8 @@
 import {onMount} from "solid-js";
-import {useAuth} from "../Auth";
-import {A} from "@solidjs/router";
+import {useClerk} from "../Auth";
 
 function SignUp() {
-    const auth = useAuth();
+    const clerk = useClerk();
     let signUpEl: HTMLDivElement | undefined;
 
     onMount(async () => {
@@ -12,7 +11,7 @@ function SignUp() {
             return;
         }
 
-        auth().mountSignUp(signUpEl);
+        clerk().mountSignUp(signUpEl);
     });
 
     return (

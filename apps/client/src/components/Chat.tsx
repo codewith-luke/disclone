@@ -2,6 +2,7 @@ import {createSignal, For, onMount} from "solid-js";
 import {useForm} from "../hooks/form";
 import {Portal} from "solid-js/web";
 import {Avatar} from "@boringer-avatars/solid";
+import {useClerk} from "../Auth";
 
 type MessageProps = {
     text: string
@@ -14,13 +15,34 @@ type ChatInputProps = {
 export const CHAT_IDENTIFIER = "chat-input" as const;
 
 export default function Chat() {
+    const clerk = useClerk();
     let chatArea: HTMLDivElement | undefined;
     const [messages, setMessages] = createSignal<string[]>([]);
     const [expectedMessage, setExpectedMessage] = createSignal(false);
 
     onMount(() => {
-        function dial() {
-            const conn = new WebSocket(`ws://localhost:8000/subscribe`);
+        async function dial() {
+            const tkn = await clerk().session?.getToken();
+            debugger;
+            const otp = await fetch("http://localhost:8000/chat/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${tkn}`
+                }
+            })
+                .then((resp) => {
+                    if (resp.status !== 202) {
+                        throw new Error(`Unexpected HTTP Status ${resp.status} ${resp.statusText}`)
+                    }
+                    return resp.text();
+                })
+                .catch((err) => {
+                    console.error("failed to auth chat", err);
+                    return "";
+                });
+
+            const conn = new WebSocket(`ws://localhost:8000/chat/subscribe?otp=${otp}`);
 
             conn.addEventListener("close", (ev) => {
                 console.error("websocket disconnected", ev);
@@ -62,7 +84,7 @@ export default function Chat() {
         const form = new FormData(ref);
         const message = form.get('message');
         try {
-            const resp = await fetch("http://localhost:8000/publish", {
+            const resp = await fetch("http://localhost:8000/chat/publish", {
                 method: "POST",
                 body: message,
             });

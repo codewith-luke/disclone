@@ -1,13 +1,13 @@
-import {useAuth} from "../Auth";
+import {useClerk} from "../Auth";
 import {createResource, createSignal} from "solid-js";
 import ButtonPrimary from "./Button";
 
 export default function DevTool() {
-    const auth = useAuth();
+    const clerk = useClerk();
     const [token, setToken] = createSignal('')
 
     createResource(async () => {
-        const tkn = await auth().session?.getToken();
+        const tkn = await clerk().session?.getToken();
 
         if (!tkn) {
             return
