@@ -24,6 +24,7 @@ export default function Chat() {
     onMount(async () => {
         async function dial() {
             const tkn = await clerk().session?.getToken();
+            console.log(clerk().user.id)
             await requestChatLogin(tkn);
             const conn = new WebSocket(`ws://localhost:8000/chat/subscribe`);
 

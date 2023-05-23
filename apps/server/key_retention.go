@@ -51,7 +51,14 @@ func (kr *KeyRetention) CleanUp(interval time.Duration) {
 	}()
 }
 
-func (kr *KeyRetention) Add() (string, error) {
+func (kr *KeyRetention) Add(userID string) (string, error) {
+	//token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	//	"iss": "disclone",
+	//	"sub": userID,
+	//	"nbf": time.Now().Unix(),
+	//	"exp": time.Now().Add(time.Minute * 5).Unix(),
+	//})
+
 	uuid, err := uuid.NewUUID()
 
 	if err != nil {

@@ -5,14 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/golang-jwt/jwt/v5"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"sync"
 	"time"
 
+	jose "github.com/go-jose/go-jose/v3/jwt"
 	"golang.org/x/time/rate"
-
 	"nhooyr.io/websocket"
 )
 
@@ -48,7 +49,7 @@ type chatServer struct {
 }
 
 func newChat(s *Server) *chatServer {
-	kr := NewKeyRetention()
+	//kr := NewKeyRetention()
 	r := chi.NewRouter()
 
 	cs := &chatServer{
@@ -57,7 +58,7 @@ func newChat(s *Server) *chatServer {
 		logf:                    log.Printf,
 		subscribers:             make(map[*subscriber]struct{}),
 		publishLimiter:          rate.NewLimiter(rate.Every(time.Millisecond*100), 8),
-		keyManager:              kr,
+		//keyManager:              kr,
 	}
 
 	cs.Router.Post("/login", WithAuth(cs.login, s.clerk))
@@ -76,21 +77,44 @@ func (cs *chatServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	cs.Router.ServeHTTP(w, r)
 }
 
+type TestClaims struct {
+	Subject string
+}
+
 func (cs *chatServer) login(w http.ResponseWriter, r *http.Request) {
+	sessionClaims := r.Context().Value("session").(jose.Claims)
+
+	fmt.Println(sessionClaims.Subject)
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"iss": "disclone",
+		"sub": sessionClaims.Subject,
+		"nbf": time.Now().Unix(),
+		"exp": time.Now().Add(time.Minute * 5).Unix(),
+	})
+	tokenString, err := token.SignedString([]byte("secret"))
+
+	if err != nil {
+		http.Error(w, "server error", http.StatusInternalServerError)
+		return
+	}
+
 	cookie := http.Cookie{
-		Name:     "exampleCookie",
-		Value:    "Hello world!",
+		Name:     "_chat",
+		Value:    tokenString,
 		MaxAge:   3600,
 		HttpOnly: true,
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
 	}
+
 	http.SetCookie(w, &cookie)
 	w.Write([]byte("cookie set!"))
 }
 
 func (cs *chatServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("exampleCookie")
+	cookie, err := r.Cookie("_chat")
+
 	if err != nil {
 		switch {
 		case errors.Is(err, http.ErrNoCookie):
