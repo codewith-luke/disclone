@@ -3,6 +3,7 @@ import {useForm} from "../hooks/form";
 import {Portal} from "solid-js/web";
 import {Avatar} from "@boringer-avatars/solid";
 import {useClerk} from "../Auth";
+import {requestChatLogin} from "../request-chat-login";
 
 type MessageProps = {
     text: string
@@ -20,29 +21,11 @@ export default function Chat() {
     const [messages, setMessages] = createSignal<string[]>([]);
     const [expectedMessage, setExpectedMessage] = createSignal(false);
 
-    onMount(() => {
+    onMount(async () => {
         async function dial() {
             const tkn = await clerk().session?.getToken();
-            debugger;
-            const otp = await fetch("http://localhost:8000/chat/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${tkn}`
-                }
-            })
-                .then((resp) => {
-                    if (resp.status !== 202) {
-                        throw new Error(`Unexpected HTTP Status ${resp.status} ${resp.statusText}`)
-                    }
-                    return resp.text();
-                })
-                .catch((err) => {
-                    console.error("failed to auth chat", err);
-                    return "";
-                });
-
-            const conn = new WebSocket(`ws://localhost:8000/chat/subscribe?otp=${otp}`);
+            await requestChatLogin(tkn);
+            const conn = new WebSocket(`ws://localhost:8000/chat/subscribe`);
 
             conn.addEventListener("close", (ev) => {
                 console.error("websocket disconnected", ev);
@@ -76,7 +59,7 @@ export default function Chat() {
             });
         }
 
-        dial();
+        await dial();
     });
 
     async function onSendMessage(ref: HTMLFormElement) {

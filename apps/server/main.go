@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -67,9 +68,10 @@ func CreateServer() *Server {
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: false,
+		AllowCredentials: true,
 		MaxAge:           300,
 	}))
+
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
@@ -127,6 +129,35 @@ func (s *Server) MountHandlers() {
 
 	s.Router.Mount("/webhooks", webhookRouter)
 	s.Router.Mount("/chat", chatRouter.Router)
+
+	s.Router.Get("/set", func(w http.ResponseWriter, r *http.Request) {
+		cookie := http.Cookie{
+			Name:     "exampleCookie",
+			Value:    "Hello world!",
+			MaxAge:   3600,
+			HttpOnly: true,
+			Secure:   false,
+			SameSite: http.SameSiteLaxMode,
+		}
+		http.SetCookie(w, &cookie)
+		w.Write([]byte("cookie set!"))
+	})
+
+	s.Router.Get("/get", func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("exampleCookie")
+		if err != nil {
+			switch {
+			case errors.Is(err, http.ErrNoCookie):
+				fmt.Println("cookie not found")
+				http.Error(w, "cookie not found", http.StatusBadRequest)
+			default:
+				log.Println(err)
+				http.Error(w, "server error", http.StatusInternalServerError)
+			}
+			return
+		}
+		fmt.Println(cookie.Value)
+	})
 }
 
 func WithAuth(next http.HandlerFunc, clerk *ClerkClient) http.HandlerFunc {

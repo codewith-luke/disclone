@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"io/ioutil"
 	"log"
@@ -76,24 +77,33 @@ func (cs *chatServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cs *chatServer) login(w http.ResponseWriter, r *http.Request) {
-	key, err := cs.keyManager.Add()
-
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+	cookie := http.Cookie{
+		Name:     "exampleCookie",
+		Value:    "Hello world!",
+		MaxAge:   3600,
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
 	}
-
-	w.WriteHeader(http.StatusAccepted)
-	w.Write([]byte(key))
+	http.SetCookie(w, &cookie)
+	w.Write([]byte("cookie set!"))
 }
 
 func (cs *chatServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
-	otp := r.URL.Query().Get("otp")
-
-	if !cs.keyManager.Validate(otp) {
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+	cookie, err := r.Cookie("exampleCookie")
+	if err != nil {
+		switch {
+		case errors.Is(err, http.ErrNoCookie):
+			fmt.Println("cookie not found")
+			http.Error(w, "cookie not found", http.StatusBadRequest)
+		default:
+			log.Println(err)
+			http.Error(w, "server error", http.StatusInternalServerError)
+		}
 		return
 	}
+
+	fmt.Println(cookie.Value)
 
 	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 		InsecureSkipVerify: true,
@@ -124,6 +134,7 @@ func (cs *chatServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cs *chatServer) publishHandler(w http.ResponseWriter, r *http.Request) {
+
 	body := http.MaxBytesReader(w, r.Body, 8192)
 
 	msg, err := ioutil.ReadAll(body)
