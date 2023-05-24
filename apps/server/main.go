@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -21,8 +21,34 @@ type Validator interface {
 	Struct(any) error
 }
 
+func Validate(r *http.Request, validate Validator, target any) error {
+	if r.Body == nil {
+		return fmt.Errorf("request body is empty")
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&target)
+
+	if err != nil {
+		return err
+	}
+
+	err = validate.Struct(target)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type Renderer interface {
 	JSON(io.Writer, int, any) error
+}
+
+type UserSession struct {
+	ISS     string
+	Subject string
+	ID      string
 }
 
 type Server struct {
@@ -125,39 +151,11 @@ func (s *Server) MountHandlers() {
 		})
 	})
 
-	chatRouter := newChat(s)
+	tr := NewTicketRetention()
+	chatRouter := NewChat(s, tr)
 
 	s.Router.Mount("/webhooks", webhookRouter)
 	s.Router.Mount("/chat", chatRouter.Router)
-
-	s.Router.Get("/set", func(w http.ResponseWriter, r *http.Request) {
-		cookie := http.Cookie{
-			Name:     "exampleCookie",
-			Value:    "Hello world!",
-			MaxAge:   3600,
-			HttpOnly: true,
-			Secure:   false,
-			SameSite: http.SameSiteLaxMode,
-		}
-		http.SetCookie(w, &cookie)
-		w.Write([]byte("cookie set!"))
-	})
-
-	s.Router.Get("/get", func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("exampleCookie")
-		if err != nil {
-			switch {
-			case errors.Is(err, http.ErrNoCookie):
-				fmt.Println("cookie not found")
-				http.Error(w, "cookie not found", http.StatusBadRequest)
-			default:
-				log.Println(err)
-				http.Error(w, "server error", http.StatusInternalServerError)
-			}
-			return
-		}
-		fmt.Println(cookie.Value)
-	})
 }
 
 func WithAuth(next http.HandlerFunc, clerk *ClerkClient) http.HandlerFunc {
@@ -181,7 +179,10 @@ func WithAuth(next http.HandlerFunc, clerk *ClerkClient) http.HandlerFunc {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "session", sessClaims.Claims)
+		ctx := context.WithValue(r.Context(), "session", UserSession{
+			ISS:     sessClaims.Claims.Issuer,
+			Subject: sessClaims.Claims.Subject,
+		})
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

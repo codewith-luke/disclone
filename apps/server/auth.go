@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/clerkinc/clerk-sdk-go/clerk"
 	"github.com/jackc/pgx/v5"
@@ -61,7 +60,7 @@ func (up *UserProvider) CreateNewUser(r *http.Request, provider string) (*UserPr
 	switch provider {
 	case PROVIDER_CLERK:
 		input := ClerkWebhookInput{}
-		err := up.validate(r, &input)
+		err := Validate(r, up.Validate, &input)
 
 		if err != nil {
 			return nil, err
@@ -89,26 +88,6 @@ func (up *UserProvider) CreateNewUser(r *http.Request, provider string) (*UserPr
 	default:
 		return nil, fmt.Errorf("provider not found or not implemented yet")
 	}
-}
-
-func (up *UserProvider) validate(r *http.Request, input any) error {
-	if r.Body == nil {
-		return fmt.Errorf("request body is empty")
-	}
-
-	err := json.NewDecoder(r.Body).Decode(&input)
-
-	if err != nil {
-		return err
-	}
-
-	err = up.Validate.Struct(input)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (up *UserProvider) insert(userID string, emailAddress string) (string, error) {

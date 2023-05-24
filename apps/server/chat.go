@@ -5,21 +5,29 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/golang-jwt/jwt/v5"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"sync"
 	"time"
 
-	jose "github.com/go-jose/go-jose/v3/jwt"
 	"golang.org/x/time/rate"
 	"nhooyr.io/websocket"
 )
 
-type KeyManager interface {
+const (
+	MESSAGE_TYPE_MESSAGE = "message"
+)
+
+type Message struct {
+	Type      string `json:"type"`
+	ChannelID string `json:"channelID"`
+	SenderID  string `json:"senderID"`
+	Content   string `json:"content"`
+}
+
+type TicketManager interface {
 	Validate(key string) bool
-	Add() (string, error)
+	Add(userID string) (string, error)
 }
 
 type chatServer struct {
@@ -45,11 +53,16 @@ type chatServer struct {
 	subscribersMu sync.Mutex
 	subscribers   map[*subscriber]struct{}
 
-	keyManager KeyManager
+	ticketManager TicketManager
+	Validate      Validator
 }
 
-func newChat(s *Server) *chatServer {
-	//kr := NewKeyRetention()
+type subscriber struct {
+	msgs      chan []byte
+	closeSlow func()
+}
+
+func NewChat(s *Server, tr *TicketRetention) *chatServer {
 	r := chi.NewRouter()
 
 	cs := &chatServer{
@@ -57,8 +70,9 @@ func newChat(s *Server) *chatServer {
 		subscriberMessageBuffer: 16,
 		logf:                    log.Printf,
 		subscribers:             make(map[*subscriber]struct{}),
+		Validate:                s.Validate,
 		publishLimiter:          rate.NewLimiter(rate.Every(time.Millisecond*100), 8),
-		//keyManager:              kr,
+		ticketManager:           tr,
 	}
 
 	cs.Router.Post("/login", WithAuth(cs.login, s.clerk))
@@ -68,31 +82,13 @@ func newChat(s *Server) *chatServer {
 	return cs
 }
 
-type subscriber struct {
-	msgs      chan []byte
-	closeSlow func()
-}
-
 func (cs *chatServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	cs.Router.ServeHTTP(w, r)
 }
 
-type TestClaims struct {
-	Subject string
-}
-
 func (cs *chatServer) login(w http.ResponseWriter, r *http.Request) {
-	sessionClaims := r.Context().Value("session").(jose.Claims)
-
-	fmt.Println(sessionClaims.Subject)
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"iss": "disclone",
-		"sub": sessionClaims.Subject,
-		"nbf": time.Now().Unix(),
-		"exp": time.Now().Add(time.Minute * 5).Unix(),
-	})
-	tokenString, err := token.SignedString([]byte("secret"))
+	sessionClaims := r.Context().Value("session").(UserSession)
+	ticket, err := cs.ticketManager.Add(sessionClaims.ID)
 
 	if err != nil {
 		http.Error(w, "server error", http.StatusInternalServerError)
@@ -100,11 +96,11 @@ func (cs *chatServer) login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cookie := http.Cookie{
-		Name:     "_chat",
-		Value:    tokenString,
-		MaxAge:   3600,
+		Name:     "__chat_ticket",
+		Value:    ticket,
+		MaxAge:   10,
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
 	}
 
@@ -113,7 +109,7 @@ func (cs *chatServer) login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cs *chatServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("_chat")
+	ticket, err := r.Cookie("__chat_ticket")
 
 	if err != nil {
 		switch {
@@ -127,7 +123,10 @@ func (cs *chatServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(cookie.Value)
+	if !cs.ticketManager.Validate(ticket.Value) {
+		http.Error(w, "invalid ticket", http.StatusBadRequest)
+		return
+	}
 
 	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{
 		InsecureSkipVerify: true,
@@ -158,18 +157,15 @@ func (cs *chatServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cs *chatServer) publishHandler(w http.ResponseWriter, r *http.Request) {
-
-	body := http.MaxBytesReader(w, r.Body, 8192)
-
-	msg, err := ioutil.ReadAll(body)
+	input := Message{}
+	err := Validate(r, cs.Validate, &input)
 
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusRequestEntityTooLarge), http.StatusRequestEntityTooLarge)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	cs.publish(msg)
-
+	cs.publish([]byte(input.Content))
 	w.WriteHeader(http.StatusAccepted)
 }
 
@@ -189,7 +185,7 @@ func (cs *chatServer) subscribe(ctx context.Context, c *websocket.Conn) error {
 	for {
 		select {
 		case msg := <-s.msgs:
-			err := writeTimeout(ctx, time.Second*5, c, msg)
+			err := writeWithTimeout(ctx, time.Second*5, c, msg)
 
 			if err != nil {
 				return err
@@ -228,7 +224,7 @@ func (cs *chatServer) deleteSubscriber(s *subscriber) {
 	cs.subscribersMu.Unlock()
 }
 
-func writeTimeout(ctx context.Context, timeout time.Duration, c *websocket.Conn, msg []byte) error {
+func writeWithTimeout(ctx context.Context, timeout time.Duration, c *websocket.Conn, msg []byte) error {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
