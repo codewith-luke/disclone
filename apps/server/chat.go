@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/spf13/viper"
 	"log"
 	"net/http"
 	"sync"
@@ -16,21 +17,22 @@ import (
 
 const (
 	MESSAGE_TYPE_MESSAGE = "message"
+	COOKE_CHAT_TICKET    = "__chat_ticket"
 )
 
 type Message struct {
 	Type      string `json:"type"`
-	ChannelID string `json:"channelID"`
+	ChannelID int    `json:"channelID"`
 	SenderID  string `json:"senderID"`
 	Content   string `json:"content"`
 }
 
 type TicketManager interface {
-	Validate(key string) bool
+	Validate(key string) (*TicketClaims, bool)
 	Add(userID string) (string, error)
 }
 
-type chatServer struct {
+type ChatServer struct {
 	// subscriberMessageBuffer controls the max number
 	// of messages that can be queued for a subscriber
 	// before it is kicked.
@@ -38,16 +40,10 @@ type chatServer struct {
 	// Defaults to 16.
 	subscriberMessageBuffer int
 
-	// publishLimiter controls the rate limit applied to the publish endpoint.
-	//
-	// Defaults to one publish every 100ms with a burst of 8.
 	publishLimiter *rate.Limiter
 
-	// logf controls where logs are sent.
-	// Defaults to log.Printf.
 	logf func(f string, v ...interface{})
 
-	// Router routes the various endpoints to the appropriate handler.
 	Router *chi.Mux
 
 	subscribersMu sync.Mutex
@@ -58,49 +54,62 @@ type chatServer struct {
 }
 
 type subscriber struct {
+	userID    string
 	msgs      chan []byte
 	closeSlow func()
 }
 
-func NewChat(s *Server, tr *TicketRetention) *chatServer {
+type ChatServerConfig struct {
+	Server        *Server
+	TicketManager *TicketRetention
+}
+
+func NewChat(config ChatServerConfig) *ChatServer {
 	r := chi.NewRouter()
 
-	cs := &chatServer{
+	cs := &ChatServer{
 		Router:                  r,
 		subscriberMessageBuffer: 16,
 		logf:                    log.Printf,
 		subscribers:             make(map[*subscriber]struct{}),
-		Validate:                s.Validate,
+		Validate:                config.Server.Validate,
 		publishLimiter:          rate.NewLimiter(rate.Every(time.Millisecond*100), 8),
-		ticketManager:           tr,
+		ticketManager:           config.TicketManager,
 	}
 
-	cs.Router.Post("/login", WithAuth(cs.login, s.clerk))
+	cs.Router.Post("/ticket", WithAuth(cs.createTicket, config.Server.Clerk))
 	cs.Router.Get("/subscribe", cs.subscribeHandler)
 	cs.Router.Post("/publish", cs.publishHandler)
 
 	return cs
 }
 
-func (cs *chatServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (cs *ChatServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	cs.Router.ServeHTTP(w, r)
 }
 
-func (cs *chatServer) login(w http.ResponseWriter, r *http.Request) {
+func (cs *ChatServer) createTicket(w http.ResponseWriter, r *http.Request) {
 	sessionClaims := r.Context().Value("session").(UserSession)
-	ticket, err := cs.ticketManager.Add(sessionClaims.ID)
+	ticket, err := cs.ticketManager.Add(sessionClaims.UserID)
 
 	if err != nil {
 		http.Error(w, "server error", http.StatusInternalServerError)
 		return
 	}
 
+	env, ok := viper.Get("ENV").(string)
+
+	if !ok {
+		err := fmt.Errorf("%s not found", "ENV")
+		log.Fatal(err)
+	}
+
 	cookie := http.Cookie{
-		Name:     "__chat_ticket",
+		Name:     COOKE_CHAT_TICKET,
 		Value:    ticket,
 		MaxAge:   10,
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   env == "production",
 		SameSite: http.SameSiteLaxMode,
 	}
 
@@ -108,8 +117,8 @@ func (cs *chatServer) login(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("cookie set!"))
 }
 
-func (cs *chatServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
-	ticket, err := r.Cookie("__chat_ticket")
+func (cs *ChatServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
+	ticket, err := r.Cookie(COOKE_CHAT_TICKET)
 
 	if err != nil {
 		switch {
@@ -123,7 +132,9 @@ func (cs *chatServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !cs.ticketManager.Validate(ticket.Value) {
+	ticketClaims, isValid := cs.ticketManager.Validate(ticket.Value)
+
+	if !isValid {
 		http.Error(w, "invalid ticket", http.StatusBadRequest)
 		return
 	}
@@ -139,7 +150,20 @@ func (cs *chatServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
 
 	defer c.Close(websocket.StatusInternalError, "")
 
-	err = cs.subscribe(r.Context(), c)
+	subject, err := ticketClaims.MapClaims.GetSubject()
+
+	if err != nil {
+		cs.logf("%v", err)
+		return
+	}
+
+	// TODO: make a better way to add the session to the context
+	ctx := context.WithValue(r.Context(), "session", UserSession{
+		UserID:   subject,
+		Provider: "",
+	})
+
+	err = cs.subscribe(ctx, c)
 
 	if errors.Is(err, context.Canceled) {
 		return
@@ -156,7 +180,7 @@ func (cs *chatServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (cs *chatServer) publishHandler(w http.ResponseWriter, r *http.Request) {
+func (cs *ChatServer) publishHandler(w http.ResponseWriter, r *http.Request) {
 	input := Message{}
 	err := Validate(r, cs.Validate, &input)
 
@@ -165,21 +189,34 @@ func (cs *chatServer) publishHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cs.publish([]byte(input.Content))
+	// TODO: Validate that the user is in fact in the room
+	switch input.Type {
+	case MESSAGE_TYPE_MESSAGE:
+		msg := fmt.Sprintf("%s: %s", input.SenderID, input.Content)
+		cs.publish([]byte(msg))
+		break
+	default:
+		http.Error(w, "invalid message type", http.StatusBadRequest)
+		return
+	}
+
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (cs *chatServer) subscribe(ctx context.Context, c *websocket.Conn) error {
+func (cs *ChatServer) subscribe(ctx context.Context, c *websocket.Conn) error {
+	sessionClaims := ctx.Value(CTX_USER_SESSION).(UserSession)
 	ctx = c.CloseRead(ctx)
 
 	s := &subscriber{
-		msgs: make(chan []byte, cs.subscriberMessageBuffer),
+		userID: sessionClaims.UserID,
+		msgs:   make(chan []byte, cs.subscriberMessageBuffer),
 		closeSlow: func() {
 			c.Close(websocket.StatusPolicyViolation, "connection too slow to keep up with messages")
 		},
 	}
 
-	cs.addSubscriber(s)
+	room := NewRoom()
+	cs.addSubscriber(s, room)
 	defer cs.deleteSubscriber(s)
 
 	for {
@@ -196,7 +233,7 @@ func (cs *chatServer) subscribe(ctx context.Context, c *websocket.Conn) error {
 	}
 }
 
-func (cs *chatServer) publish(msg []byte) {
+func (cs *ChatServer) publish(msg []byte) {
 	cs.subscribersMu.Lock()
 
 	defer cs.subscribersMu.Unlock()
@@ -212,13 +249,14 @@ func (cs *chatServer) publish(msg []byte) {
 	}
 }
 
-func (cs *chatServer) addSubscriber(s *subscriber) {
+func (cs *ChatServer) addSubscriber(s *subscriber, room *Room) {
 	cs.subscribersMu.Lock()
 	cs.subscribers[s] = struct{}{}
+	room.AddUser(s.userID)
 	cs.subscribersMu.Unlock()
 }
 
-func (cs *chatServer) deleteSubscriber(s *subscriber) {
+func (cs *ChatServer) deleteSubscriber(s *subscriber) {
 	cs.subscribersMu.Lock()
 	delete(cs.subscribers, s)
 	cs.subscribersMu.Unlock()

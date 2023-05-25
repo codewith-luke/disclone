@@ -3,7 +3,7 @@ import {useForm} from "../hooks/form";
 import {Portal} from "solid-js/web";
 import {Avatar} from "@boringer-avatars/solid";
 import {useClerk} from "../Auth";
-import {requestChatLogin} from "../request-chat-login";
+import {requestTicket} from "../request-ticket";
 
 type MessageProps = {
     text: string
@@ -23,8 +23,8 @@ export default function Chat() {
 
     onMount(async () => {
         async function dial() {
-            const tkn = await clerk().session?.getToken();
-            await requestChatLogin(tkn);
+            const tkn = await clerk().session?.getToken({template: 'disclone'});
+            await requestTicket(tkn);
 
             const conn = new WebSocket(`ws://localhost:8000/chat/subscribe`);
 
@@ -68,9 +68,19 @@ export default function Chat() {
         const form = new FormData(ref);
         const message = form.get('message');
         try {
+            const msg = JSON.stringify({
+                type: 'message',
+                channelID: 1,
+                senderID: clerk().user.id,
+                content: message,
+            });
+
             const resp = await fetch("http://localhost:8000/chat/publish", {
                 method: "POST",
-                body: message,
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: msg
             });
 
             if (resp.status !== 202) {

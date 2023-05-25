@@ -10,13 +10,13 @@ import (
 
 const (
 	PROVIDER_CLERK = "clerk"
-	PROVIDER_AUTHO = "autho"
 )
 
 type UserProviderMapping struct {
 	ID           string `json:"id"`
 	ProviderID   string `json:"provider_id"`
 	EmailAddress string `json:"email_address"`
+	DisplayName  string `json:"display_name"`
 }
 
 type ClerkWebhookInput struct {
@@ -110,18 +110,42 @@ func (up *UserProvider) insert(userID string, emailAddress string) (string, erro
 	return rID, nil
 }
 
-type ClerkClient struct {
+type AuthClient struct {
 	client clerk.Client
 }
 
-func NewClerkClient(secret string) *ClerkClient {
+func NewAuthClient(secret string) *AuthClient {
 	client, err := clerk.NewClient(secret)
 
 	if err != nil {
+
 		panic(err)
 	}
 
-	return &ClerkClient{
+	return &AuthClient{
 		client: client,
+	}
+}
+
+func (ac *AuthClient) VerifyToken(provider string, token string) (*UserSession, error) {
+	switch provider {
+	case PROVIDER_CLERK:
+		customClaims := struct {
+			Provider string `json:"provider"`
+		}{}
+
+		result, err := ac.client.VerifyToken(token, clerk.WithCustomClaims(&customClaims))
+		_, err = ac.client.Users().Read(result.Claims.Subject)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &UserSession{
+			UserID:   result.Claims.Subject,
+			Provider: PROVIDER_CLERK,
+		}, err
+	default:
+		return nil, fmt.Errorf("provider not found or not implemented yet")
 	}
 }

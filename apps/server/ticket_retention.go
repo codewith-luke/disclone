@@ -7,7 +7,8 @@ import (
 	"time"
 )
 
-var hmacSampleSecret = []byte("secret")
+// TODO: Make this a env variable
+var secret = []byte("secret")
 
 type Ticket struct {
 	Value     string    `json:"key"`
@@ -31,21 +32,20 @@ func NewTicketRetention() *TicketRetention {
 	return kr
 }
 
-func (tr *TicketRetention) Validate(tokenString string) bool {
+func (tr *TicketRetention) Validate(tokenString string) (*TicketClaims, bool) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 
-		return hmacSampleSecret, nil
+		return secret, nil
 	})
 
 	if err != nil {
-		return false
+		return nil, false
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println(claims)
 		ticketClaims := TicketClaims{
 			ID:        claims["id"].(string),
 			MapClaims: claims,
@@ -53,11 +53,41 @@ func (tr *TicketRetention) Validate(tokenString string) bool {
 
 		if _, ok := tr.Keys[ticketClaims.ID]; ok {
 			tr.Remove(ticketClaims.ID)
-			return ok
+			return &ticketClaims, true
 		}
 	}
 
-	return false
+	return nil, false
+}
+
+func (tr *TicketRetention) Add(userID string) (string, error) {
+	uuid, err := uuid.NewUUID()
+	key := uuid.String()
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"iss": "disclone",
+		"id":  key,
+		"sub": userID,
+		"nbf": time.Now().Unix(),
+		"exp": time.Now().Add(time.Minute * 5).Unix(),
+	})
+
+	tokenString, err := token.SignedString(secret)
+
+	if err != nil {
+		return "", err
+	}
+
+	tr.Keys[key] = Ticket{
+		Value:     tokenString,
+		CreatedAt: time.Now(),
+	}
+
+	return tokenString, nil
+}
+
+func (tr *TicketRetention) Remove(key string) {
+	delete(tr.Keys, key)
 }
 
 func (tr *TicketRetention) CleanUp(interval time.Duration) {
@@ -78,34 +108,4 @@ func (tr *TicketRetention) CleanUp(interval time.Duration) {
 			}
 		}
 	}()
-}
-
-func (tr *TicketRetention) Add(userID string) (string, error) {
-	uuid, err := uuid.NewUUID()
-	key := uuid.String()
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"iss": "disclone",
-		"id":  key,
-		"sub": userID,
-		"nbf": time.Now().Unix(),
-		"exp": time.Now().Add(time.Minute * 5).Unix(),
-	})
-
-	tokenString, err := token.SignedString(hmacSampleSecret)
-
-	if err != nil {
-		return "", err
-	}
-
-	tr.Keys[key] = Ticket{
-		Value:     tokenString,
-		CreatedAt: time.Now(),
-	}
-
-	return tokenString, nil
-}
-
-func (tr *TicketRetention) Remove(key string) {
-	delete(tr.Keys, key)
 }

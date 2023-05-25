@@ -17,6 +17,14 @@ import (
 	"time"
 )
 
+const (
+	ENV_CLERK_SECRET = "CLERK_SECRET"
+)
+
+const (
+	CTX_USER_SESSION = "user_session"
+)
+
 type Validator interface {
 	Struct(any) error
 }
@@ -46,9 +54,8 @@ type Renderer interface {
 }
 
 type UserSession struct {
-	ISS     string
-	Subject string
-	ID      string
+	UserID   string
+	Provider string
 }
 
 type Server struct {
@@ -56,7 +63,7 @@ type Server struct {
 	Renderer Renderer
 	Router   *chi.Mux
 	DB       *DB
-	clerk    *ClerkClient
+	Clerk    *AuthClient
 }
 
 type ErrorRes struct {
@@ -90,7 +97,7 @@ func bootstrapEnvConfig() {
 func CreateServer() *Server {
 	r := chi.NewRouter()
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedOrigins:   []string{"https://*", "http://*", "tauri://localhost"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -109,15 +116,15 @@ func CreateServer() *Server {
 	var Renderer = render.New()
 	var db = NewDB(context.Background())
 
-	secret := GetENVKey("CLERK_SECRET")
-	clerkClient := NewClerkClient(secret)
+	secret := GetENVKey(ENV_CLERK_SECRET)
+	clerkClient := NewAuthClient(secret)
 
 	return &Server{
 		Validate: Validate,
 		Renderer: Renderer,
 		Router:   r,
 		DB:       db,
-		clerk:    clerkClient,
+		Clerk:    clerkClient,
 	}
 }
 
@@ -130,12 +137,7 @@ func (s *Server) MountHandlers() {
 
 	webhookRouter := chi.NewRouter()
 	webhookRouter.Group(func(r chi.Router) {
-		createPath := fmt.Sprintf("/user/{provider:%s|%s}/create", PROVIDER_CLERK, PROVIDER_AUTHO)
-
-		r.Get("/", WithAuth(func(w http.ResponseWriter, r *http.Request) {
-			s.Renderer.JSON(w, http.StatusOK, map[string]string{"hello": "world"})
-		}, s.clerk))
-
+		createPath := fmt.Sprintf("/user/{provider:%s|%s}/create", PROVIDER_CLERK)
 		r.Post(createPath, func(w http.ResponseWriter, r *http.Request) {
 			provider := chi.URLParam(r, "provider")
 
@@ -152,26 +154,20 @@ func (s *Server) MountHandlers() {
 	})
 
 	tr := NewTicketRetention()
-	chatRouter := NewChat(s, tr)
+	chatRouter := NewChat(ChatServerConfig{
+		Server:        s,
+		TicketManager: tr,
+	})
 
 	s.Router.Mount("/webhooks", webhookRouter)
 	s.Router.Mount("/chat", chatRouter.Router)
 }
 
-func WithAuth(next http.HandlerFunc, clerk *ClerkClient) http.HandlerFunc {
+func WithAuth(next http.HandlerFunc, cc *AuthClient) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sessionToken := r.Header.Get("Authorization")
 		sessionToken = strings.TrimPrefix(sessionToken, "Bearer ")
-
-		sessClaims, err := clerk.client.VerifyToken(sessionToken)
-
-		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Unauthorized"))
-			return
-		}
-
-		_, err = clerk.client.Users().Read(sessClaims.Claims.Subject)
+		sessClaims, err := cc.VerifyToken(PROVIDER_CLERK, sessionToken)
 
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -179,10 +175,7 @@ func WithAuth(next http.HandlerFunc, clerk *ClerkClient) http.HandlerFunc {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "session", UserSession{
-			ISS:     sessClaims.Claims.Issuer,
-			Subject: sessClaims.Claims.Subject,
-		})
+		ctx := context.WithValue(r.Context(), CTX_USER_SESSION, sessClaims)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

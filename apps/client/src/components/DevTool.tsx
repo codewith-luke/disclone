@@ -7,7 +7,7 @@ export default function DevTool() {
     const [token, setToken] = createSignal('')
 
     createResource(async () => {
-        const tkn = await clerk().session?.getToken();
+        const tkn = await clerk().session?.getToken({template: 'disclone'});
 
         if (!tkn) {
             return
@@ -26,7 +26,8 @@ export default function DevTool() {
 
     return (
         <ButtonPrimary class="rounded-full w-10 h-10 p-0" value="JWT" type="button" onClick={() => {
-            copyValue(token() || '');}
+            copyValue(token() || '');
+        }
         }/>
     )
 }

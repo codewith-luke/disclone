@@ -1,5 +1,5 @@
-export async function requestChatLogin(tkn: string): Promise<void> {
-    await fetch("http://localhost:8000/chat/login", {
+export async function requestTicket(tkn: string): Promise<void> {
+    await fetch("http://localhost:8000/chat/ticket", {
         method: "POST",
         credentials: "include",
         headers: {
