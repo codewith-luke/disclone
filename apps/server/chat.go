@@ -89,7 +89,7 @@ func (cs *ChatServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cs *ChatServer) createTicket(w http.ResponseWriter, r *http.Request) {
-	sessionClaims := r.Context().Value("session").(UserSession)
+	sessionClaims := r.Context().Value(CTX_USER_SESSION).(UserSession)
 	ticket, err := cs.ticketManager.Add(sessionClaims.UserID)
 
 	if err != nil {
@@ -158,7 +158,7 @@ func (cs *ChatServer) subscribeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: make a better way to add the session to the context
-	ctx := context.WithValue(r.Context(), "session", UserSession{
+	ctx := context.WithValue(r.Context(), CTX_USER_SESSION, UserSession{
 		UserID:   subject,
 		Provider: "",
 	})

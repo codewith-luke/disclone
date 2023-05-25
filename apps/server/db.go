@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/codewith-luke/disclone/server/db"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"sync"
 )
 
 type DB struct {
-	Driver *pgxpool.Pool
+	Queries *db.Queries
+	driver  *pgxpool.Pool
 }
 
 var (
@@ -26,21 +28,22 @@ func NewDB(ctx context.Context) *DB {
 	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, pwd, host, port, database)
 
 	pgOnce.Do(func() {
-		db, err := pgxpool.New(ctx, connString)
+		pgxDB, err := pgxpool.New(ctx, connString)
 		if err != nil {
 			panic(err)
 		}
 
-		pgInstance = &DB{Driver: db}
+		q := db.New(pgxDB)
+		pgInstance = &DB{Queries: q, driver: pgxDB}
 	})
 
 	return pgInstance
 }
 
 func (pg *DB) Ping(ctx context.Context) error {
-	return pg.Driver.Ping(ctx)
+	return pg.driver.Ping(ctx)
 }
 
 func (pg *DB) Close() {
-	pg.Driver.Close()
+	pg.driver.Close()
 }

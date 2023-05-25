@@ -121,12 +121,10 @@ func TestUserCreate_Success(t *testing.T) {
 	checkResponseCode(t, http.StatusOK, actual.Code)
 
 	bodyDecoder := json.NewDecoder(actual.Body)
-	var result struct {
-		ID           string `json:"id"`
-		EmailAddress string `json:"email_address"`
-	}
+	var result UserProviderMapping
 	bodyDecoder.Decode(&result)
 
 	require.Equal(t, result.EmailAddress, expected.EmailAddress)
+	require.IsTypef(t, UserProviderMapping{}, result, "result is not of type InsertUserRow")
 	require.NotEmpty(t, result.ID)
 }

@@ -18,3 +18,5 @@ tasks:
     command: 'air -c .air.toml'
     deps:
       - 'db:run'
+  gen:
+    command: 'sqlc generate --experimental'

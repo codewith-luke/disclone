@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/clerkinc/clerk-sdk-go/clerk"
-	"github.com/jackc/pgx/v5"
+	"github.com/codewith-luke/disclone/server/db"
 	"net/http"
 )
 
@@ -13,7 +13,7 @@ const (
 )
 
 type UserProviderMapping struct {
-	ID           string `json:"id"`
+	ID           int32  `json:"id"`
 	ProviderID   string `json:"provider_id"`
 	EmailAddress string `json:"email_address"`
 	DisplayName  string `json:"display_name"`
@@ -90,24 +90,19 @@ func (up *UserProvider) CreateNewUser(r *http.Request, provider string) (*UserPr
 	}
 }
 
-func (up *UserProvider) insert(userID string, emailAddress string) (string, error) {
-	query := "INSERT INTO user_provider_mapping (provider_id, provider_user_id, email_address) values (@provider_id, @provider_user_id, @email_address) RETURNING id, email_address"
-	args := pgx.NamedArgs{
-		"provider_id":      PROVIDER_CLERK,
-		"provider_user_id": userID,
-		"email_address":    emailAddress,
-	}
-
-	var rID string
-	var rEmail string
-
-	err := up.DB.Driver.QueryRow(context.Background(), query, args).Scan(&rID, &rEmail)
+func (up *UserProvider) insert(userID string, emailAddress string) (int32, error) {
+	user, err := up.DB.Queries.InsertUser(context.Background(), db.InsertUserParams{
+		ProviderID:     PROVIDER_CLERK,
+		ProviderUserID: userID,
+		EmailAddress:   emailAddress,
+		DisplayName:    fmt.Sprintf("user_"),
+	})
 
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
-	return rID, nil
+	return user.ID, nil
 }
 
 type AuthClient struct {

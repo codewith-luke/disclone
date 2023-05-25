@@ -137,7 +137,7 @@ func (s *Server) MountHandlers() {
 
 	webhookRouter := chi.NewRouter()
 	webhookRouter.Group(func(r chi.Router) {
-		createPath := fmt.Sprintf("/user/{provider:%s|%s}/create", PROVIDER_CLERK)
+		createPath := fmt.Sprintf("/user/{provider:%s}/create", PROVIDER_CLERK)
 		r.Post(createPath, func(w http.ResponseWriter, r *http.Request) {
 			provider := chi.URLParam(r, "provider")
 
@@ -175,7 +175,10 @@ func WithAuth(next http.HandlerFunc, cc *AuthClient) http.HandlerFunc {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), CTX_USER_SESSION, sessClaims)
+		ctx := context.WithValue(r.Context(), CTX_USER_SESSION, UserSession{
+			UserID:   sessClaims.UserID,
+			Provider: sessClaims.Provider,
+		})
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
