@@ -1,0 +1,6 @@
+type: 'application'
+language: [ 'typescript', 'rust' ]
+
+tasks:
+  dev:
+    command: 'vite dev'

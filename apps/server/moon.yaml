@@ -1,0 +1,10 @@
+type: 'application'
+language: 'go'
+
+tasks:
+  dev:
+    command: 'go run main.go'
+  build:
+    command: 'go build -o ./bin/api-proxy main.go'
+  test:
+    command: 'go test ./...'
