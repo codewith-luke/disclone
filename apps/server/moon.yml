@@ -1,0 +1,16 @@
+type: 'application'
+language: 'go'
+
+workspace:
+  inheritedTasks:
+    exclude: [ 'install' ]
+
+tasks:
+  install:
+    command: 'go mod tidy'
+  dev:
+    command: 'go run main.go'
+  build:
+    command: 'go build -o ./bin/api-server main.go'
+  test:
+    command: 'go test ./...'

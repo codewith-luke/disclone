@@ -1,0 +1,5 @@
+tasks:
+  wdev:
+    command: 'vite'
+  dev:
+    command: 'tauri dev'
