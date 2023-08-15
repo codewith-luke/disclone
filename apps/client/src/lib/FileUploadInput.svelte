@@ -1,5 +1,5 @@
 <div>
-    <PlusCircle/>
+    <PlusCircle class="text-hover"/>
 </div>
 
 <script>

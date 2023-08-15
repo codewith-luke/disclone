@@ -5,8 +5,10 @@
     export let index;
 </script>
 
-<div class="flex justify-center gap-x-4 items-center text-surface-400">
+<div class="flex justify-center group gap-x-4 items-center text-surface-400 cursor-pointer">
     <UserProfileAction/>
+    <span class="text-group-hover">
     User#{index}
-    <MoreVertical/>
+    </span>
+    <MoreVertical class="opacity-0 group-hover:opacity-100"/>
 </div>

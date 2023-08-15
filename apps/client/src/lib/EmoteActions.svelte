@@ -1,6 +1,6 @@
 <div class="flex justify-around gap-x-2">
-    <Sticker/>
-    <Meh/>
+    <Sticker class="text-hover"/>
+    <Meh class="text-hover"/>
 </div>
 
 <script>
