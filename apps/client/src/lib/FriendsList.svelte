@@ -1,7 +1,7 @@
 <script>
-    import FriendProfileAction from "./FriendProfileAction.svelte";
+    import FriendProfileAction from "./FriendProfile.svelte";
 
-    let users = 5;
+    let users = 20;
 </script>
 
 <div class="flex flex-col gap-y-4 mt-4">
