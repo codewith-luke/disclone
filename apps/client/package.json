@@ -11,6 +11,7 @@
     "tauri": "tauri dev"
   },
   "dependencies": {
+    "@floating-ui/dom": "^1.5.1",
     "@tauri-apps/api": "^1.4.0",
     "lucide-svelte": "^0.268.0"
   },
@@ -20,6 +21,7 @@
     "@sveltejs/vite-plugin-svelte": "^2.4.2",
     "@tauri-apps/cli": "^1.4.0",
     "@tsconfig/svelte": "^5.0.0",
+    "@types/node": "^20.5.0",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.24",
     "postcss-load-config": "^4.0.1",
@@ -29,6 +31,6 @@
     "tailwindcss": "^3.3.2",
     "tslib": "^2.6.0",
     "typescript": "^5.0.2",
-    "vite": "^4.4.4"
+    "vite": "^4.4.5"
   }
 }

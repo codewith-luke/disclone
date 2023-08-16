@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import Header from "./lib/Header.svelte";
     import SideNav from "./lib/SideNav.svelte";
 </script>

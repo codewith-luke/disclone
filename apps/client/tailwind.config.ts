@@ -16,7 +16,11 @@ const config = {
         )
     ],
     theme: {
-        extend: {},
+        extend: {
+            colors: {
+                'surface-950': '#1C243B'
+            }
+        },
     },
     plugins: [
         // 4. Append the Skeleton plugin (after other plugins)
