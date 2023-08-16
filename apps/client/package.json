@@ -15,7 +15,8 @@
     "lucide-svelte": "^0.268.0"
   },
   "devDependencies": {
-    "@skeletonlabs/skeleton": "^1.11.0",
+    "@skeletonlabs/skeleton": "2.0.0-rc.1",
+    "@skeletonlabs/tw-plugin": "0.0.1-rc.3",
     "@sveltejs/vite-plugin-svelte": "^2.4.2",
     "@tauri-apps/cli": "^1.4.0",
     "@tsconfig/svelte": "^5.0.0",
