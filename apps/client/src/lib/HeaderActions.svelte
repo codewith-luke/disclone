@@ -2,15 +2,33 @@
     <button class="text-hover" use:popup={popupNotifications}>
         <Bell/>
     </button>
-    <button class="text-hover">
-        <SmilePlus class="text-hover"/>
+    <button class="text-hover" on:click={openModal}>
+        <SmilePlus/>
     </button>
     <button class="text-hover" use:popup={popupMoreActions}>
-        <MoreVertical class="text-hover"/>
+        <MoreVertical/>
     </button>
 
     <div class="card p-4 w-72 shadow-xl" data-popup="moreActions">
-        More Actions
+        <ul class="list">
+            <li class="text-hover border-b border-b-surface-500">
+                <span class="font-bold text-lg">
+                    CodingWithLuke
+                </span>
+            </li>
+            <li class="text-hover">
+                <button class="flex gap-x-4 w-full">
+                    <Settings/>
+                    Settings
+                </button>
+            </li>
+            <li class="text-hover">
+                <button class="flex gap-x-4 w-full">
+                    <LogOut/>
+                    Logout
+                </button>
+            </li>
+        </ul>
     </div>
 
     <div class="w-80 shadow-xl rounded-lg overflow-hidden bg-surface-900" data-popup="notifications">
@@ -42,8 +60,9 @@
 </div>
 
 <script lang="ts">
+    import {type ModalSettings, getModalStore} from '@skeletonlabs/skeleton';
     import {type PopupSettings, popup} from "@skeletonlabs/skeleton";
-    import {Bell, SmilePlus, MoreVertical, MessageCircle, SmilePlusIcon, X} from 'lucide-svelte';
+    import {Bell, SmilePlus, MoreVertical, MessageCircle, SmilePlusIcon, X, LogOut, Settings} from 'lucide-svelte';
 
     type PickedOptions = Pick<PopupSettings, ['event', 'placement', 'middleware']>;
 
@@ -64,10 +83,34 @@
         ...popupOptions,
         target: 'notifications'
     };
+
+    const modal: ModalSettings = {
+        type: 'prompt',
+        title: 'Add Friend',
+        body: 'Enter username to add to friend list',
+        value: '',
+        valueAttr: {
+            type: 'text',
+            minlength: 3,
+            maxlength: 10,
+            required: true
+        },
+        response: (r: string) => console.log('response:', r),
+    };
+
+    const modalStore = getModalStore();
+
+    function openModal() {
+        modalStore.trigger(modal);
+    }
 </script>
 
 <style>
     .list li {
-        @apply rounded-md p-4 cursor-pointer;
+        @apply p-2 cursor-pointer rounded-none;
+    }
+
+    [data-popup="notifications"] .list li {
+        @apply rounded-md p-4;
     }
 </style>
