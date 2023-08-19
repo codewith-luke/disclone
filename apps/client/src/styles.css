@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+    .text-hover {
+        @apply hover:text-secondary-400 cursor-pointer
+    }
+
+    .text-group-hover {
+        @apply group-hover:text-secondary-400 cursor-pointer
+    }
+}
+
 html {
     height: 100vh;
 }
@@ -21,16 +31,9 @@ body,
 }
 
 .modal-prompt-input {
-   @apply px-3 py-2
+    @apply px-3 py-2
 }
 
-@layer utilities {
-    .text-hover {
-        @apply hover:text-secondary-400 cursor-pointer
-    }
-
-    .text-group-hover {
-        @apply group-hover:text-secondary-400 cursor-pointer
-    }
+[data-popup] {
+    transition-duration: 0ms;
 }
-
