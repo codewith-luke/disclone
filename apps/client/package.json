@@ -11,9 +11,11 @@
     "tauri": "tauri dev"
   },
   "dependencies": {
+    "@boringer-avatars/svelte": "^0.2.1",
     "@floating-ui/dom": "^1.5.1",
     "@tauri-apps/api": "^1.4.0",
-    "lucide-svelte": "^0.268.0"
+    "lucide-svelte": "^0.268.0",
+    "w3c-keys": "^1.0.3"
   },
   "devDependencies": {
     "@skeletonlabs/skeleton": "2.0.0-rc.1",

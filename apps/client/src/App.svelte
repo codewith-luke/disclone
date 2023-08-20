@@ -3,7 +3,7 @@
 </Layout>
 <Modal />
 
-<script type="ts" lang="ts">
+<script lang="ts">
     import Layout from "./Layout.svelte";
     import ChatArea from "./lib/ChatArea.svelte";
     import {Modal, storePopup, initializeStores} from '@skeletonlabs/skeleton';

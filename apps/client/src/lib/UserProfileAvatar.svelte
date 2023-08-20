@@ -1,4 +1,7 @@
-<div class="w-12 h-12 rounded-full bg-surface-800 cursor-pointer" use:popup={popupOptions}></div>
+<div class="w-12 h-12"
+     use:popup={popupOptions}>
+    <ProfileAvatar userID="codingwithluke"/>
+</div>
 
 <div class="card p-4 w-72 shadow-xl" data-popup="profileActions">
     <ul>
@@ -14,6 +17,7 @@
 <script lang="ts">
     import {type PopupSettings, popup} from "@skeletonlabs/skeleton";
     import {Circle} from "lucide-svelte";
+    import ProfileAvatar from "./ProfileAvatar.svelte";
 
     const popupOptions: PopupSettings = {
         target: 'profileActions',

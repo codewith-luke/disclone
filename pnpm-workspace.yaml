@@ -1,2 +1,3 @@
 packages:
   - 'apps/client'
+  - 'apps/my-app'
