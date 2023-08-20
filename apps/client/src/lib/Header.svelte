@@ -52,7 +52,7 @@
     </div>
     <div class="flex flex-1 items-center">
         <div class="w-full flex items-center gap-x-4 justify-end">
-            <button on:click={onSearchClick}>
+            <button on:click={onSearchClick} class="text-surface-400 text-hover">
                 <Search/>
             </button>
         </div>

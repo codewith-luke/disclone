@@ -56,10 +56,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
         "resizable": true,
         "title": "my-app",
-        "width": 800
+        "height": 720,
+        "width": 1280
       }
     ]
   }
