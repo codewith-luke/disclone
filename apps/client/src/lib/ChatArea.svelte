@@ -1,7 +1,7 @@
 <svelte:window on:keydown={handleKeydown}/>
-<div class="flex flex-col h-full gap-y-6">
-    <div class="h-full overflow-y-scroll">
-        <section class="w-full p-4 overflow-y-auto space-y-4">
+<div class="h-full flex flex-col">
+    <div class="overflow-hidden">
+        <section class="overflow-y-scroll h-full space-y-4 p-4">
             <Message/>
             {#each messageFeed as bubble, i}
                 <Message/>
@@ -15,6 +15,7 @@
             {/each}
         </section>
     </div>
+
 
     <div class="flex justify-center items-center mb-6 mx-8 gap-x-4 text-surface-300">
         <FileUploadInput/>
@@ -34,7 +35,7 @@
     import {Key} from "w3c-keys";
 
     let messageInputEl: HTMLInputElement;
-    let messageFeed = new Array(6).fill({});
+    let messageFeed = new Array(10).fill({});
 
     function handleKeydown(event) {
         if (event.key === Key.Space) {

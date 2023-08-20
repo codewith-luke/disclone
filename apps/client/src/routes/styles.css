@@ -12,18 +12,8 @@
     }
 }
 
-html {
-    height: 100vh;
-}
-
-body,
-#app {
-    height: inherit;
-}
-
 .dark body,
 [data-theme='skeleton'] {
-    /*background-color: rgb(var(--color-surface-800));*/
     background-image: linear-gradient(to right top, rgb(var(--color-surface-900)), rgb(var(--color-surface-600)));
 }
 

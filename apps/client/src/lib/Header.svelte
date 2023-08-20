@@ -46,7 +46,7 @@
     </div>
 {/if}
 
-<header class="flex justify-between gap-x-4 h-20 bg-surface-900 drop-shadow-lg z-10">
+<header class="flex relative justify-between gap-x-4 min-h-[5rem] bg-surface-900 drop-shadow-lg z-10">
     <div class="flex items-center w-48 pl-5">
         <UserProfileAvatar/>
     </div>

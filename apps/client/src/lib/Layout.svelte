@@ -8,8 +8,6 @@
 
     <div class="relative flex flex-row h-full overflow-hidden">
         <SideNav/>
-        <div class="pl-48 w-full">
-            <slot></slot>
-        </div>
+        <slot></slot>
     </div>
 </div>
