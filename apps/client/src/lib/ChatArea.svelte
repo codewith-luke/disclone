@@ -4,7 +4,6 @@
         <section class="w-full p-4 overflow-y-auto space-y-4">
             <Message/>
             {#each messageFeed as bubble, i}
-
                 <Message/>
                 <!--{#if bubble.host === true}-->
                 <!--    &lt;!&ndash; Host Message Bubble &ndash;&gt;-->
