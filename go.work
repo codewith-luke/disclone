@@ -2,5 +2,6 @@ go 1.21
 
 use (
 	apps/registry
+	packages/disclone-logger
 )
 
