@@ -1,24 +1,20 @@
-version: "3.8"
-
+version: "3.9"
 services:
-  db:
-    container_name: db
-    image: postgres:13.1-alpine
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: disclone
-    volumes:
-      - db:/var/lib/postgresql/data
-    networks:
-      - disclone_network
+  service_a:
+    build:
+      dockerfile: Dockerfile
+      context: ./service-a
     ports:
-      - 5432:5432
-
-volumes:
-  db:
-
-networks:
-  disclone_network:
-    name: disclone_network
+      - "3000:3000"
+  service_b:
+    build:
+      dockerfile: Dockerfile
+      context: ./service-b
+    ports:
+      - "3001:3001"
+  registry:
+    build:
+      dockerfile: Dockerfile
+      context: ./registry
+    ports:
+      - "4000:4000"
