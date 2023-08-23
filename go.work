@@ -1,7 +1,7 @@
-go 1.21
+go 1.21.0
 
 use (
-	apps/registry
-	packages/disclone-logger
+	./packages/disclone-logger
+	./apps/registry
+	apps/service-a
 )
-
