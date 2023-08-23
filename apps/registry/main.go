@@ -3,28 +3,51 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/joho/godotenv"
 	"io"
 	"log"
+	"log/slog"
 	"net"
 	"os"
 	"strconv"
 	"strings"
 )
 
+type EnvKeys string
+
+const (
+	ENV  EnvKeys = "ENV"
+	PORT EnvKeys = "PORT"
+)
+
 const (
 	HOST = "localhost"
-	PORT = "4000"
 	TYPE = "tcp"
 )
 
-func main() {
-	address := fmt.Sprintf("%s:%s", HOST, PORT)
+type Task string
 
+const (
+	Register Task = "register"
+)
+
+type PacketData struct {
+	Task    Task
+	Service string
+	Port    int
+}
+
+func main() {
+	loadEnvVariables(ENV)
+
+	PortNumber := os.Getenv(string(PORT))
+
+	address := fmt.Sprintf("%s:%s", HOST, PortNumber)
+	slog.Info("Starting registry server on port: " + PortNumber)
 	listen, err := net.Listen(TYPE, address)
 
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
 	}
 
 	for {
@@ -32,10 +55,25 @@ func main() {
 
 		if err != nil {
 			log.Fatal(err)
-			os.Exit(1)
 		}
 
 		go handleRequest(conn)
+	}
+}
+
+func loadEnvVariables(key EnvKeys) {
+	env := os.Getenv(string(key))
+
+	if len(env) == 0 {
+		env = "development"
+	}
+
+	envFile := fmt.Sprintf(".%s.env", env)
+
+	err := godotenv.Load(envFile)
+
+	if err != nil {
+		log.Fatalf("Error loading %s file", envFile)
 	}
 }
 
@@ -43,10 +81,11 @@ func handleRequest(conn net.Conn) {
 	buf := make([]byte, 4)
 
 	if _, err := io.ReadFull(conn, buf); err != nil {
+		slog.Error("Error reading size: " + err.Error())
 		log.Fatal(err)
 	}
 
-	fmt.Printf("size: %d", buf)
+	fmt.Printf("message size: %d", buf)
 	size := binary.BigEndian.Uint32(buf)
 	buffer := make([]byte, size)
 	_, err := conn.Read(buffer)
@@ -60,11 +99,9 @@ func handleRequest(conn net.Conn) {
 	}
 
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Error reading: %s", err.Error())
 	}
 
-	// write data to response
-	//time := time.Now().Format(time.ANSIC)
 	data, err := getData(buffer)
 
 	if err != nil {
@@ -75,18 +112,6 @@ func handleRequest(conn net.Conn) {
 
 	conn.Write([]byte(message))
 	conn.Close()
-}
-
-type Task string
-
-const (
-	Register Task = "register"
-)
-
-type PacketData struct {
-	Task    Task
-	Service string
-	Port    int
 }
 
 func getData(buf []byte) (PacketData, error) {
