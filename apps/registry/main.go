@@ -9,8 +9,8 @@ import (
 	"net"
 	"os"
 	"packages/disclone-logger"
+	tcp_packet_handler "packages/tcp-packet-handler"
 	"strconv"
-	"strings"
 )
 
 type EnvKeys string
@@ -28,47 +28,32 @@ const (
 type Task string
 
 const (
-	Register Task = "register"
+	REGISTER Task = "register"
+	GET      Task = "get"
+	UPDATE   Task = "update"
+	REMOVE   Task = "remove"
 )
 
 type Enroller interface {
-	add(service Service)
-	update(service Service)
-	remove(serviceName string)
-	get(serviceName string) (Service, error)
-	has(service string) bool
+	Add(service ServiceConfig)
+	Update(service ServiceConfig)
+	Remove(serviceName string)
+	Get(serviceName string) (ServiceConfig, error)
+	Has(service string) bool
 }
 
-// TODO: this needs to be an array of Service in a map
-type Registry map[string]Service
-
-func (registry Registry) add(service Service) {
-	registry[service.Name] = service
+type Requester interface {
+	Sequence() uint32
+	Size() uint32
+	Data() []string
 }
 
-func (registry Registry) update(service Service) {
-	registry[service.Name] = service
+type RegistryServerConfig struct {
+	PortNumber string
+	logger     *slog.Logger
 }
 
-func (registry Registry) remove(serviceName string) {
-	delete(registry, serviceName)
-}
-
-func (registry Registry) get(serviceName string) (Service, error) {
-	if _, ok := registry[serviceName]; !ok {
-		return Service{}, fmt.Errorf("service not found")
-	}
-
-	return registry[serviceName], nil
-}
-
-func (registry Registry) has(service string) bool {
-	_, ok := registry[service]
-
-	return ok
-}
-
-type Service struct {
+type ServiceConfig struct {
 	Name   string
 	Port   int32
 	Domain string
@@ -86,9 +71,15 @@ func main() {
 	loadEnvVariables(logger, ENV)
 
 	PortNumber := os.Getenv(string(PORT))
+	startServer(RegistryServerConfig{
+		PortNumber: PortNumber,
+		logger:     logger,
+	})
+}
 
-	address := fmt.Sprintf("%s:%s", HOST, PortNumber)
-	logger.Info("Starting registry server on port: " + PortNumber)
+func startServer(config RegistryServerConfig) {
+	address := fmt.Sprintf("%s:%s", HOST, config.PortNumber)
+	config.logger.Info("Starting registry server on port: " + config.PortNumber)
 	listen, err := net.Listen(TYPE, address)
 
 	if err != nil {
@@ -97,7 +88,7 @@ func main() {
 
 	registry := Registry{}
 
-	registry.add(Service{})
+	registry.Add(ServiceConfig{})
 
 	for {
 		conn, err := listen.Accept()
@@ -106,8 +97,42 @@ func main() {
 			log.Fatal(err)
 		}
 
-		go handleRequest(logger, registry, conn)
+		go handleRequest(config.logger, registry, conn)
 	}
+}
+
+func handleRequest(logger *slog.Logger, registry Enroller, conn net.Conn) {
+	requestPacket, err := tcp_packet_handler.HandleRequest(conn)
+
+	if err != nil {
+		logger.Error("Error reading", "error", err.Error())
+		conn.Write([]byte("Invalid request"))
+		conn.Close()
+	}
+
+	addr, ok := conn.RemoteAddr().(*net.TCPAddr)
+
+	if !ok {
+		logger.Error("Have valid remote address")
+		conn.Write([]byte("Invalid remote address"))
+		conn.Close()
+	}
+
+	message, err := handleRegistry(registry, addr, requestPacket)
+
+	if err != nil {
+		logger.Error("Error with registry handle", "error", err.Error())
+	}
+
+	header := make([]byte, 12)
+	binary.BigEndian.PutUint32(header[:4], requestPacket.Sequence())
+	binary.BigEndian.PutUint32(header[4:8], requestPacket.Size())
+	binary.BigEndian.PutUint32(header[8:], uint32(len(message)))
+
+	final := append(header, []byte(message)...)
+	fmt.Println("Response", message)
+	conn.Write(final)
+	conn.Close()
 }
 
 func loadEnvVariables(logger *slog.Logger, key EnvKeys) {
@@ -128,86 +153,50 @@ func loadEnvVariables(logger *slog.Logger, key EnvKeys) {
 	logger.Info("Loaded environment variables from: " + envFile)
 }
 
-func handleRequest(logger *slog.Logger, registry Enroller, conn net.Conn) {
-	buf := make([]byte, 4)
-
-	_, err := conn.Read(buf)
-
-	if err != nil {
-		logger.Error("Error reading size", "error", err.Error())
-		return
-	}
-
-	size := binary.BigEndian.Uint32(buf)
-
-	logger.Info("Message Size", "size", size)
-
-	buffer := make([]byte, size)
-	_, err = conn.Read(buffer)
-
-	if err != nil {
-		logger.Error("Error reading data", "error", err.Error())
-		return
-	}
-
-	addr, ok := conn.RemoteAddr().(*net.TCPAddr)
-
-	if !ok {
-		logger.Error("Have valid remote address", "")
-		conn.Write([]byte("Invalid remote address"))
-		conn.Close()
-	}
-
-	serviceName, err := getData(registry, addr, buffer)
-
-	if err != nil {
-		logger.Error("Error reading", "error", err.Error())
-	}
-
-	data, err := registry.get(serviceName)
-
-	if err != nil {
-		logger.Error("Error getting service", "error", err.Error())
-
-		conn.Write([]byte("Service not found"))
-		conn.Close()
-	}
-
-	message := fmt.Sprintf("task: %s - service name: %s - port: %d", data.Name, data.Domain, data.Port)
-
-	conn.Write([]byte(message))
-	conn.Close()
-}
-
-func getData(registry Enroller, addr *net.TCPAddr, buf []byte) (string, error) {
-	requestData := string(buf[:])
-	data := strings.Split(requestData, " ")
+func handleRegistry(registry Enroller, addr *net.TCPAddr, packet Requester) (string, error) {
+	message := ""
+	data := packet.Data()
 
 	taskStr := data[0]
-	service := data[1]
-	portStr := data[2]
-
 	task := Task(taskStr)
-	port, err := strconv.Atoi(portStr)
-
-	if registry.has(service) {
-		return service, nil
-	}
-
-	if err != nil {
-		return "", err
-	}
 
 	switch task {
-	case Register:
-		registry.add(Service{
-			Name:   service,
+	case REGISTER:
+		serviceName := data[1]
+		portStr := data[2]
+
+		port, err := strconv.Atoi(portStr)
+
+		if err != nil {
+			return "", err
+		}
+
+		service := ServiceConfig{
+			Name:   serviceName,
 			Port:   int32(port),
 			Domain: addr.IP.String(),
-		})
+		}
+
+		if registry.Has(serviceName) {
+			registry.Update(service)
+			return "", nil
+		}
+
+		registry.Add(service)
+		return "", err
+	case GET:
+		serviceName := data[1]
+
+		s, err := registry.Get(serviceName)
+
+		if err != nil {
+			return "", fmt.Errorf("serviceName not found: %s", serviceName)
+		}
+
+		message = fmt.Sprintf("%s %d %s", s.Name, s.Port, s.Domain)
 	default:
 		return "", fmt.Errorf("unknown task: %s", task)
 	}
 
-	return service, nil
+	return message, nil
 }
