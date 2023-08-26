@@ -1,35 +1,29 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"log"
 	"net"
-	"net/http"
 	"os"
-	"packages/tcp-packet-handler"
-	"strings"
+	tcp_packet_handler "packages/tcp-packet-handler"
 )
 
-func main() {
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		makeSomeTCPReq()
-		w.Write([]byte("Hello from service A"))
-	})
-	http.ListenAndServe(":3000", r)
+const (
+	HOST = "localhost"
+	PORT = "4000"
+	TYPE = "tcp"
+)
+
+type ServiceConfig struct {
+	Name   string
+	Port   int32
+	Domain string
 }
 
-func makeSomeTCPReq() {
-	const (
-		HOST = "localhost"
-		PORT = "4000"
-		TYPE = "tcp"
-	)
+func main() {
 
-	address := fmt.Sprintf("%s:%s", HOST, PORT)
-	tcpServer, err := net.ResolveTCPAddr(TYPE, address)
+	tcpServer, err := net.ResolveTCPAddr(TYPE, HOST+":"+PORT)
 
 	if err != nil {
 		println("ResolveTCPAddr failed:", err.Error())
@@ -45,46 +39,42 @@ func makeSomeTCPReq() {
 
 	defer conn.Close()
 
-	// THIS SHOULD BE AN ENV VAR for port and service name
-	requestPacket := tcp_packet_handler.GenerateRequestPacket("register service-a 3000")
+	gob.Register(tcp_packet_handler.RegisterReq{})
+	gob.Register(tcp_packet_handler.RegisterGet{})
+	gob.Register(ServiceConfig{})
 
-	fmt.Println(string(requestPacket.GetRequest()))
-	_, err = conn.Write(requestPacket.GetRequest())
+	enc := gob.NewEncoder(conn)
 
-	if err != nil {
-		fmt.Println("Write data failed:", err.Error())
-		return
-	}
+	//err = enc.Encode(tcp_packet_handler.Packet{
+	//	Sequence: 12345,
+	//	Task:     "register",
+	//	Service:  "service_a",
+	//	Data:     tcp_packet_handler.RegisterReq{Port: 3001},
+	//})
 
-	responsePacket, err := tcp_packet_handler.HandleResponse(conn)
-
-	if err != nil {
-		fmt.Println("Read data failed:", err.Error())
-		return
-	}
-
-	if responsePacket.Sequence() != requestPacket.Sequence() {
-		fmt.Println("Response 1 sequence does not match request sequence", responsePacket.Sequence(), requestPacket.Sequence())
-		return
-	}
-
-	fmt.Println("Registered service")
-
-	requestService := tcp_packet_handler.GenerateRequestPacket("get service-a")
-	fmt.Println(string(requestService.GetRequest()))
-
-	_, err = conn.Write([]byte("get service-a"))
-	if err != nil {
-		fmt.Println("Write data failed:", err.Error())
-		return
-	}
-
-	serviceResponse, err := tcp_packet_handler.HandleResponse(conn)
+	err = enc.Encode(tcp_packet_handler.Packet{
+		Sequence: 12345,
+		Task:     "get",
+		Service:  "service_a",
+		Data:     tcp_packet_handler.RegisterGet{Service: "service_b"},
+	})
 
 	if err != nil {
-		fmt.Println("Read data failed:", err.Error())
+		println("Encode failed:", err.Error())
 		return
 	}
 
-	fmt.Println("Response 2 message:", strings.Join(serviceResponse.Data(), " "))
+	dec := gob.NewDecoder(conn)
+
+	for {
+		var packet tcp_packet_handler.Packet
+		err := dec.Decode(&packet)
+
+		if err != nil {
+			log.Fatal("decode error:", err)
+		}
+
+		fmt.Println(packet)
+		break
+	}
 }

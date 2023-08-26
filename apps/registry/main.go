@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/binary"
+	"encoding/gob"
 	"fmt"
 	"github.com/joho/godotenv"
 	"log"
@@ -9,8 +9,8 @@ import (
 	"net"
 	"os"
 	"packages/disclone-logger"
-	tcp_packet_handler "packages/tcp-packet-handler"
-	"strconv"
+	"packages/tcp-packet-handler"
+	"time"
 )
 
 type EnvKeys string
@@ -40,12 +40,6 @@ type Enroller interface {
 	Remove(serviceName string)
 	Get(serviceName string) (ServiceConfig, error)
 	Has(service string) bool
-}
-
-type Requester interface {
-	Sequence() uint32
-	Size() uint32
-	Data() []string
 }
 
 type RegistryServerConfig struct {
@@ -78,37 +72,49 @@ func main() {
 }
 
 func startServer(config RegistryServerConfig) {
-	address := fmt.Sprintf("%s:%s", HOST, config.PortNumber)
-	config.logger.Info("Starting registry server on port: " + config.PortNumber)
+	address := HOST + ":" + config.PortNumber
 	listen, err := net.Listen(TYPE, address)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	registry := Registry{}
+	defer listen.Close()
 
-	registry.Add(ServiceConfig{})
+	registry := Registry{}
+	registry.Add(ServiceConfig{
+		Name:   "service_b",
+		Port:   3002,
+		Domain: "localhost",
+	})
+
+	gob.Register(tcp_packet_handler.RegisterReq{})
+	gob.Register(tcp_packet_handler.RegisterGet{})
+	gob.Register(ServiceConfig{})
 
 	for {
 		conn, err := listen.Accept()
 
+		timeout := 5 * time.Second
+		err = conn.SetReadDeadline(time.Now().Add(timeout))
+
 		if err != nil {
-			log.Fatal(err)
+			return
 		}
 
+		err = conn.SetWriteDeadline(time.Now().Add(timeout))
+
+		if err != nil {
+			log.Fatal(err)
+			os.Exit(1)
+		}
 		go handleRequest(config.logger, registry, conn)
 	}
 }
 
 func handleRequest(logger *slog.Logger, registry Enroller, conn net.Conn) {
-	requestPacket, err := tcp_packet_handler.HandleRequest(conn)
-
-	if err != nil {
-		logger.Error("Error reading", "error", err.Error())
-		conn.Write([]byte("Invalid request"))
-		conn.Close()
-	}
+	enc := gob.NewEncoder(conn)
+	dec := gob.NewDecoder(conn)
 
 	addr, ok := conn.RemoteAddr().(*net.TCPAddr)
 
@@ -118,21 +124,40 @@ func handleRequest(logger *slog.Logger, registry Enroller, conn net.Conn) {
 		conn.Close()
 	}
 
-	message, err := handleRegistry(registry, addr, requestPacket)
+	for {
+		var packet tcp_packet_handler.Packet
+		err := dec.Decode(&packet)
 
-	if err != nil {
-		logger.Error("Error with registry handle", "error", err.Error())
+		if err != nil {
+			logger.Error("decode error:", err)
+			conn.Close()
+			break
+		}
+
+		logger.Info("Received request", "packet", packet)
+		serviceConfig, err := handleRegistry(registry, addr, packet)
+
+		if err != nil {
+			logger.Error("handleRegistry error:", "error", err.Error())
+			conn.Close()
+			return
+		}
+
+		packet.Data = serviceConfig
+
+		err = enc.Encode(packet)
+
+		if err != nil {
+			logger.Error("failed to send message:", "err", err.Error())
+			conn.Close()
+			break
+		}
+
+		logger.Info("Sent response", "packet", packet)
+		break
 	}
 
-	header := make([]byte, 12)
-	binary.BigEndian.PutUint32(header[:4], requestPacket.Sequence())
-	binary.BigEndian.PutUint32(header[4:8], requestPacket.Size())
-	binary.BigEndian.PutUint32(header[8:], uint32(len(message)))
-
-	final := append(header, []byte(message)...)
-	fmt.Println("Response", message)
-	conn.Write(final)
-	conn.Close()
+	logger.Info("Connection closed")
 }
 
 func loadEnvVariables(logger *slog.Logger, key EnvKeys) {
@@ -153,50 +178,44 @@ func loadEnvVariables(logger *slog.Logger, key EnvKeys) {
 	logger.Info("Loaded environment variables from: " + envFile)
 }
 
-func handleRegistry(registry Enroller, addr *net.TCPAddr, packet Requester) (string, error) {
-	message := ""
-	data := packet.Data()
-
-	taskStr := data[0]
-	task := Task(taskStr)
+func handleRegistry(registry Enroller, addr *net.TCPAddr, packet tcp_packet_handler.Packet) (ServiceConfig, error) {
+	task := Task(packet.Task)
 
 	switch task {
 	case REGISTER:
-		serviceName := data[1]
-		portStr := data[2]
-
-		port, err := strconv.Atoi(portStr)
-
-		if err != nil {
-			return "", err
-		}
-
+		data := packet.Data.(tcp_packet_handler.RegisterReq)
 		service := ServiceConfig{
-			Name:   serviceName,
-			Port:   int32(port),
+			Name:   packet.Service,
+			Port:   data.Port,
 			Domain: addr.IP.String(),
 		}
 
-		if registry.Has(serviceName) {
+		if registry.Has(packet.Service) {
 			registry.Update(service)
-			return "", nil
+			return ServiceConfig{}, nil
 		}
 
 		registry.Add(service)
-		return "", err
-	case GET:
-		serviceName := data[1]
 
-		s, err := registry.Get(serviceName)
+		fmt.Println("registered service: ", service.Name)
+
+		return service, nil
+	case GET:
+		data := packet.Data.(tcp_packet_handler.RegisterGet)
+		service, err := registry.Get(data.Service)
+
+		fmt.Println("get service: ", data.Service)
 
 		if err != nil {
-			return "", fmt.Errorf("serviceName not found: %s", serviceName)
+			return ServiceConfig{
+				Name:   data.Service,
+				Port:   0,
+				Domain: "",
+			}, nil
 		}
 
-		message = fmt.Sprintf("%s %d %s", s.Name, s.Port, s.Domain)
+		return service, nil
 	default:
-		return "", fmt.Errorf("unknown task: %s", task)
+		return ServiceConfig{}, fmt.Errorf("unknown task: %s", task)
 	}
-
-	return message, nil
 }
