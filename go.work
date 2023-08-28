@@ -4,5 +4,4 @@ use (
 	./packages/disclone-logger
 	./packages/tcp-packet-handler
 	./apps/registry
-	apps/service-a
 )

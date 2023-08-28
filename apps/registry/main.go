@@ -10,7 +10,6 @@ import (
 	"os"
 	"packages/disclone-logger"
 	"packages/tcp-packet-handler"
-	"time"
 )
 
 type EnvKeys string
@@ -43,8 +42,8 @@ type Enroller interface {
 }
 
 type RegistryServerConfig struct {
-	PortNumber string
-	logger     *slog.Logger
+	port   string
+	logger *slog.Logger
 }
 
 type ServiceConfig struct {
@@ -65,51 +64,90 @@ func main() {
 	loadEnvVariables(logger, ENV)
 
 	PortNumber := os.Getenv(string(PORT))
-	startServer(RegistryServerConfig{
-		PortNumber: PortNumber,
-		logger:     logger,
+
+	server, err := NewServer(RegistryServerConfig{
+		port:   PortNumber,
+		logger: logger,
 	})
+
+	if err != nil {
+		logger.Error("failed to create server:", "err", err.Error())
+		return
+	}
+
+	server.Open()
 }
 
-func startServer(config RegistryServerConfig) {
-	address := HOST + ":" + config.PortNumber
+type Server struct {
+	port     string
+	logger   *slog.Logger
+	listener net.Listener
+}
+
+func (s *Server) Open() {
+	address := HOST + ":" + s.port
 	listen, err := net.Listen(TYPE, address)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer listen.Close()
+	s.listener = listen
+
+	s.logger.Info("Listening on " + address)
+
+	defer s.Close()
 
 	registry := Registry{}
-	registry.Add(ServiceConfig{
-		Name:   "service_b",
-		Port:   3002,
-		Domain: "localhost",
-	})
 
 	gob.Register(tcp_packet_handler.RegisterReq{})
-	gob.Register(tcp_packet_handler.RegisterGet{})
+	gob.Register(tcp_packet_handler.RegisterGetReq{})
 	gob.Register(ServiceConfig{})
 
 	for {
-		conn, err := listen.Accept()
-
-		timeout := 5 * time.Second
-		err = conn.SetReadDeadline(time.Now().Add(timeout))
+		conn, err := s.listener.Accept()
 
 		if err != nil {
+			s.logger.Error("failed to accept connection:", "err", err.Error())
 			return
 		}
 
-		err = conn.SetWriteDeadline(time.Now().Add(timeout))
+		//timeout := 5 * time.Second
+		//err = conn.SetReadDeadline(time.Now().Add(timeout))
+		//
+		//if err != nil {
+		//	s.logger.Error("failed to set read deadline:", "err", err.Error())
+		//	return
+		//}
+		//
+		//err = conn.SetWriteDeadline(time.Now().Add(timeout))
+		//
+		//if err != nil {
+		//	s.logger.Error("failed to set write deadline:", "err", err.Error())
+		//	return
+		//}
 
-		if err != nil {
-			log.Fatal(err)
-			os.Exit(1)
-		}
-		go handleRequest(config.logger, registry, conn)
+		go handleRequest(s.logger, registry, conn)
 	}
+}
+
+func (s *Server) Close() {
+	s.listener.Close()
+}
+
+func NewServer(config RegistryServerConfig) (*Server, error) {
+	if config.logger == nil {
+		return nil, fmt.Errorf("logger is nil")
+	}
+
+	if config.port == "" {
+		return nil, fmt.Errorf("invalid port")
+	}
+
+	return &Server{
+		port:   config.port,
+		logger: config.logger,
+	}, nil
 }
 
 func handleRequest(logger *slog.Logger, registry Enroller, conn net.Conn) {
@@ -201,7 +239,7 @@ func handleRegistry(registry Enroller, addr *net.TCPAddr, packet tcp_packet_hand
 
 		return service, nil
 	case GET:
-		data := packet.Data.(tcp_packet_handler.RegisterGet)
+		data := packet.Data.(tcp_packet_handler.RegisterGetReq)
 		service, err := registry.Get(data.Service)
 
 		fmt.Println("get service: ", data.Service)

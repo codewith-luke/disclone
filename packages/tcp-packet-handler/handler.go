@@ -11,6 +11,6 @@ type RegisterReq struct {
 	Port int32
 }
 
-type RegisterGet struct {
+type RegisterGetReq struct {
 	Service string
 }
