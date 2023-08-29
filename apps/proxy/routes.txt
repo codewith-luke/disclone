@@ -1,0 +1,10 @@
+/login - POST
+/logout - POST
+
+/profile - GET/POST/PUT
+/profile/settings - GET/POST/PUT
+
+/groups - GET
+/groups/:id - GET/PATCH
+/groups/new - POST
+/groups/:id/messages - GET/POST

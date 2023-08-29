@@ -4,6 +4,313 @@ info:
   title: Disclone Proxy API
   description: Basic API proxy for Disclone
 servers:
-  - url: http://localhost:8080
+  - url: http://localhost:8080/api/v1
 paths:
+  # ACCOUNT
+  /login:
+    post:
+      description: Logs in a user
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: login response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /logout:
+    post:
+      description: Logs out a user
+      operationId: logout
+      responses:
+        '200':
+          description: logout response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /register:
+    post:
+      description: Registers a user
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: register response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # PROFILE
+  /profile:
+    get:
+      description: Gets a user's profile
+      operationId: getProfile
+      responses:
+        '200':
+          description: profile response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      description: Updates a user's profile
+      operationId: updateProfile
+      requestBody:
+        required: true
+        description: Profile to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: profile response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /profile/settings:
+    get:
+      description: Gets a user's settings
+      operationId: getSettings
+      responses:
+        '200':
+          description: settings response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      description: Updates a user's settings
+      operationId: updateSettings
+      requestBody:
+        required: true
+        description: Settings to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSettingsRequest'
+      responses:
+        '200':
+          description: settings response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # GROUPS
+  /groups:
+    get:
+      description: Gets a user's groups
+      operationId: getGroups
+      responses:
+        '200':
+          description: groups response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Groups'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /groups/new:
+    post:
+      description: Creates a group
+      operationId: createGroup
+      requestBody:
+        required: true
+        description: Group to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGroupRequest'
+      responses:
+        '200':
+          description: group response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /groups/:id/:
+    get:
+      description: Gets a group
+      operationId: getGroup
+      parameters:
+        - name: id
+          in: path
+          description: ID of group to fetch
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: group response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /groups/:id/members:
+    get:
+      description: Gets a group's members
+      operationId: getGroupMembers
+      parameters:
+        - name: id
+          in: path
+          description: ID of group to fetch
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: group members response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMembers'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /groups/:id/messages:
+    get:
+      description: Gets a group's messages
+      operationId: getGroupMessages
+      parameters:
+        - name: id
+          in: path
+          description: ID of group to fetch
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: group messages response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMessages'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      description: Sends a message to a group
+      operationId: sendMessageToGroup
+      parameters:
+        - name: id
+          in: path
+          description: ID of group to fetch
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        description: Message to send
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageToGroupRequest'
+      responses:
+        '200':
+          description: group messages response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMessages'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
 
