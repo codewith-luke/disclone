@@ -1,4 +1,4 @@
-module packages/disclone-logger
+module github.com/codewith-luke/disclone/packages/disclone-logger
 
 go 1.21
 

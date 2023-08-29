@@ -1,0 +1,9 @@
+openapi: "3.0.0"
+info:
+  version: 0.0.0
+  title: Disclone Proxy API
+  description: Basic API proxy for Disclone
+servers:
+  - url: http://localhost:8080
+paths:
+

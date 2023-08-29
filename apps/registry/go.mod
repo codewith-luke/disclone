@@ -1,4 +1,4 @@
-module registry
+module github.com/codewith-luke/disclone/apps/registry
 
 go 1.21
 
