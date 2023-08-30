@@ -1,10 +1,13 @@
 openapi: "3.0.0"
+
 info:
   version: 0.0.0
   title: Disclone Proxy API
   description: Basic API proxy for Disclone
+
 servers:
   - url: http://localhost:8080/api/v1
+
 paths:
   # ACCOUNT
   /login:
@@ -20,6 +23,11 @@ paths:
       responses:
         '200':
           description: login response
+          headers:
+            Set-cookie:
+              schema:
+                type: string
+                example: _user_session_id=abcde12345; Path=/; HttpOnly
           content:
             application/json:
               schema:
@@ -195,7 +203,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /groups/:id/:
+  /groups/{id}/:
     get:
       description: Gets a group
       operationId: getGroup
@@ -220,7 +228,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /groups/:id/members:
+  /groups/{id}/members:
     get:
       description: Gets a group's members
       operationId: getGroupMembers
@@ -245,7 +253,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /groups/:id/messages:
+  /groups/{id}/messages:
     get:
       description: Gets a group's messages
       operationId: getGroupMessages
@@ -301,8 +309,142 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
 components:
   schemas:
+    # Data Models
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - username
+        - profileImage
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        username:
+          type: string
+        profileImage:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+    Profile:
+      type: object
+      required:
+        - user
+        - settings
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        settings:
+          $ref: '#/components/schemas/Settings'
+    Settings:
+      type: object
+      required:
+        - enabled
+      properties:
+        enabled:
+          type: boolean
+    Group:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+        - members
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        members:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+    Groups:
+      type: object
+      required:
+        - groups
+      properties:
+        groups:
+          type: array
+        items:
+          $ref: '#/components/schemas/Group'
+    GroupMembers:
+      type: object
+      required:
+        - members
+      properties:
+        members:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - username
+              - profileImage
+              - status
+            properties:
+              id:
+                type: string
+              username:
+                type: string
+              profileImage:
+                type: string
+              status:
+                type: string
+    Message:
+      type: object
+      required:
+        - id
+        - content
+        - createdAt
+        - updatedAt
+        - userId
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        userId:
+          type: string
+    GroupMessages:
+      type: object
+      required:
+        - messages
+      properties:
+        messages:
+          type: array
+        items:
+          $ref: '#/components/schemas/Message'
+
+    # HTTP Models
     LoginRequest:
       type: object
       required:
@@ -312,5 +454,76 @@ components:
         email:
           type: string
         password:
+          type: string
+    LoginResponse:
+      type: object
+      required:
+        - User
+      properties:
+        User:
+          $ref: '#/components/schemas/User'
+    LogoutResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - username
+        - password
+      properties:
+        email:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+    RegisterResponse:
+      type: object
+      required:
+        - User
+      properties:
+        User:
+          $ref: '#/components/schemas/User'
+
+    UpdateProfileRequest:
+      type: object
+      required:
+        - profileImage
+        - status
+      properties:
+        profileImage:
+          type: string
+        status:
+          type: string
+    UpdateSettingsRequest:
+      type: object
+      required:
+        - enabled
+      properties:
+        enabled:
+          type: boolean
+    CreateGroupRequest:
+      type: object
+      required:
+        - name
+        - members
+      properties:
+        name:
+          type: string
+        members:
+          type: array
+          items:
+            type: string
+    SendMessageToGroupRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
           type: string
 
