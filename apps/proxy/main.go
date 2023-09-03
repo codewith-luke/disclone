@@ -39,6 +39,7 @@ func main() {
 	// We now register our srv above as the handler for the interface
 	api.RegisterHandlers(e, &srv)
 	opts1 := middleware.RedocOpts{SpecURL: "proxy-api.yaml", Path: "doc"}
+	// TODO: Investigate custom styping using this https://redocly.com/docs/redoc/quickstart/
 	openAPIDoc := middleware.Redoc(opts1, nil)
 
 	e.File("/proxy-api.yaml", "./proxy-api.yaml")
