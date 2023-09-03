@@ -5,7 +5,16 @@ import (
 	"net/http"
 )
 
-type Server struct{}
+type Server struct {
+}
+
+func (s *Server) GetProxy(ctx echo.Context) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "Doc: not implemented")
+}
+
+func (s *Server) GetDoc(ctx echo.Context) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "Doc: not implemented")
+}
 
 func (s *Server) Login(ctx echo.Context) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "Login: not implemented")

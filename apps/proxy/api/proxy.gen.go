@@ -21,6 +21,9 @@ import (
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
+	// (GET /doc)
+	GetDoc(ctx echo.Context) error
+
 	// (GET /groups)
 	GetGroups(ctx echo.Context) error
 
@@ -57,6 +60,9 @@ type ServerInterface interface {
 	// (PATCH /profile/settings)
 	UpdateSettings(ctx echo.Context) error
 
+	// (GET /proxy-api.yaml)
+	GetProxy(ctx echo.Context) error
+
 	// (POST /register)
 	Register(ctx echo.Context) error
 }
@@ -64,6 +70,15 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// GetDoc converts echo context to params.
+func (w *ServerInterfaceWrapper) GetDoc(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetDoc(ctx)
+	return err
 }
 
 // GetGroups converts echo context to params.
@@ -202,6 +217,15 @@ func (w *ServerInterfaceWrapper) UpdateSettings(ctx echo.Context) error {
 	return err
 }
 
+// GetProxy converts echo context to params.
+func (w *ServerInterfaceWrapper) GetProxy(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetProxy(ctx)
+	return err
+}
+
 // Register converts echo context to params.
 func (w *ServerInterfaceWrapper) Register(ctx echo.Context) error {
 	var err error
@@ -239,6 +263,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.GET(baseURL+"/doc", wrapper.GetDoc)
 	router.GET(baseURL+"/groups", wrapper.GetGroups)
 	router.POST(baseURL+"/groups/new", wrapper.CreateGroup)
 	router.GET(baseURL+"/groups/:id/", wrapper.GetGroup)
@@ -251,6 +276,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PATCH(baseURL+"/profile", wrapper.UpdateProfile)
 	router.GET(baseURL+"/profile/settings", wrapper.GetSettings)
 	router.PATCH(baseURL+"/profile/settings", wrapper.UpdateSettings)
+	router.GET(baseURL+"/proxy-api.yaml", wrapper.GetProxy)
 	router.POST(baseURL+"/register", wrapper.Register)
 
 }
@@ -258,27 +284,30 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

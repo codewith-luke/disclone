@@ -6,12 +6,42 @@ info:
   description: Basic API proxy for Disclone
 
 servers:
-  - url: http://localhost:8080/api/v1
+  - url: http://localhost:8080
+
+tags:
+  - name: auth
+    description: Everything related to auth / registration
+  - name: profile
+    description: User profiles
+  - name: groups
+    description: Messaging and Group Chats
 
 paths:
+  /proxy-api.yaml:
+    get:
+      operationId: getProxy
+      responses:
+        default:
+          description: returns the proxy API schema
+          content:
+            application/file:
+              schema:
+                $ref: '#/components/schemas/AnyValue'
+  /doc:
+    get:
+      operationId: getDoc
+      responses:
+        default:
+          description: get the documentation for proxy api
+          content:
+            application/html:
+              schema:
+                $ref: '#/components/schemas/AnyValue'
   # ACCOUNT
   /login:
     post:
+      tags:
+        - auth
       description: Logs in a user
       operationId: login
       requestBody:
@@ -40,6 +70,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /logout:
     post:
+      tags:
+        - auth
       description: Logs out a user
       operationId: logout
       responses:
@@ -57,6 +89,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /register:
     post:
+      tags:
+        - auth
       description: Registers a user
       operationId: register
       requestBody:
@@ -82,6 +116,8 @@ paths:
   # PROFILE
   /profile:
     get:
+      tags:
+        - profile
       description: Gets a user's profile
       operationId: getProfile
       responses:
@@ -98,6 +134,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     patch:
+      tags:
+        - profile
       description: Updates a user's profile
       operationId: updateProfile
       requestBody:
@@ -122,6 +160,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /profile/settings:
     get:
+      tags:
+        - profile
       description: Gets a user's settings
       operationId: getSettings
       responses:
@@ -138,6 +178,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     patch:
+      tags:
+        - profile
       description: Updates a user's settings
       operationId: updateSettings
       requestBody:
@@ -164,6 +206,8 @@ paths:
   # GROUPS
   /groups:
     get:
+      tags:
+        - groups
       description: Gets a user's groups
       operationId: getGroups
       responses:
@@ -181,6 +225,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /groups/new:
     post:
+      tags:
+        - groups
       description: Creates a group
       operationId: createGroup
       requestBody:
@@ -205,6 +251,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /groups/{id}/:
     get:
+      tags:
+        - groups
       description: Gets a group
       operationId: getGroup
       parameters:
@@ -230,6 +278,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /groups/{id}/members:
     get:
+      tags:
+        - groups
       description: Gets a group's members
       operationId: getGroupMembers
       parameters:
@@ -255,6 +305,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /groups/{id}/messages:
     get:
+      tags:
+        - groups
       description: Gets a group's messages
       operationId: getGroupMessages
       parameters:
@@ -279,6 +331,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     post:
+      tags:
+        - groups
       description: Sends a message to a group
       operationId: sendMessageToGroup
       parameters:
@@ -313,6 +367,15 @@ paths:
 components:
   schemas:
     # Data Models
+    AnyValue:
+      anyOf:
+        - type: string
+        - type: number
+        - type: integer
+        - type: boolean
+        - type: array
+          items: { }
+        - type: object
     Error:
       type: object
       required:
@@ -390,8 +453,8 @@ components:
       properties:
         groups:
           type: array
-        items:
-          $ref: '#/components/schemas/Group'
+          items:
+            $ref: '#/components/schemas/Group'
     GroupMembers:
       type: object
       required:
@@ -441,8 +504,8 @@ components:
       properties:
         messages:
           type: array
-        items:
-          $ref: '#/components/schemas/Message'
+          items:
+            $ref: '#/components/schemas/Message'
 
     # HTTP Models
     LoginRequest:
