@@ -6,10 +6,19 @@ import (
 	"net"
 )
 
+type Task string
+
+const (
+	REGISTER Task = "register"
+	GET      Task = "get"
+	UPDATE   Task = "update"
+	REMOVE   Task = "remove"
+)
+
 type Packet struct {
 	Sequence uint32
 	Service  string
-	Task     string
+	Task     Task
 	Data     any
 }
 
@@ -35,6 +44,9 @@ type Client struct {
 }
 
 func NewClient(config ClientConfig) *Client {
+	gob.Register(RegisterReq{})
+	gob.Register(RegisterGetReq{})
+
 	return &Client{
 		host: config.Host,
 		port: config.Port,
@@ -55,9 +67,6 @@ func (c *Client) Open() error {
 	}
 
 	c.conn = conn
-
-	gob.Register(RegisterReq{})
-	gob.Register(RegisterGetReq{})
 
 	enc := gob.NewEncoder(conn)
 	dec := gob.NewDecoder(conn)
@@ -82,13 +91,12 @@ func (c *Client) Send(data Packet) error {
 	return nil
 }
 
-func (c *Client) Receive() (Packet, error) {
-	var data Packet
-	err := c.dec.Decode(&data)
+func (c *Client) Receive(data *Packet) error {
+	err := c.dec.Decode(data)
 
 	if err != nil {
-		return Packet{}, err
+		return err
 	}
 
-	return data, nil
+	return nil
 }

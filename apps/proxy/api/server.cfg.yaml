@@ -1,5 +1,5 @@
 package: api
-output: proxy.gen.go
+output: api/proxy.gen.go
 #additional-imports:
 #  - package: github.com/codewith-luke/disclone/apps/proxy/api/models
 #    alias: .

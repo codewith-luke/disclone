@@ -1,3 +1,6 @@
+//go:generate oapi-codegen --config=./api/models/models.cfg.yaml ./proxy-api.yaml
+//go:generate oapi-codegen --config=./api/server.cfg.yaml ./proxy-api.yaml
+
 package main
 
 import (
@@ -6,6 +9,17 @@ import (
 )
 
 type Server struct {
+	RegistryCache *RegistryCache
+}
+
+func (s *Server) GetTCP(ctx echo.Context) error {
+	service, err := s.RegistryCache.GetService("service_a")
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return echo.NewHTTPError(http.StatusNotImplemented, service)
 }
 
 func (s *Server) GetProxy(ctx echo.Context) error {

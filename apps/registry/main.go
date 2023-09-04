@@ -24,15 +24,6 @@ const (
 	TYPE = "tcp"
 )
 
-type Task string
-
-const (
-	REGISTER Task = "register"
-	GET      Task = "get"
-	UPDATE   Task = "update"
-	REMOVE   Task = "remove"
-)
-
 type Enroller interface {
 	Add(service ServiceConfig)
 	Update(service ServiceConfig)
@@ -100,6 +91,12 @@ func (s *Server) Open() {
 
 	registry := Registry{}
 
+	registry.Add(ServiceConfig{
+		Name:   "service_a",
+		Port:   4040,
+		Domain: "127.0.0.1",
+	})
+
 	gob.Register(tcp_packet_handler.RegisterReq{})
 	gob.Register(tcp_packet_handler.RegisterGetReq{})
 	gob.Register(ServiceConfig{})
@@ -111,21 +108,6 @@ func (s *Server) Open() {
 			s.logger.Error("failed to accept connection:", "err", err.Error())
 			return
 		}
-
-		//timeout := 5 * time.Second
-		//err = conn.SetReadDeadline(time.Now().Add(timeout))
-		//
-		//if err != nil {
-		//	s.logger.Error("failed to set read deadline:", "err", err.Error())
-		//	return
-		//}
-		//
-		//err = conn.SetWriteDeadline(time.Now().Add(timeout))
-		//
-		//if err != nil {
-		//	s.logger.Error("failed to set write deadline:", "err", err.Error())
-		//	return
-		//}
 
 		go handleRequest(s.logger, registry, conn)
 	}
@@ -217,10 +199,10 @@ func loadEnvVariables(logger *slog.Logger, key EnvKeys) {
 }
 
 func handleRegistry(registry Enroller, addr *net.TCPAddr, packet tcp_packet_handler.Packet) (ServiceConfig, error) {
-	task := Task(packet.Task)
+	task := tcp_packet_handler.Task(packet.Task)
 
 	switch task {
-	case REGISTER:
+	case tcp_packet_handler.REGISTER:
 		data := packet.Data.(tcp_packet_handler.RegisterReq)
 		service := ServiceConfig{
 			Name:   packet.Service,
@@ -238,7 +220,7 @@ func handleRegistry(registry Enroller, addr *net.TCPAddr, packet tcp_packet_hand
 		fmt.Println("registered service: ", service.Name)
 
 		return service, nil
-	case GET:
+	case tcp_packet_handler.GET:
 		data := packet.Data.(tcp_packet_handler.RegisterGetReq)
 		service, err := registry.Get(data.Service)
 
