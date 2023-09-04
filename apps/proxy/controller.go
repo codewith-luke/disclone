@@ -16,8 +16,12 @@ func (s *Server) GetDoc(ctx echo.Context) error {
 	return echo.NewHTTPError(http.StatusNotImplemented, "Doc: not implemented")
 }
 
+func (s *Server) GetDocs(ctx echo.Context) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "Docs: not implemented")
+}
+
 func (s *Server) Login(ctx echo.Context) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "Login: not implemented")
+	return echo.NewHTTPError(http.StatusNotImplemented, "this is a test")
 }
 
 func (s *Server) Logout(ctx echo.Context) error {

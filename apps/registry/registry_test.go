@@ -1,7 +1,7 @@
 package main_test
 
 import (
-	"registry"
+	"github.com/codewith-luke/disclone/apps/registry"
 	"testing"
 )
 

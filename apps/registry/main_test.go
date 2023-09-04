@@ -1,14 +1,12 @@
 package main
 
 import (
-	"encoding/gob"
 	"fmt"
+	"github.com/codewith-luke/disclone/packages/disclone-logger"
+	"github.com/codewith-luke/disclone/packages/tcp-packet-handler"
 	"log"
 	"log/slog"
-	"net"
 	"os"
-	"packages/disclone-logger"
-	"packages/tcp-packet-handler"
 	"reflect"
 	"testing"
 	"time"
@@ -37,24 +35,11 @@ func setupServer() (*Server, error) {
 	return server, err
 }
 
-func setupClient() (net.Conn, *gob.Encoder, *gob.Decoder, error) {
-	addr := fmt.Sprintf("%s:%s", testHost, testPort)
-
-	conn, err := net.Dial(testType, addr)
-
-	if err != nil {
-		fmt.Println("Error connecting:", err.Error())
-		return nil, nil, nil, err
-	}
-
-	gob.Register(tcp_packet_handler.RegisterReq{})
-	gob.Register(tcp_packet_handler.RegisterGetReq{})
-	gob.Register(ServiceConfig{})
-
-	enc := gob.NewEncoder(conn)
-	dec := gob.NewDecoder(conn)
-
-	return conn, enc, dec, nil
+func setupClient() *tcp_packet_handler.Client {
+	return tcp_packet_handler.NewClient(tcp_packet_handler.ClientConfig{
+		Host: testHost,
+		Port: testPort,
+	})
 }
 
 func init() {
@@ -109,18 +94,19 @@ func TestRegistryServer(t *testing.T) {
 	}
 
 	t.Run(tt[0].Name, func(t *testing.T) {
-		conn, enc, dec, err := setupClient()
+		client := setupClient()
+
+		err := client.Open()
 
 		if err != nil {
 			t.Error("could not setup client")
 			return
 		}
 
-		defer conn.Close()
+		defer client.Close()
 
-		err = enc.Encode(tt[0].Data)
+		err = client.Send(tt[0].Data)
 
-		var got tcp_packet_handler.Packet
 		want := tcp_packet_handler.Packet{
 			Sequence: 12345,
 			Task:     "get",
@@ -132,7 +118,7 @@ func TestRegistryServer(t *testing.T) {
 			},
 		}
 
-		err = dec.Decode(&got)
+		got, err := client.Receive()
 
 		if err != nil {
 			t.Errorf("test decode error: %s", err.Error())
@@ -156,16 +142,18 @@ func TestRegistryServer(t *testing.T) {
 	})
 
 	t.Run(tt[1].Name, func(t *testing.T) {
-		conn, enc, dec, err := setupClient()
+		client := setupClient()
+
+		err := client.Open()
 
 		if err != nil {
 			t.Error("could not setup client")
 			return
 		}
 
-		defer conn.Close()
+		defer client.Close()
 
-		err = enc.Encode(tt[1].Data)
+		err = client.Send(tt[1].Data)
 
 		var got tcp_packet_handler.Packet
 		want := tcp_packet_handler.Packet{
@@ -179,7 +167,7 @@ func TestRegistryServer(t *testing.T) {
 			},
 		}
 
-		err = dec.Decode(&got)
+		got, err = client.Receive()
 
 		if err != nil {
 			t.Errorf("test decode error: %s", err.Error())
@@ -203,18 +191,19 @@ func TestRegistryServer(t *testing.T) {
 	})
 
 	t.Run(tt[2].Name, func(t *testing.T) {
-		conn, enc, dec, err := setupClient()
+		client := setupClient()
+
+		err := client.Open()
 
 		if err != nil {
 			t.Error("could not setup client")
 			return
 		}
 
-		defer conn.Close()
+		defer client.Close()
 
-		err = enc.Encode(tt[2].Data)
+		err = client.Send(tt[2].Data)
 
-		var got tcp_packet_handler.Packet
 		want := tcp_packet_handler.Packet{
 			Sequence: 12347,
 			Task:     "get",
@@ -226,7 +215,7 @@ func TestRegistryServer(t *testing.T) {
 			},
 		}
 
-		err = dec.Decode(&got)
+		got, err := client.Receive()
 
 		if err != nil {
 			t.Errorf("test decode error: %s", err.Error())

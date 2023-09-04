@@ -37,6 +37,16 @@ paths:
             application/html:
               schema:
                 $ref: '#/components/schemas/AnyValue'
+  /docs:
+    get:
+      operationId: getDocs
+      responses:
+        default:
+          description: get the documentation for proxy api
+          content:
+            application/html:
+              schema:
+                $ref: '#/components/schemas/AnyValue'
   # ACCOUNT
   /login:
     post:

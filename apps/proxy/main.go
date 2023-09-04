@@ -38,12 +38,16 @@ func main() {
 
 	// We now register our srv above as the handler for the interface
 	api.RegisterHandlers(e, &srv)
-	opts1 := middleware.RedocOpts{SpecURL: "proxy-api.yaml", Path: "doc"}
+
+	opts := middleware.SwaggerUIOpts{SpecURL: "proxy-api.yaml"}
+	sh := middleware.SwaggerUI(opts, nil)
+	//opts := middleware.RedocOpts{SpecURL: "proxy-api.yaml", Path: "doc"}
 	// TODO: Investigate custom styping using this https://redocly.com/docs/redoc/quickstart/
-	openAPIDoc := middleware.Redoc(opts1, nil)
+	//openAPIDoc := middleware.Redoc(opts, nil)
 
 	e.File("/proxy-api.yaml", "./proxy-api.yaml")
-	e.GET("/doc", echo.WrapHandler(openAPIDoc))
+	//e.GET("/doc", echo.WrapHandler(sh))
+	e.GET("/docs", echo.WrapHandler(sh))
 
 	// And we serve HTTP until the world ends.
 	e.Logger.Fatal(e.Start(net.JoinHostPort("0.0.0.0", *port)))

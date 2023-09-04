@@ -3,13 +3,13 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"github.com/codewith-luke/disclone/packages/disclone-logger"
+	"github.com/codewith-luke/disclone/packages/tcp-packet-handler"
 	"github.com/joho/godotenv"
 	"log"
 	"log/slog"
 	"net"
 	"os"
-	"packages/disclone-logger"
-	"packages/tcp-packet-handler"
 )
 
 type EnvKeys string
