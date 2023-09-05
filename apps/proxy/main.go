@@ -41,15 +41,15 @@ func main() {
 	port := flag.String("port", portNum, "Port for test HTTP server")
 	flag.Parse()
 
-	swagger, err := api.GetSwagger()
+	oAPI, err := api.GetSwagger()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error loading swagger spec\n: %s", err)
+		fmt.Fprintf(os.Stderr, "Error loading oAPI spec\n: %s", err)
 		os.Exit(1)
 	}
 
-	// Clear out the servers array in the swagger spec, that skips validating
+	// Clear out the servers array in the oAPI spec, that skips validating
 	// that server names match. We don't know how this thing will be run.
-	swagger.Servers = nil
+	oAPI.Servers = nil
 
 	// Create an instance of our handler which satisfies the generated interface
 	cache, err := NewRegistryCache()
@@ -69,7 +69,7 @@ func main() {
 	//e.Use(echomiddleware.Logger())
 	// Use our validation middleware to check all requests against the
 
-	e.Use(omware.OapiRequestValidator(swagger))
+	e.Use(omware.OapiRequestValidator(oAPI))
 
 	// We now register our srv above as the handler for the interface
 	api.RegisterHandlers(e, &srv)
