@@ -1,7 +1,0 @@
-tags:
-  - 'proxy'
-tasks:
-  build:
-    command: 'go build github.com/codewith-luke/disclone/apps/registry'
-  dev:
-    command: 'go run github.com/codewith-luke/disclone/apps/registry'

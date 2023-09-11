@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/codewith-luke/disclone/apps/proxy/api"
-	disclone_logger "github.com/codewith-luke/disclone/packages/disclone-logger"
+	"github.com/codewith-luke/plog"
 	omware "github.com/deepmap/oapi-codegen/pkg/middleware"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/joho/godotenv"
@@ -18,20 +18,17 @@ import (
 type EnvKeys string
 
 const (
-	ENV           EnvKeys = "ENV"
-	SERVICE_NAME  EnvKeys = "SERVICE_NAME"
-	PORT          EnvKeys = "PORT"
-	REGISTRY_HOST EnvKeys = "REGISTRY_HOST"
-	REGISTRY_PORT EnvKeys = "REGISTRY_PORT"
+	ENV  EnvKeys = "ENV"
+	PORT EnvKeys = "PORT"
 )
 
 func main() {
-	loggerOpts := disclone_logger.PrettyHandlerOptions{
+	loggerOpts := plog.PrettyHandlerOptions{
 		SlogOpts: slog.HandlerOptions{
 			Level: slog.LevelDebug,
 		},
 	}
-	handler := disclone_logger.NewPrettyHandler(os.Stdout, loggerOpts)
+	handler := plog.NewPrettyHandler(os.Stdout, loggerOpts)
 	logger := slog.New(handler)
 
 	loadEnvVariables(logger, ENV)
@@ -51,17 +48,7 @@ func main() {
 	// that server names match. We don't know how this thing will be run.
 	oAPI.Servers = nil
 
-	// Create an instance of our handler which satisfies the generated interface
-	cache, err := NewRegistryCache()
-
-	if err != nil {
-		logger.Error("Error creating registry cache: " + err.Error())
-		os.Exit(1)
-	}
-
-	srv := Server{
-		RegistryCache: cache,
-	}
+	srv := Server{}
 
 	// This is how you set up a basic Echo router
 	e := echo.New()

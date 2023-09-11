@@ -1,8 +1,5 @@
 go 1.21.0
 
 use (
-	./packages/disclone-logger
-	./packages/tcp-packet-handler
-	./apps/registry
 	./apps/proxy
 )

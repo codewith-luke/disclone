@@ -17,16 +17,6 @@ tags:
     description: Messaging and Group Chats
 
 paths:
-  /tcp:
-    get:
-      operationId: getTCP
-      responses:
-        default:
-          description: sheeesh
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AnyValue'
   /proxy-api.yaml:
     get:
       operationId: getProxy
