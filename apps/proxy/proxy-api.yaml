@@ -233,7 +233,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /groups/new:
     post:
       tags:
         - groups

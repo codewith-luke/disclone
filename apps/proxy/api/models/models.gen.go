@@ -34,8 +34,8 @@ type AnyValue5 = map[string]interface{}
 
 // CreateGroupRequest defines model for CreateGroupRequest.
 type CreateGroupRequest struct {
-	Members []string `json:"members"`
-	Name    string   `json:"name"`
+	Members *[]string `json:"members,omitempty"`
+	Name    string    `json:"name"`
 }
 
 // Error defines model for Error.
