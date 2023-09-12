@@ -1,0 +1,9 @@
+POST http://127.0.0.1:{{port}}/login
+Content-Type: application/json
+
+{
+  "username": "user1",
+  "password": "securepassword"
+}
+
+
