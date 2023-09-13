@@ -1,6 +1,6 @@
 import {User} from "../types";
 
-export async function createSessionID(user: User) {
+export function createSessionID(user: User) {
     return "123456"
 }
 
