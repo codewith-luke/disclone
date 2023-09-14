@@ -1,5 +1,6 @@
 import {sleep} from "bun";
 import {UserWithAuth} from "../types";
+import {CustomError} from "../error";
 
 type UserAccess = ReturnType<typeof createUserAccess>;
 
@@ -10,13 +11,13 @@ export interface IAuthDB {
 export default class AuthDB implements IAuthDB {
     public readonly userAccess;
 
-    constructor() {
+    constructor(logger: any) {
         // DB GOES HERE
-        this.userAccess = createUserAccess();
+        this.userAccess = createUserAccess(logger);
     }
 }
 
-function createUserAccess() {
+function createUserAccess(logger: any) {
     return {
         getUser,
         getPermissions,
@@ -34,6 +35,9 @@ function createUserAccess() {
         } as UserWithAuth;
 
         await sleep(200);
+
+        logger.info("This is from winton");
+        throw new CustomError("Custom implemented");
         return user;
     }
 

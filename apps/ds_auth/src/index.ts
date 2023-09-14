@@ -1,9 +1,15 @@
 import {Elysia} from "elysia";
-import {userHandler} from "./user_handler";
+import {userHandler} from "./user-handler";
+import {setup} from "./setup";
+import {createHttpErrorResponse, HttpErrorMessages} from "./error";
 
 const app = new Elysia()
+    .use(setup)
     .get("/heartbeat", () => "ok")
     .use(userHandler)
+    .onError(({code, error}) => {
+        return createHttpErrorResponse(HttpErrorMessages.unknownError, error);
+    })
     .listen(Bun.env.PORT);
 
 console.log(

@@ -6,8 +6,10 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
+    "@bogeychan/elysia-logger": "^0.0.9",
     "@elysiajs/cookie": "^0.6.1",
-    "elysia": "latest"
+    "elysia": "latest",
+    "winston": "^3.10.0"
   },
   "devDependencies": {
     "bun-types": "latest"
