@@ -36,8 +36,6 @@ function createUserAccess(logger: any) {
 
         await sleep(200);
 
-        logger.info("This is from winton");
-        throw new ValidationError("Custom implemented");
         return user;
     }
 

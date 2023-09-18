@@ -1,5 +1,6 @@
 import winston, {format} from "winston";
 import {Environments, Routes} from "./types";
+
 const {combine, timestamp, printf} = format;
 
 const filterList = [Routes.login];
@@ -16,19 +17,20 @@ const LoggerTypes = {
 
 const requestFormat = printf((logData) => {
     const {level, path, message, traceID, req, timestamp} = logData;
+
     const {params, query, body} = req;
     let data: string | {
         params: any;
         query: any;
         body: any;
-    } = 'private';
+    } = {
+        params,
+        query,
+        body
+    };
 
-    if (filterList.includes(path) && Bun.env.NODE_ENV === Environments.development) {
-        data = {
-            params,
-            query,
-            body
-        }
+    if (filterList.includes(path) && Bun.env.NODE_ENV !== Environments.development) {
+        data = 'private';
     }
 
     return `[${level}] ${timestamp} [${traceID}]: ${path} ${JSON.stringify(data)}, ${message}`;

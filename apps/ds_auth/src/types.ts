@@ -25,6 +25,7 @@ export const State = {
 } as const;
 
 export const Routes = {
+    heartbeat: '/heartbeat',
     login: '/login'
 } as const;
 

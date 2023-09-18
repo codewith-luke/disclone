@@ -9,6 +9,6 @@ export function createSignatureToken(user: User) {
 }
 
 export function passwordMatches(password: string, hash: string) {
-    return password === hash
+    return password === hash;
 }
 
