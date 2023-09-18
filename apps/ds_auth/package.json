@@ -8,6 +8,7 @@
   "dependencies": {
     "@bogeychan/elysia-logger": "^0.0.9",
     "@elysiajs/cookie": "^0.6.1",
+    "@elysiajs/cors": "^0.6.0",
     "elysia": "latest",
     "winston": "^3.10.0"
   },

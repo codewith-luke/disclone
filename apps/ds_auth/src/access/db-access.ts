@@ -1,6 +1,6 @@
 import {sleep} from "bun";
 import {UserWithAuth} from "../types";
-import {CustomError} from "../error";
+import {ValidationError} from "../error";
 
 type UserAccess = ReturnType<typeof createUserAccess>;
 
@@ -37,7 +37,7 @@ function createUserAccess(logger: any) {
         await sleep(200);
 
         logger.info("This is from winton");
-        throw new CustomError("Custom implemented");
+        throw new ValidationError("Custom implemented");
         return user;
     }
 

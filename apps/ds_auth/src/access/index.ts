@@ -1,6 +1,6 @@
 import AuthDB from "./db-access";
-import {logger} from "../logger";
+import {loggers} from "../logger";
 
-const db = new AuthDB(logger);
+const db = new AuthDB(loggers.basicLogger);
 
 export default db;

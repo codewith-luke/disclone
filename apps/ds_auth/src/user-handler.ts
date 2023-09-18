@@ -3,6 +3,7 @@ import {cookie} from '@elysiajs/cookie'
 import {createHttpErrorResponse, ErrorCodes, HttpErrorMessages} from "./error";
 import {setup} from "./setup";
 import {userAccess} from "./use-cases";
+import {Routes, State} from "./types";
 
 const LoginRequest = t.Object({
     username: t.String(),
@@ -12,10 +13,8 @@ const LoginRequest = t.Object({
 export const userHandler = new Elysia()
     .use(setup)
     .use(cookie())
-    .state('userAccess', userAccess)
-    // .state('logger', logger)
-    .post('/login', async ({logger, store: {userAccess}, setCookie, body}) => {
-        logger.info('login')
+    .state(State.userAccess, userAccess)
+    .post(Routes.login, async ({store: {userAccess}, setCookie, body}) => {
         const {sessionID, token} = await userAccess.loginUser(body.username, body.password);
 
         setCookie('session_id', sessionID);
@@ -27,9 +26,6 @@ export const userHandler = new Elysia()
     }, {
         body: LoginRequest,
         error({code, error}) {
-            switch (code) {
-                case ErrorCodes.CUSTOM_ERROR:
-                    return createHttpErrorResponse(HttpErrorMessages.invalidCredentials, error);
-            }
+
         }
     });

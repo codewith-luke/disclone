@@ -5,8 +5,7 @@ export const ErrorCodes = {
     INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
     VALIDATION: "VALIDATION",
     PARSE: "PARSE",
-    UNKNOWN: "UNKNOWN",
-    CUSTOM_ERROR: "CUSTOM_ERROR",
+    UNKNOWN: "UNKNOWN"
 } as const;
 
 export type ErrorCode = keyof typeof ErrorCodes;
@@ -42,12 +41,6 @@ export class InternalError extends BaseError {
 export class UnknownError extends BaseError {
     constructor(message?: string) {
         super(ErrorCodes.UNKNOWN, message || "Unknown Error");
-    }
-}
-
-export class CustomError extends BaseError {
-    constructor(message?: string) {
-        super(ErrorCodes.CUSTOM_ERROR, message || "Custom Error");
     }
 }
 

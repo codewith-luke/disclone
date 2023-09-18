@@ -20,4 +20,16 @@ export type ErrorResponseMessage = {
     message: string;
 }
 
+export const State = {
+    userAccess: 'userAccess'
+} as const;
+
+export const Routes = {
+    login: '/login'
+} as const;
+
+export const Environments = {
+    development: 'development',
+    production: 'production',
+}
 
