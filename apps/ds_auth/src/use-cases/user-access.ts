@@ -1,26 +1,52 @@
-import {createSessionID, createSignatureToken, passwordMatches} from "../core/auth";
+import {createSessionID, createSignatureToken, hashPassword, passwordMatches} from "../core/auth";
 import {IAuthDB} from "../access/db-access";
 import {ValidationError} from "../error";
 
+export type RegisterUserInput = {
+    email: string;
+    username: string;
+    password: string;
+}
 
-export function createUserAccess(db: IAuthDB) {
+export function createUserAccess(db: IAuthDB, logger: Console) {
     return {
-        loginUser: async function loginUser(username: string, password: string) {
-            let user = await db.userAccess.getUser(username);
+        loginUser,
+        logoutUser,
+        registerUser
+    }
 
-            if (!user || !passwordMatches(password, user.password)) {
-                throw new ValidationError();
-            }
+    async function registerUser(data: RegisterUserInput) {
+        await db.userAccess.registerUser({
+            ...data,
+            password: await hashPassword(data.password)
+        });
+        return await loginUser(data.username, data.password);
+    }
 
-            const sessionID = createSessionID(user);
-            const token = createSignatureToken(user);
+    async function logoutUser(sessionID: string) {
+        await db.userAccess.deleteSession(sessionID);
 
-            await db.userAccess.saveSession(sessionID, token);
+        logger.info(`User logged out successfully`);
+    }
 
-            return {
-                sessionID,
-                token
-            }
+    async function loginUser(username: string, password: string) {
+        let user = await db.userAccess.getUser(username);
+
+        if (!user || !await passwordMatches(password, user.password)) {
+            logger.error(`User ${username} failed to login`);
+            throw new ValidationError();
+        }
+
+        const sessionID = createSessionID();
+        const token = createSignatureToken(Bun.env.SECRET, user);
+
+        await db.userAccess.saveSession(sessionID, token);
+
+        logger.info(`User ${username} logged in successfully`);
+
+        return {
+            sessionID,
+            token
         }
     }
 }

@@ -20,13 +20,19 @@ export type ErrorResponseMessage = {
     message: string;
 }
 
+export const Cookies = {
+    sessionID: 'session_id'
+}
+
 export const State = {
     userAccess: 'userAccess'
 } as const;
 
 export const Routes = {
     heartbeat: '/heartbeat',
-    login: '/login'
+    login: '/login',
+    logout: '/logout',
+    register: '/register',
 } as const;
 
 export const Environments = {

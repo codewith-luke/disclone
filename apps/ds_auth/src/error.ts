@@ -14,7 +14,7 @@ export interface IError extends Error {
     code: ErrorCode;
 }
 
-class BaseError extends Error implements IError {
+export class BaseError extends Error implements IError {
     constructor(private statusCode: ErrorCode, message?: string) {
         super(message);
         this.name = statusCode.toUpperCase();
