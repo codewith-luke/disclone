@@ -21,7 +21,7 @@ describe("dsa", () => {
         expect(actual).toBe(expected);
     });
 
-    describe('register', function () {
+    describe(`[${Routes.register}]`, function () {
         it(`[${Routes.register}] should return 500 if invalid email`, async () => {
             const expected = {
                 status: 401,
@@ -94,4 +94,4 @@ describe("dsa", () => {
         expect(actual.username).toBe(expected.username);
         expect(actual.token).toBeDefined();
     });
-})
+});
