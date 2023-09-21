@@ -2,12 +2,12 @@ version: '3'
 services:
   disclone:
     env_file:
-      - .development.env
+      - .env.development
     image: postgres
     ports:
       - "5432:5432"
     volumes:
-      - "./schema.sql:/docker-entrypoint-initdb.d/1.sql"
+      - "./init_ds_auth.sql:/docker-entrypoint-initdb.d/1.sql"
       - "postgres-data:/var/lib/postgresql/data"
 volumes:
   postgres-data:

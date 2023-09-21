@@ -10,6 +10,7 @@
     "@elysiajs/cookie": "^0.6.1",
     "@elysiajs/cors": "^0.6.0",
     "elysia": "latest",
+    "postgres": "^3.3.5",
     "winston": "^3.10.0"
   },
   "devDependencies": {

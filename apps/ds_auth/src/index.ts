@@ -6,6 +6,7 @@ import {setup} from "./setup";
 import {createHttpErrorResponse, ErrorCodes, HttpErrorMessages, IError} from "./error";
 import {RequestLifeCycle} from "./logger";
 import {Routes} from "./types";
+import sql from "./db";
 
 export function createApp() {
     return new Elysia()
@@ -29,6 +30,19 @@ export function createApp() {
 const app = createApp()
     .listen(Bun.env.PORT);
 
+getUsersOver()
+    .then((users) => {
+        console.log(users)
+    });
+
 console.log(
     `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
 );
+
+async function getUsersOver() {
+    const users = await sql`
+        select *
+        from users
+    `
+    return users
+}
