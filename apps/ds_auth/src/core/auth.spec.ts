@@ -35,8 +35,9 @@ describe("auth", () => {
 
     describe('hashPassword', function () {
         it('should return hashed password based on callback which should match', async function () {
-            const hashPass = await hashPassword('test');
-            const actual = await passwordMatches('test', hashPass);
+            const hashPass = await hashPassword('admin');
+            const actual = await passwordMatches('admin', hashPass);
+            console.log(hashPass)
             expect(actual).toBe(true);
         });
     });

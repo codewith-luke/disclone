@@ -3,10 +3,9 @@ import {cors} from '@elysiajs/cors';
 
 import {userHandler} from "./user-handler";
 import {setup} from "./setup";
-import {createHttpErrorResponse, ErrorCodes, HttpErrorMessages, IError} from "./error";
+import {createHttpErrorResponse, ErrorCodes, HttpErrorMessages} from "./error";
 import {RequestLifeCycle} from "./logger";
 import {Routes} from "./types";
-import sql from "./db";
 
 export function createApp() {
     return new Elysia()
@@ -15,34 +14,21 @@ export function createApp() {
         .onResponse(({logger}) => {
             logger.info(RequestLifeCycle.end)
         })
+        .get(Routes.heartbeat, () => "ok")
+        .use(userHandler)
         .onError(({code, error}) => {
             switch (code) {
                 case ErrorCodes.VALIDATION:
-                    return createHttpErrorResponse(HttpErrorMessages.invalidCredentials, error as IError)
+                    return createHttpErrorResponse(HttpErrorMessages.invalidCredentials, error);
                 default:
-                    return createHttpErrorResponse(HttpErrorMessages.unknownError, error as IError)
+                    return createHttpErrorResponse(HttpErrorMessages.unknownError, error);
             }
         })
-        .get(Routes.heartbeat, () => "ok")
-        .use(userHandler)
 }
 
 const app = createApp()
     .listen(Bun.env.PORT);
 
-getUsersOver()
-    .then((users) => {
-        console.log(users)
-    });
-
 console.log(
     `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
 );
-
-async function getUsersOver() {
-    const users = await sql`
-        select *
-        from users
-    `
-    return users
-}

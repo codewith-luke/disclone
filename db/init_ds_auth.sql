@@ -25,5 +25,5 @@ GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA ds_auth TO ds_auth;
 
 INSERT into ds_auth.users
     (username, password, email)
-values ('admin', 'admin', 'admin@localhost');
+values ('admin', '$argon2id$v=19$m=65536,t=2,p=1$JJFuyOC4pqaEQqRkB7qmMUPuAp0QRKoEVUqEgVaRXew$9j8PdSBxv/g7EOwqIH+WSTlhR6xJKd2Lcp8Be24LAH4', 'admin@localhost');
 

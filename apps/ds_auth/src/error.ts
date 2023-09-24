@@ -3,6 +3,7 @@ import {ErrorResponseMessage} from "./types";
 export const ErrorCodes = {
     NOT_FOUND: "NOT_FOUND",
     INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
+    QUERY_ERROR: "QUERY_ERROR",
     VALIDATION: "VALIDATION",
     PARSE: "PARSE",
     UNKNOWN: "UNKNOWN"
@@ -38,6 +39,12 @@ export class InternalError extends BaseError {
     }
 }
 
+export class QueryError extends BaseError {
+    constructor(message?: string) {
+        super(ErrorCodes.QUERY_ERROR, message || "Query Error");
+    }
+}
+
 export class UnknownError extends BaseError {
     constructor(message?: string) {
         super(ErrorCodes.UNKNOWN, message || "Unknown Error");
@@ -56,18 +63,11 @@ export const HttpErrorMessages: Record<string, ErrorResponseMessage> = {
 }
 
 export function createHttpErrorResponse(error: ErrorResponseMessage, e?: Error | IError) {
-    const err = {
+    return {
         status: error.status,
         body: {
             message: error.message,
-            error: e?.message || "Unknown Error",
-            code: ErrorCodes.UNKNOWN as string,
+            error: e || "Unknown Error",
         }
     }
-
-    if (e instanceof BaseError) {
-        err.body.code = e.code;
-    }
-
-    return err;
 }

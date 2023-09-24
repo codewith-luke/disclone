@@ -1,11 +1,13 @@
 import {sleep} from "bun";
-import {UserWithAuth} from "../types";
-import {hashPassword} from "../core/auth";
 import {type RegisterUserInput} from "../use-cases/user-access";
+import {type Logger} from "../logger";
+import {type DB} from "../db";
+import {QueryError} from "../error";
+import {User} from "../types";
 
 type UserAccess = ReturnType<typeof createUserAccess>;
 
-type RegisterUserAccess  = {} & RegisterUserInput;
+type RegisterUserAccess = {} & RegisterUserInput;
 
 export interface IAuthDB {
     userAccess: UserAccess;
@@ -14,13 +16,12 @@ export interface IAuthDB {
 export default class AuthDB implements IAuthDB {
     public readonly userAccess;
 
-    constructor(logger: any) {
-        // DB GOES HERE
-        this.userAccess = createUserAccess(logger);
+    constructor(logger: Logger, db: DB) {
+        this.userAccess = createUserAccess(logger, db);
     }
 }
 
-function createUserAccess(logger: Console) {
+function createUserAccess(logger: Logger, db: DB) {
     return {
         getUser,
         getPermissions,
@@ -30,18 +31,21 @@ function createUserAccess(logger: Console) {
     }
 
     async function getUser(username: string) {
-        // TODO: fetch some user from the DB with password
-        const user = {
-            id: 1,
-            username: "johndoe",
-            email: "test@test.com",
-            password: await hashPassword("securepassword"),
-            permissions: ["read", "write"]
-        } as UserWithAuth;
+        logger.info(`Fetching user ${username}`);
+        try {
+            const [user] = await db.query`
+                select distinct username, *
+                from users
+                where username = ${username}
+            `;
 
-        await sleep(200);
-
-        return user;
+            logger.info(`Found user ${user?.username}`);
+            return user as User;
+        } catch (e) {
+            const message = `Failed to get user ${username}`;
+            logger.error(message, e);
+            throw new QueryError(message);
+        }
     }
 
     async function getPermissions() {

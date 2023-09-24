@@ -8,6 +8,7 @@ type Permission = "read" | "write" | "delete" | "update";
 export type User = {
     id: number;
     username: string;
+    password: string;
     permissions: Permission[];
 }
 

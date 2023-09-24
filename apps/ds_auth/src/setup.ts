@@ -34,6 +34,7 @@ export const setup = new Elysia({name: "setup"})
         [ErrorCodes.VALIDATION]: ValidationError,
         [ErrorCodes.UNKNOWN]: UnknownError,
         [ErrorCodes.INTERNAL_SERVER_ERROR]: InternalError,
+        [ErrorCodes.QUERY_ERROR]: InternalError,
     });
 
 

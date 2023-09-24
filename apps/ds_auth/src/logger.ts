@@ -1,6 +1,16 @@
 import winston, {format} from "winston";
 import {Environments, Routes} from "./types";
 
+interface LogMethod extends winston.LeveledLogMethod {
+}
+
+export interface Logger {
+    debug: LogMethod;
+    info: LogMethod;
+    warn: LogMethod;
+    error: LogMethod;
+}
+
 const {combine, timestamp, printf} = format;
 
 const filterList = [Routes.login];
