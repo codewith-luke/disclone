@@ -36,15 +36,15 @@ describe("auth", () => {
     describe('validatePassword', function () {
         it('should fail with spaces or slashes', function () {
             expect(() => {
-                validatePassword(' ');
+                validatePassword('12345678 ');
             }).toThrow('Password must not contain spaces or slashes');
 
             expect(() => {
-                validatePassword('/');
+                validatePassword('12345678/');
             }).toThrow('Password must not contain spaces or slashes');
 
             expect(() => {
-                validatePassword('\\');
+                validatePassword('12345678\\');
             }).toThrow('Password must not contain spaces or slashes');
         });
 
@@ -115,14 +115,36 @@ describe("auth", () => {
         it('should fail with invalid hash', async function () {
             let hashPass = await hashPassword('admin', 'pepper');
             hashPass = `a${hashPass}`;
-            const actual = await passwordMatches('admin', hashPass, 'pepper');
-            expect(actual).toBeFalse();
+
+            expect(async () => {
+                await passwordMatches('admin', hashPass, 'pepper');
+            }).toThrow();
+        });
+
+        it('should fail with no pepper given', async function () {
+            const hashPass = await hashPassword('admin', 'pepper');
+
+            expect(async () => {
+                await passwordMatches('admin', hashPass, '');
+            }).toThrow();
         });
 
         it('should fail with invalid pepper', async function () {
             const hashPass = await hashPassword('admin', 'pepper');
             const actual = await passwordMatches('admin', hashPass, 'pepe');
             expect(actual).toBeFalse();
+        });
+
+        it('should fail with invalid password', function () {
+            expect(async () => {
+                await hashPassword("", "pepper");
+            }).toThrow('Password is missing');
+        });
+
+        it('should fail with invalid pepper', function () {
+            expect(async () => {
+                await hashPassword("123462", "");
+            }).toThrow('Password pepper is missing');
         });
     });
 });

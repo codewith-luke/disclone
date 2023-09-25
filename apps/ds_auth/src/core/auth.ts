@@ -13,12 +13,13 @@ export function createSignatureToken(secret: string, user: User) {
 }
 
 export function validatePassword(password: string) {
-    if (password.match(/(\s)|(\/)|(\\)/)) {
-        throw new Error("Password must not contain spaces or slashes");
-    }
-
     if (password.length < 8 || password.length > 64) {
         throw new Error("Password must be between 8 and 64 characters long");
+    }
+
+    // NOTE: Checks for spaces and slashes
+    if (password.match(/(\s)|(\/)|(\\)/)) {
+        throw new Error("Password must not contain spaces or slashes");
     }
 
     // NOTE: Checks for special character
@@ -48,17 +49,25 @@ export function validatePassword(password: string) {
 }
 
 export async function hashPassword(password: string, pepper: string) {
+    if (!pepper || pepper.length === 0) {
+        throw new Error("Password pepper is missing");
+    }
+
+    if (!password || password.length === 0) {
+        throw new Error("Password is missing");
+    }
+
     const encryptedPassword = encryptPassword(password, pepper);
     return Bun.password.hash(encryptedPassword);
 }
 
 export async function passwordMatches(password: string, hash: string, pepper: string) {
-    try {
-        const encryptedPassword = encryptPassword(password, pepper);
-        return await Bun.password.verify(encryptedPassword, hash, "argon2id");
-    } catch (e) {
-        return false;
+    if (!pepper || pepper.length === 0) {
+        throw new Error("Password pepper is missing");
     }
+
+    const encryptedPassword = encryptPassword(password, pepper);
+    return await Bun.password.verify(encryptedPassword, hash, "argon2id");
 }
 
 // TODO: This needs to be swapped out for some dynamic secret stored in a vault

@@ -4,8 +4,8 @@ Content-Type: application/json
 X-Trace-ID: 1234567890
 
 {
-  "username": "user1",
-  "password": "securepassword"
+  "username": "admin",
+  "password": "admin"
 }
 
 ### /logout

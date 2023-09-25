@@ -2,7 +2,7 @@ import {Elysia, t} from "elysia";
 import {setup} from "./setup";
 import {userAccess} from "./use-cases";
 import {Cookies, Routes, State} from "./types";
-import {createHttpErrorResponse, ErrorCodes, HttpErrorMessages} from "./error";
+import {createHttpErrorResponse, ErrorCodes, HttpErrorMessages, ValidationError} from "./error";
 
 const LoginRequest = t.Object({
     username: t.String(),
@@ -41,7 +41,7 @@ export const userHandler = new Elysia()
         error({code, error}) {
             switch (code) {
                 case ErrorCodes.QUERY_ERROR: {
-                    return createHttpErrorResponse(HttpErrorMessages.invalidCredentials, error);
+                    return createHttpErrorResponse(HttpErrorMessages.invalidCredentials, new ValidationError());
                 }
             }
         }
