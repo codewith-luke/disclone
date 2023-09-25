@@ -1,5 +1,5 @@
 import {User} from "../types";
-import {randomBytes} from "node:crypto";
+import {createHmac, randomBytes} from "node:crypto";
 
 export function createSessionID() {
     return randomBytes(16).toString("base64");
@@ -12,17 +12,58 @@ export function createSignatureToken(secret: string, user: User) {
         .digest("base64");
 }
 
-export async function hashPassword(password: string) {
-    return await Bun.password.hash(password, {
-        algorithm: "argon2id",
-    });
+export function validatePassword(password: string) {
+    if (password.match(/(\s)|(\/)|(\\)/)) {
+        throw new Error("Password must not contain spaces or slashes");
+    }
+
+    if (password.length < 8 || password.length > 64) {
+        throw new Error("Password must be between 8 and 64 characters long");
+    }
+
+    // NOTE: Checks for special character
+    if (!password.match(/[^a-zA-Z0-9\s]/)) {
+        throw new Error("Password must contain at least one special character");
+    }
+
+    // NOTE: Checks for uppercase letter
+    if (!password.match(/[A-Z]/)) {
+        throw new Error("Password must contain at least one uppercase letter");
+    }
+
+    // NOTE: Checks for lowercase letter
+    if (!password.match(/[a-z]/)) {
+        throw new Error("Password must contain at least one lowercase letter");
+    }
+
+    // NOTE: Checks for number
+    if (!password.match(/[0-9]/)) {
+        throw new Error("Password must contain at least one number");
+    }
+
+    // NOTE: Checks for repeating characters
+    if (password.match(/(.)\1\1/)) {
+        throw new Error("Password must not contain repeating characters more than 3 times");
+    }
 }
 
-export async function passwordMatches(password: string, hash: string) {
+export async function hashPassword(password: string, pepper: string) {
+    const encryptedPassword = encryptPassword(password, pepper);
+    return Bun.password.hash(encryptedPassword);
+}
+
+export async function passwordMatches(password: string, hash: string, pepper: string) {
     try {
-        return await Bun.password.verify(password, hash, "argon2id");
+        const encryptedPassword = encryptPassword(password, pepper);
+        return await Bun.password.verify(encryptedPassword, hash, "argon2id");
     } catch (e) {
         return false;
     }
 }
+
+// TODO: This needs to be swapped out for some dynamic secret stored in a vault
+function encryptPassword(hash: string, pepper: string) {
+    return createHmac("sha256", pepper).update(hash).digest("base64");
+}
+
 
