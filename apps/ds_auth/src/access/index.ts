@@ -1,6 +1,6 @@
 import AuthDB from "./db-access";
 import {loggers} from "../logger";
-import dbConn from "../db";
+import {dbConn} from "../server";
 
 const db = new AuthDB(loggers.basicLogger, dbConn);
 

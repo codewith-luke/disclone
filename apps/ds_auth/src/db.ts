@@ -7,14 +7,22 @@ export interface DB {
 export class DB {
     constructor(public readonly query: Sql) {
     }
+
+    async end() {
+        await this.query.end({ timeout: 5 })
+    }
 }
 
-const dbConn = new DB(postgres({
-    host: 'localhost',
-    port: 5432,
-    database: 'disclone',
-    username: 'ds_auth',
-    password: 'password'
-}));
+export default function createDBConn() {
+    const pg = postgres({
+        host: 'localhost',
+        port: 5432,
+        database: 'disclone',
+        username: 'ds_auth',
+        password: 'password'
+    });
 
-export default dbConn;
+    return new DB(pg);
+}
+
+

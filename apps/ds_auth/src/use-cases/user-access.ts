@@ -1,6 +1,7 @@
 import {createSessionID, createSignatureToken, hashPassword, passwordMatches, validatePassword} from "../core/auth";
 import {IAuthDB} from "../access/db-access";
 import {ValidationError} from "../error";
+import {Logger} from "../logger";
 
 export type RegisterUserInput = {
     email: string;
@@ -8,7 +9,7 @@ export type RegisterUserInput = {
     password: string;
 }
 
-export function createUserAccess(db: IAuthDB, logger: Console) {
+export function createUserAccess(db: IAuthDB, logger: Logger) {
     return {
         loginUser,
         logoutUser,
@@ -43,22 +44,37 @@ export function createUserAccess(db: IAuthDB, logger: Console) {
         let user = await db.userAccess.getUser(username);
         let isMatch = false;
 
+        if (!user) {
+            logger.error(`User ${username} failed to login, no user found.`);
+            return null;
+        }
+
         try {
             isMatch = await passwordMatches(password, user.password, Bun.env.PASSWORD_PEPPER);
         } catch (e) {
             if (e instanceof Error) {
-                logger.error(`User ${username} failed to login: ${e.message}`);
-                throw new ValidationError("Invalid username or password");
+                logger.error(`User password match failed: ${e.message}`);
+                return null;
             }
         }
 
-        if (!user || !isMatch) {
-            logger.error(`User ${username} failed to login`);
-            throw new ValidationError("Invalid username or password");
+        if (!isMatch) {
+            logger.error(`User ${username} failed to login, password mismatch.`);
+            return null;
         }
 
         const sessionID = createSessionID();
         const token = createSignatureToken(Bun.env.SECRET, user);
+
+        if (!sessionID) {
+            logger.error(`User ${username} failed to login, session creation failed.`);
+            return null;
+        }
+
+        if (!token) {
+            logger.error(`User ${username} failed to login, token creation failed.`);
+            return null;
+        }
 
         await db.userAccess.saveSession(sessionID, token);
 

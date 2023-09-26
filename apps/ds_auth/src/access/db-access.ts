@@ -39,6 +39,11 @@ function createUserAccess(logger: Logger, db: DB) {
                 where username = ${username}
             `;
 
+            if (!user) {
+                logger.info(`User ${username} not found`);
+                return null;
+            }
+
             logger.info(`Found user ${user?.username}`);
             return user as User;
         } catch (e) {

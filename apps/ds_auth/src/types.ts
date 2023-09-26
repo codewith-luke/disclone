@@ -18,7 +18,9 @@ export type UserWithAuth = User & {
 
 export type ErrorResponseMessage = {
     status: number;
-    message: string;
+    body: {
+        message: string;
+    }
 }
 
 export const Cookies = {

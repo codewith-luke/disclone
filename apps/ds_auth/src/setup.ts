@@ -13,7 +13,7 @@ export const setup = new Elysia({name: "setup"})
         const traceID = ctx.headers[traceIDHeader];
 
         if (!traceID) {
-            // loggers.basicLogger.warn(`No traceID found in headers`);
+            loggers.basicLogger.warn(`No traceID found in headers`);
         }
 
         loggers.requestLogger.defaultMeta.traceID = traceID || loggers.requestLogger.defaultMeta.traceID;

@@ -13,6 +13,7 @@ export type ErrorCode = keyof typeof ErrorCodes;
 
 export interface IError extends Error {
     code: ErrorCode;
+    createHttpResponse: () => ErrorResponseMessage;
 }
 
 export class BaseError extends Error implements IError {
@@ -24,6 +25,12 @@ export class BaseError extends Error implements IError {
 
     get code() {
         return this.statusCode;
+    }
+
+    createHttpResponse(message?: string) {
+        const httpMessage = HttpErrorMessages[this.code];
+        httpMessage.body.message = message || this.message;
+        return httpMessage;
     }
 }
 
@@ -51,23 +58,41 @@ export class UnknownError extends BaseError {
     }
 }
 
-export const HttpErrorMessages: Record<string, ErrorResponseMessage> = {
-    unknownError: {
-        status: 500,
-        message: "Unknown Error",
-    },
-    invalidCredentials: {
-        status: 401,
-        message: "Invalid Credentials",
-    }
-}
-
-export function createHttpErrorResponse(error: ErrorResponseMessage, e?: Error | IError) {
-    return {
-        status: error.status,
+export const HttpErrorMessages: Record<keyof typeof ErrorCodes, ErrorResponseMessage> = {
+    NOT_FOUND: {
+        status: 404,
         body: {
-            message: error.message,
-            error: e || "Unknown Error",
+            message: "Not Found",
+        }
+    },
+    INTERNAL_SERVER_ERROR: {
+        status: 500,
+        body: {
+            message: "Internal Server Error",
+        }
+    },
+    QUERY_ERROR: {
+        status: 501,
+        body: {
+            message: "Query Error",
+        }
+    },
+    VALIDATION: {
+        status: 401,
+        body: {
+            message: "Validation Error",
+        }
+    },
+    PARSE: {
+        status: 400,
+        body: {
+            message: "Parse Error",
+        }
+    },
+    UNKNOWN: {
+        status: 500,
+        body: {
+            message: "Unknown Error",
         }
     }
 }
