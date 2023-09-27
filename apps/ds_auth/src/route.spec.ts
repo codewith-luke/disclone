@@ -1,26 +1,22 @@
-import {afterEach, beforeAll, beforeEach, describe, expect, it} from 'bun:test'
+import {afterAll, beforeAll, describe, expect, it} from 'bun:test'
 import {Elysia} from "elysia";
 import {Environments, Routes} from "./types";
 import {createApp} from "./server";
-import {HttpErrorMessages} from "./error";
+import {HttpErrorMessages} from "./util/error";
 
 const domain = "http://localhost";
 
 describe("dsa", () => {
-    let sut = createApp();
+    let sut = createApp()
 
     beforeAll(() => {
         Bun.env.NODE_ENV = Environments.development;
         Bun.env.PASSWORD_PEPPER = "pepper";
+        sut.listen(Bun.env.PORT);
     });
 
-    beforeEach(() => {
-        sut = createApp()
-            .listen(Bun.env.PORT)
-    });
-
-    afterEach(async () => {
-        await sut.stop();
+    afterAll(function () {
+        sut.stop();
     });
 
     it(`[${Routes.heartbeat}] return an ok in response`, async () => {
@@ -91,7 +87,6 @@ describe("dsa", () => {
                     }),
                 })
             ).then((res: Response) => {
-                console.log("=======", res.headers.get("Set-Cookie"))
                 cookies = res.headers.get("Set-Cookie") ?? "";
                 return res.json();
             });
@@ -101,32 +96,33 @@ describe("dsa", () => {
             expect(actual.token).toBeDefined();
         });
     });
-    //
-    // it(`[${Routes.logout} removes cookie and logs out user`, async function () {
-    //     const expected = {
-    //         username: "test",
-    //         token: "123456",
-    //     };
-    //
-    //     let cookies = "";
-    //
-    //     // TODO - Login and set cookie in the DB
-    //     //        Validate it is gone
-    //
-    //     const actual = await sut.handle(
-    //         new Request(`${domain}${Routes.logout}`, {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Cookie': "session_id=thisisthecookie",
-    //             }
-    //         })
-    //     ).then(res => {
-    //         cookies = res.headers.get("Set-Cookie") ?? "";
-    //     });
-    //
-    //     const sessionID = cookies.split('; ')
-    //         .find(row => row.startsWith("session_id="))?.split('=')[1] || "";
-    //
-    //     expect(sessionID.length).toBe(0);
-    // });
+
+
+    it(`[${Routes.logout} removes cookie and logs out user`, async function () {
+        const expected = {
+            username: "test",
+            token: "123456",
+        };
+
+        let cookies = "";
+
+        // TODO - Login and set cookie in the DB
+        //        Validate it is gone
+
+        const actual = await sut.handle(
+            new Request(`${domain}${Routes.logout}`, {
+                method: 'POST',
+                headers: {
+                    'Cookie': "session_id=thisisthecookie",
+                }
+            })
+        ).then(res => {
+            cookies = res.headers.get("Set-Cookie") ?? "";
+        });
+
+        const sessionID = cookies.split('; ')
+            .find(row => row.startsWith("session_id="))?.split('=')[1] || "";
+
+        expect(sessionID.length).toBe(0);
+    });
 });

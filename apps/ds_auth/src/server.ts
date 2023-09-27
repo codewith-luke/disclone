@@ -1,16 +1,28 @@
-import createDBConn, {DB} from "./db";
+import createDBConn from "./db";
 import {Elysia, ValidationError} from "elysia";
 import {setup} from "./setup";
 import {cors} from "@elysiajs/cors";
-import {RequestLifeCycle} from "./logger";
+import {loggers, RequestLifeCycle} from "./util/logger";
 import {Routes} from "./types";
-import {userHandler} from "./user-handler";
-import {BaseError, ErrorCodes} from "./error";
+import {createUserHandler} from "./user-handler";
+import {BaseError, ErrorCodes} from "./util/error";
+import {createAuthDB} from "./access/db-access";
+import {createUserAccess} from "./use-cases/user-access";
 
-export let dbConn: DB | null = null;
+function setupHandlers() {
+    const dbConn = createDBConn();
+    const authDB = createAuthDB(loggers.basicLogger, dbConn);
+    const userAccess = createUserAccess(authDB, loggers.basicLogger)
+    const userHandler = createUserHandler(userAccess);
+
+    return {
+        dbConn,
+        userHandler
+    }
+}
 
 export function createApp() {
-    dbConn = createDBConn();
+    const {dbConn, userHandler} = setupHandlers();
 
     return new Elysia()
         .use(setup)

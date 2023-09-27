@@ -1,25 +1,26 @@
 import {sleep} from "bun";
 import {type RegisterUserInput} from "../use-cases/user-access";
-import {type Logger} from "../logger";
+import {type Logger} from "../util/logger";
 import {type DB} from "../db";
-import {QueryError} from "../error";
+import {QueryError} from "../util/error";
 import {User} from "../types";
 
 type UserAccess = ReturnType<typeof createUserAccess>;
 
 type RegisterUserAccess = {} & RegisterUserInput;
 
-export interface IAuthDB {
+export interface AuthDB {
     userAccess: UserAccess;
 }
 
-export default class AuthDB implements IAuthDB {
-    public readonly userAccess;
+export function createAuthDB(logger: Logger, db: DB): AuthDB {
+    const userAccess = createUserAccess(logger, db);
 
-    constructor(logger: Logger, db: DB) {
-        this.userAccess = createUserAccess(logger, db);
+    return {
+        userAccess
     }
 }
+
 
 function createUserAccess(logger: Logger, db: DB) {
     return {

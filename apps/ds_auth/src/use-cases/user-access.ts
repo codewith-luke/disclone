@@ -1,7 +1,7 @@
 import {createSessionID, createSignatureToken, hashPassword, passwordMatches, validatePassword} from "../core/auth";
-import {IAuthDB} from "../access/db-access";
-import {ValidationError} from "../error";
-import {Logger} from "../logger";
+import {AuthDB} from "../access/db-access";
+import {ValidationError} from "../util/error";
+import {Logger} from "../util/logger";
 
 export type RegisterUserInput = {
     email: string;
@@ -9,7 +9,7 @@ export type RegisterUserInput = {
     password: string;
 }
 
-export function createUserAccess(db: IAuthDB, logger: Logger) {
+export function createUserAccess(db: AuthDB, logger: Logger) {
     return {
         loginUser,
         logoutUser,

@@ -1,4 +1,4 @@
-import {ErrorResponseMessage} from "./types";
+import {ErrorResponseMessage} from "../types";
 
 export const ErrorCodes = {
     NOT_FOUND: "NOT_FOUND",

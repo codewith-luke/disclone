@@ -1,9 +1,7 @@
 import {Elysia, t} from "elysia";
 import {setup} from "./setup";
-import {userAccess} from "./use-cases";
 import {Cookies, Routes, State} from "./types";
-import {ErrorCodes, ValidationError} from "./error";
-import {type DB} from "./db";
+import {ErrorCodes, ValidationError} from "./util/error";
 
 const LoginRequest = t.Object({
     username: t.String(),
@@ -19,45 +17,47 @@ const RegisterRequest = t.Object({
     password: t.String(),
 });
 
-export const userHandler = new Elysia()
-    .use(setup)
-    .state(State.userAccess, userAccess)
-    .post(Routes.register, async ({store: {userAccess}, body}) => {
-        await userAccess.registerUser(body);
-        return {}
-    }, {
-        body: RegisterRequest
-    })
-    .post(Routes.login, async ({store: {userAccess}, setCookie, body, set}) => {
-        const result = await userAccess.loginUser(body.username, body.password);
+export function createUserHandler(userAccess: any) {
+    return new Elysia()
+        .use(setup)
+        .state(State.userAccess, userAccess)
+        .post(Routes.register, async ({store: {userAccess}, body}) => {
+            await userAccess.registerUser(body);
+            return {}
+        }, {
+            body: RegisterRequest
+        })
+        .post(Routes.login, async ({store: {userAccess}, setCookie, body, set}) => {
+            const result = await userAccess.loginUser(body.username, body.password);
 
-        if (!result) {
-            const error = new ValidationError().createHttpResponse();
-            set.status = error.status;
-            return error;
-        }
+            if (!result) {
+                const error = new ValidationError().createHttpResponse();
+                set.status = error.status;
+                return error;
+            }
 
-        const {sessionID, token} = result;
+            const {sessionID, token} = result;
 
-        setCookie(Cookies.sessionID, sessionID);
+            setCookie(Cookies.sessionID, sessionID);
 
-        return {
-            username: body.username,
-            token,
-        }
-    }, {
-        body: LoginRequest,
-        error({code, error}) {
-            switch (code) {
-                case ErrorCodes.QUERY_ERROR: {
-                    return error.createHttpResponse();
+            return {
+                username: body.username,
+                token,
+            }
+        }, {
+            body: LoginRequest,
+            error({code, error}) {
+                switch (code) {
+                    case ErrorCodes.QUERY_ERROR: {
+                        return error.createHttpResponse();
+                    }
                 }
             }
-        }
-    })
-    .post(Routes.logout, async ({cookie, store: {userAccess}, removeCookie, setCookie}) => {
-        await userAccess.logoutUser(cookie[Cookies.sessionID]);
-        removeCookie(Cookies.sessionID);
-    }, {
-        body: t.Undefined()
-    });
+        })
+        .post(Routes.logout, async ({cookie, store: {userAccess}, removeCookie, setCookie}) => {
+            await userAccess.logoutUser(cookie[Cookies.sessionID]);
+            removeCookie(Cookies.sessionID);
+        }, {
+            body: t.Undefined()
+        });
+}

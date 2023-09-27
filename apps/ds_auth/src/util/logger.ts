@@ -1,5 +1,5 @@
 import winston, {format} from "winston";
-import {Environments, Routes} from "./types";
+import {Environments, Routes} from "../types";
 
 interface LogMethod extends winston.LeveledLogMethod {
 }
