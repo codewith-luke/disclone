@@ -2,10 +2,11 @@ import {Elysia, t} from "elysia";
 import {setup} from "./setup";
 import {Cookies, Routes, State} from "./types";
 import {ErrorCodes, ValidationError} from "./util/error";
+import {UserAccess} from "./use-cases/user-access";
 
 const LoginRequest = t.Object({
     username: t.String(),
-    password: t.String()
+    password: t.String(),
 });
 
 const RegisterRequest = t.Object({
@@ -17,7 +18,7 @@ const RegisterRequest = t.Object({
     password: t.String(),
 });
 
-export function createUserHandler(userAccess: any) {
+export function createUserHandler(userAccess: UserAccess) {
     return new Elysia()
         .use(setup)
         .state(State.userAccess, userAccess)

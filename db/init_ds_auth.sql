@@ -21,9 +21,22 @@ create TABLE ds_auth.sessions
     updated_at TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
+
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA ds_auth TO ds_auth;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA ds_auth TO ds_auth;
+
+CREATE OR REPLACE FUNCTION update_modified_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = now();
+RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_modified_time_sessions BEFORE UPDATE ON ds_auth.sessions FOR EACH ROW EXECUTE PROCEDURE  update_modified_column();
+CREATE TRIGGER update_modified_time_users BEFORE UPDATE ON ds_auth.users FOR EACH ROW EXECUTE PROCEDURE  update_modified_column();
 
 INSERT into ds_auth.users
     (username, password, email)
-values ('admin', '$argon2id$v=19$m=65536,t=2,p=1$JJFuyOC4pqaEQqRkB7qmMUPuAp0QRKoEVUqEgVaRXew$9j8PdSBxv/g7EOwqIH+WSTlhR6xJKd2Lcp8Be24LAH4', 'admin@localhost');
+values ('admin', '$argon2id$v=19$m=65536,t=2,p=1$l8dOxo5QkVOiKKa+QNpEGNTgUkCrGrzj2CXFZ5xhPYs$0jyFFb643s0c/f2OsZ1gddtLXFxR4tqArkMUpN9xUwk', 'admin@localhost');
 

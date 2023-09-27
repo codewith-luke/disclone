@@ -9,6 +9,7 @@
     "@bogeychan/elysia-logger": "^0.0.9",
     "@elysiajs/cookie": "^0.6.1",
     "@elysiajs/cors": "^0.6.0",
+    "@sinclair/typebox": "^0.31.17",
     "elysia": "latest",
     "postgres": "^3.3.5",
     "winston": "^3.10.0"

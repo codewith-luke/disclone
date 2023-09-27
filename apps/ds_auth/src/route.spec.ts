@@ -51,6 +51,8 @@ describe("dsa", () => {
 
             expect(actual.status).toBe(expected.status);
         });
+
+        it(`[${Routes.register}] should return 400 if invalid password`, async () => {});
     });
 
     describe(`${Routes.login}`, function () {
@@ -97,7 +99,6 @@ describe("dsa", () => {
         });
     });
 
-
     it(`[${Routes.logout} removes cookie and logs out user`, async function () {
         const expected = {
             username: "test",
@@ -109,7 +110,7 @@ describe("dsa", () => {
         // TODO - Login and set cookie in the DB
         //        Validate it is gone
 
-        const actual = await sut.handle(
+        await sut.handle(
             new Request(`${domain}${Routes.logout}`, {
                 method: 'POST',
                 headers: {
@@ -124,5 +125,10 @@ describe("dsa", () => {
             .find(row => row.startsWith("session_id="))?.split('=')[1] || "";
 
         expect(sessionID.length).toBe(0);
+    });
+
+    // TODO: Make a tests that validates that a normal request requires a valid session
+    it('should validates that a normal request requires a valid session', function () {
+        expect(true).toBe(false);
     });
 });

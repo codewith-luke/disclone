@@ -9,18 +9,15 @@ type UserAccess = ReturnType<typeof createUserAccess>;
 
 type RegisterUserAccess = {} & RegisterUserInput;
 
-export interface AuthDB {
-    userAccess: UserAccess;
-}
+export type AuthDB = ReturnType<typeof createAuthDB>
 
-export function createAuthDB(logger: Logger, db: DB): AuthDB {
+export function createAuthDB(logger: Logger, db: DB) {
     const userAccess = createUserAccess(logger, db);
 
     return {
         userAccess
     }
 }
-
 
 function createUserAccess(logger: Logger, db: DB) {
     return {
@@ -32,7 +29,7 @@ function createUserAccess(logger: Logger, db: DB) {
     }
 
     async function getUser(username: string) {
-        logger.info(`Fetching user ${username}`);
+        logger.info(`db-access: Fetching user ${username}`);
         try {
             const [user] = await db.query`
                 select distinct username, *
@@ -41,11 +38,11 @@ function createUserAccess(logger: Logger, db: DB) {
             `;
 
             if (!user) {
-                logger.info(`User ${username} not found`);
+                logger.info(`db-access: User ${username} not found`);
                 return null;
             }
 
-            logger.info(`Found user ${user?.username}`);
+            logger.info(`db-access: Found user ${user?.username}`);
             return user as User;
         } catch (e) {
             const message = `Failed to get user ${username}`;
@@ -59,8 +56,23 @@ function createUserAccess(logger: Logger, db: DB) {
         return ["read", "write"]
     }
 
-    async function saveSession(sessionID: string, token: string) {
-        await sleep(200);
+    async function saveSession(userID: number, sessionID: string, token: string) {
+        try {
+            const res = await db.query`
+                insert into sessions (user_id, session_id, token)
+                values (${userID}, ${sessionID}, ${token})
+                on conflict (user_id)
+                    do update set token      = ${token},
+                                  session_id = ${sessionID}
+            `;
+
+            logger.info(`db-access: Created session ${sessionID}`);
+            return null
+        } catch (e) {
+            const message = `db-access: Failed to create session ${sessionID}`;
+            logger.error(message, e);
+            throw new QueryError(message);
+        }
     }
 
     async function deleteSession(sessionID: string) {

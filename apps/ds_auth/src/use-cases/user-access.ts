@@ -9,6 +9,8 @@ export type RegisterUserInput = {
     password: string;
 }
 
+export type UserAccess = ReturnType<typeof createUserAccess>;
+
 export function createUserAccess(db: AuthDB, logger: Logger) {
     return {
         loginUser,
@@ -76,7 +78,7 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
             return null;
         }
 
-        await db.userAccess.saveSession(sessionID, token);
+        await db.userAccess.saveSession(user.id, sessionID, token);
 
         logger.info(`User ${username} logged in successfully`);
 

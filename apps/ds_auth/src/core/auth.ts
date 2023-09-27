@@ -8,6 +8,7 @@ export function createSessionID() {
 export function createSignatureToken(secret: string, user: User) {
     return new Bun.CryptoHasher("sha256")
         .update(secret)
+        .update(new Date().toString())
         .update(user.username)
         .digest("base64");
 }
