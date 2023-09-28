@@ -1,4 +1,4 @@
-type SensitiveKeys = {
+export type SensitiveKeys = {
     password: string;
     email: string;
 }
@@ -12,7 +12,7 @@ export type User = {
     permissions: Permission[];
 }
 
-export type UserWithAuth = User & {
+export type UserwithAuth = User & {
     [K in keyof SensitiveKeys]: SensitiveKeys[K];
 }
 

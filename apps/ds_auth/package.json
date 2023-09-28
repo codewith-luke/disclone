@@ -10,6 +10,9 @@
     "@elysiajs/cookie": "^0.6.1",
     "@elysiajs/cors": "^0.6.0",
     "@sinclair/typebox": "^0.31.17",
+    "ajv": "^8.12.0",
+    "ajv-errors": "^3.0.0",
+    "ajv-formats": "^2.1.1",
     "elysia": "latest",
     "postgres": "^3.3.5",
     "winston": "^3.10.0"

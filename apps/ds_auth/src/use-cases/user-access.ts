@@ -19,13 +19,11 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
     }
 
     async function registerUser(data: RegisterUserInput) {
-        try {
-            validatePassword(data.password);
-        } catch (e) {
-            if (e instanceof Error) {
-                logger.error(`User ${data.username} failed to register: ${e.message}`);
-                throw new ValidationError(e.message);
-            }
+        const passwordErr = validatePassword(data.password);
+
+        if (passwordErr) {
+            logger.error(`User ${data.username} failed to register: ${passwordErr.message}`);
+            throw new ValidationError(passwordErr.message);
         }
 
         await db.userAccess.registerUser({

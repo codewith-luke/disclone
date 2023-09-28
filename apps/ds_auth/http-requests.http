@@ -4,9 +4,9 @@ Content-Type: application/json
 X-Trace-ID: 1234567890
 
 {
-  "username": "admin",
-  "password": "admin",
-  "email": "test!@"
+  "username": "user!",
+  "password": "User123@",
+  "email": "user@test.com"
 }
 
 ### /login

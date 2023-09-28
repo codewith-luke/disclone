@@ -14,39 +14,39 @@ export function createSignatureToken(secret: string, user: User) {
 }
 
 export function validatePassword(password: string) {
-    if (password.length < 8 || password.length > 64) {
-        throw new Error("Password must be between 8 and 64 characters long");
-    }
-
     // NOTE: Checks for spaces and slashes
     if (password.match(/(\s)|(\/)|(\\)/)) {
-        throw new Error("Password must not contain spaces or slashes");
+        return new Error("Password must not contain spaces or slashes");
     }
 
     // NOTE: Checks for special character
     if (!password.match(/[^a-zA-Z0-9\s]/)) {
-        throw new Error("Password must contain at least one special character");
+        return new Error("Password must contain at least one special character");
     }
 
     // NOTE: Checks for uppercase letter
     if (!password.match(/[A-Z]/)) {
-        throw new Error("Password must contain at least one uppercase letter");
+        return new Error("Password must contain at least one uppercase letter");
     }
 
     // NOTE: Checks for lowercase letter
     if (!password.match(/[a-z]/)) {
-        throw new Error("Password must contain at least one lowercase letter");
+        return new Error("Password must contain at least one lowercase letter");
     }
 
     // NOTE: Checks for number
     if (!password.match(/[0-9]/)) {
-        throw new Error("Password must contain at least one number");
+        return new Error("Password must contain at least one number");
     }
 
     // NOTE: Checks for repeating characters
     if (password.match(/(.)\1\1/)) {
-        throw new Error("Password must not contain repeating characters more than 3 times");
+        return new Error("Password must not contain repeating characters more than 3 times");
     }
+}
+
+export function validateUsername(username: string) {
+
 }
 
 export async function hashPassword(password: string, pepper: string) {

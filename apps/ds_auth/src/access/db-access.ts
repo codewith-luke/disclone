@@ -3,7 +3,11 @@ import {type RegisterUserInput} from "../use-cases/user-access";
 import {type Logger} from "../util/logger";
 import {type DB} from "../db";
 import {QueryError} from "../util/error";
-import {User} from "../types";
+import {User, UserwithAuth} from "../types";
+
+const DBErrorCodes = {
+    UNIQUE_VIOLATION: "23505"
+} as const;
 
 type UserAccess = ReturnType<typeof createUserAccess>;
 
@@ -80,7 +84,52 @@ function createUserAccess(logger: Logger, db: DB) {
     }
 
     async function registerUser({email, username, password}: RegisterUserAccess) {
-        await sleep(200);
+        try {
+            await db.query.begin(async sql => {
+                const [...users] = await sql<UserwithAuth[]>`
+                    select distinct username, email
+                    from users
+                    where username = ${username}
+                       or email = ${email}
+                `;
+
+                const keys = getDuplicateKeys(users, {email, username})
+
+                if (keys.size > 0) {
+                    throw new QueryError(`This account ${[...keys].join(" or ")} is already in use`);
+                }
+
+                await db.query`
+                    insert into users (email, username, password)
+                    values (${email}, ${username}, ${password})
+                `;
+            })
+
+            logger.info(`db-access: Registered user ${username}`);
+            return null
+        } catch (e) {
+            if (e instanceof QueryError) {
+                throw e;
+            }
+
+            const message = `db-access: Failed to register user ${username}`;
+            logger.error(message, e);
+            throw new QueryError(message);
+        }
     }
+}
+
+function getDuplicateKeys(users: UserwithAuth[], user: { email: string; username: string }) {
+    return users.reduce((acc, usr) => {
+        if (usr.username === user.username) {
+            acc.add("username");
+        }
+
+        if (usr.email === user.email) {
+            acc.add("email");
+        }
+
+        return acc;
+    }, new Set<string>())
 }
 
