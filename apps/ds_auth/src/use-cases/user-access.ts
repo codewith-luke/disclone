@@ -1,4 +1,11 @@
-import {createSessionID, createSignatureToken, hashPassword, passwordMatches, validatePassword} from "../core/auth";
+import {
+    createSessionID,
+    createSignatureToken,
+    hashPassword,
+    passwordMatches,
+    validatePassword,
+    validateUsername
+} from "../core/auth";
 import {AuthDB} from "../access/db-access";
 import {ValidationError} from "../util/error";
 import {Logger} from "../util/logger";
@@ -24,6 +31,13 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
         if (passwordErr) {
             logger.error(`User ${data.username} failed to register: ${passwordErr.message}`);
             throw new ValidationError(passwordErr.message);
+        }
+
+        const usernameErr = validateUsername(data.username);
+
+        if (usernameErr) {
+            logger.error(`User ${data.username} failed to register: ${usernameErr.message}`);
+            throw new ValidationError(usernameErr.message);
         }
 
         await db.userAccess.registerUser({

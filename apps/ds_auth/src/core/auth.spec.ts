@@ -1,4 +1,4 @@
-import {describe, expect, it} from "bun:test";
+import {describe, expect, it, test} from "bun:test";
 import {createSignatureToken, hashPassword, passwordMatches, validatePassword} from "./auth";
 import {User} from "../types";
 
@@ -34,68 +34,60 @@ describe("auth", () => {
     });
 
     describe('validatePassword', function () {
+        const expectedBasicPassword = 'Password must contain at least one uppercase letter, lowercase letter, number and special character';
+
         it('should fail with spaces or slashes', function () {
-            expect(() => {
-                validatePassword('12345678 ');
-            }).toThrow('Password must not contain spaces or slashes');
+            const expected = 'Password must not contain spaces or slashes';
+            const tests = [{
+                input: '12345678! ',
+            }, {
+                input: '12345678/',
+            }, {
+                input: '12345678\\',
+            }];
 
-            expect(() => {
-                validatePassword('12345678/');
-            }).toThrow('Password must not contain spaces or slashes');
-
-            expect(() => {
-                validatePassword('12345678\\');
-            }).toThrow('Password must not contain spaces or slashes');
+            for (const test of tests) {
+                const actual = validatePassword(test.input);
+                expect(actual?.message).toBe(expected);
+            }
         });
 
         it('should fail with short password', function () {
-            expect(() => {
-                validatePassword('1234567');
-            }).toThrow('Password must be between 8 and 64 characters long');
+            const actual = validatePassword('1234567');
+            expect(actual?.message).toBe(expectedBasicPassword);
         });
 
-        it('should fail with long password', function () {
-            expect(() => {
-                validatePassword('12345678901234567890123456789012345678901234567890123456789012345678901234567890');
-            }).toThrow('Password must be between 8 and 64 characters long');
-        });
+        it('should fail with invalid formatted password', function () {
+            const tests = [{
+                input: '12345678',
+            }, {
+                input: '12345678A',
+            }, {
+                input: 'sdasd!Aa',
+            }, {
+                input: '1dasdAa',
+            }];
 
-        it('should fail with missing special character', function () {
-            expect(() => {
-                validatePassword('12345678');
-            }).toThrow('Password must contain at least one special character');
-        });
-
-        it('should fail with no uppercase character', function () {
-            expect(() => {
-                validatePassword('1234567!');
-            }).toThrow('Password must contain at least one uppercase letter');
-        });
-
-        it('should fail with no lowercase character', function () {
-            expect(() => {
-                validatePassword('1234567A!');
-            }).toThrow('Password must contain at least one lowercase letter');
-        });
-
-        it('should fail with no number character', function () {
-            expect(() => {
-                validatePassword('aaaaaaA!');
-            }).toThrow('Password must contain at least one number');
+            for (const test of tests) {
+                const actual = validatePassword(test.input);
+                expect(actual?.message).toBe(expectedBasicPassword);
+            }
         });
 
         it('should fail with repeating characters 3 or more', function () {
-            expect(() => {
-                validatePassword('1aaaaaaA!');
-            }).toThrow('Password must not contain repeating characters more than 3 times');
+            const expected = 'Password must not contain repeating characters more than 3 times';
+            const tests = [{
+                input: '1aaaaaaA!',
+            }, {
+                input: '111aAcvsdf!',
+            }, {
+                input: '11aAcv!!!sdf!',
+            }];
 
-            expect(() => {
-                validatePassword('111aAcvsdf!');
-            }).toThrow('Password must not contain repeating characters more than 3 times');
-
-            expect(() => {
-                validatePassword('11aAcv!!!sdf!');
-            }).toThrow('Password must not contain repeating characters more than 3 times');
+            for (const test of tests) {
+                const actual = validatePassword(test.input);
+                expect(actual?.message).toBe(expected);
+            }
         });
     });
 

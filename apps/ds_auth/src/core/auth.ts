@@ -1,6 +1,15 @@
 import {User} from "../types";
 import {createHmac, randomBytes} from "node:crypto";
 
+const Regexes = {
+    spaceAndSlashes: /(\s)|(\/)|(\\)/,
+    specialCharacter: /[^a-zA-Z0-9\s]/,
+    uppercaseLetter: /[A-Z]/,
+    lowercaseLetter: /[a-z]/,
+    number: /[0-9]/,
+    repeatingCharacters: /(.)\1\1/,
+} as const;
+
 export function createSessionID() {
     return randomBytes(16).toString("base64");
 }
@@ -14,39 +23,34 @@ export function createSignatureToken(secret: string, user: User) {
 }
 
 export function validatePassword(password: string) {
-    // NOTE: Checks for spaces and slashes
-    if (password.match(/(\s)|(\/)|(\\)/)) {
+    if (password.match(Regexes.spaceAndSlashes)) {
         return new Error("Password must not contain spaces or slashes");
     }
 
-    // NOTE: Checks for special character
-    if (!password.match(/[^a-zA-Z0-9\s]/)) {
-        return new Error("Password must contain at least one special character");
+    if (!password.match(Regexes.uppercaseLetter) ||
+        !password.match(Regexes.lowercaseLetter) ||
+        !password.match(Regexes.number) ||
+        !password.match(Regexes.specialCharacter)) {
+        return new Error("Password must contain at least one uppercase letter, lowercase letter, number and special character");
     }
 
-    // NOTE: Checks for uppercase letter
-    if (!password.match(/[A-Z]/)) {
-        return new Error("Password must contain at least one uppercase letter");
-    }
-
-    // NOTE: Checks for lowercase letter
-    if (!password.match(/[a-z]/)) {
-        return new Error("Password must contain at least one lowercase letter");
-    }
-
-    // NOTE: Checks for number
-    if (!password.match(/[0-9]/)) {
-        return new Error("Password must contain at least one number");
-    }
-
-    // NOTE: Checks for repeating characters
     if (password.match(/(.)\1\1/)) {
         return new Error("Password must not contain repeating characters more than 3 times");
     }
+
+    return null;
 }
 
 export function validateUsername(username: string) {
+    if (username.match(Regexes.specialCharacter)) {
+        return new Error("Username must not contain any special characters");
+    }
 
+    if (username.match(Regexes.spaceAndSlashes)) {
+        return new Error("Username must not contain any spaces or slashes");
+    }
+
+    return null;
 }
 
 export async function hashPassword(password: string, pepper: string) {

@@ -3,15 +3,6 @@ import {setup} from "./setup";
 import {Cookies, Routes, State} from "./types";
 import {ErrorCodes, ValidationError} from "./util/error";
 import {UserAccess} from "./use-cases/user-access";
-import addErrors from "ajv-errors";
-import addFormats from "ajv-formats";
-import Ajv from "ajv";
-
-const ajv = new Ajv({ allErrors: true });
-addFormats(ajv, ["email", "time", "uri"])
-    .addKeyword("kind")
-    .addKeyword("modifier");
-addErrors(ajv);
 
 const LoginRequest = t.Object({
     username: t.String(),
@@ -26,8 +17,8 @@ const RegisterRequest = t.Object({
     username: t.String({
         minLength: 3,
         maxLength: 64,
-        pattern: "^[a-z0-9]+$",
-        errorMessage: {format: "Username can only contain lowercase letters and numbers"},
+        default: "Username must be at least 3 characters long",
+        examples: "Username must be at least 3 characters long"
     }),
     password: t.String({
         minLength: 8,
@@ -35,8 +26,6 @@ const RegisterRequest = t.Object({
         errorMessage: {format: "Password must be at least 8 characters long"},
     }),
 });
-
-const validate = ajv.compile(RegisterRequest);
 
 export function createUserHandler(userAccess: UserAccess) {
     return new Elysia()
