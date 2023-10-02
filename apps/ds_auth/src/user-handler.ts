@@ -36,6 +36,11 @@ export function createUserHandler(userAccess: UserAccess) {
         .use(setup)
         // TODO: implement Guard to validate sessionID && token
         .state(State.userAccess, userAccess)
+        .derive(({request: {headers}}) => {
+            return {
+                authorization: headers.get('Authorization')
+            }
+        })
         .post(Routes.register, async ({store: {userAccess}, setCookie, set, body}) => {
             const result = await userAccess.registerUser(body);
 
@@ -89,14 +94,33 @@ export function createUserHandler(userAccess: UserAccess) {
         }, {
             body: t.Undefined()
         })
-        .put(Routes.archive, async ({body, removeCookie}) => {
-            await userAccess.archive(body.userID);
+        .put(Routes.archive, async ({body, removeCookie, cookie}) => {
+            const sessionID = cookie[Cookies.sessionID];
+            await userAccess.archive(body.userID, sessionID);
             removeCookie(Cookies.sessionID);
 
             return {
                 userID: body.userID
             }
         }, {
+            beforeHandle: async ({cookie, set, authorization}) => {
+                const sessionID = cookie[Cookies.sessionID];
+                const token = authorization?.split("Bearer ")[1];
+
+                if (!sessionID || !token) {
+                    set.status = 401;
+                    return false;
+                }
+
+                const user = await userAccess.validateAuth(sessionID, token);
+
+                if (!user) {
+                    set.status = 401;
+                    return false;
+                }
+
+            },
             body: ArchiveRequest
         });
 }
+

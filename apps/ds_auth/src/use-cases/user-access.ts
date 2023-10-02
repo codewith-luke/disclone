@@ -23,7 +23,8 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
         loginUser,
         logoutUser,
         registerUser,
-        archive
+        archive,
+        validateAuth
     }
 
     async function registerUser(data: RegisterUserInput) {
@@ -101,7 +102,34 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
         }
     }
 
-    async function archive(userID: number) {
-        await db.userAccess.archive(userID);
+    async function archive(userID: number, sessionID: string) {
+        const user = await db.userAccess.userFromSession(sessionID);
+
+        if (user.id !== userID) {
+            logger.error(`User failed to archive, user mismatch.`);
+            throw new ValidationError("User mismatch");
+        }
+
+        await db.userAccess.archive(userID, sessionID);
+    }
+
+    async function validateAuth(sessionID: string, token: string) {
+        const user = await db.userAccess.userFromSession(sessionID);
+
+        if (!user) {
+            logger.error(`User failed to validate auth, session not found.`);
+            return null;
+        }
+
+        const isValid = createSignatureToken(Bun.env.SECRET, user) === token;
+
+        if (!isValid) {
+            logger.error(`User failed to validate auth, token mismatch.`);
+            return null;
+        }
+
+        logger.info(`User validated auth successfully.`);
+
+        return user;
     }
 }

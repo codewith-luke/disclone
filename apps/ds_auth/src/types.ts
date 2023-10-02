@@ -13,7 +13,7 @@ export type User = {
     permissions: Permission[];
 }
 
-export type UserwithAuth = User & {
+export type UserWithAuth = User & {
     [K in keyof SensitiveKeys]: SensitiveKeys[K];
 }
 

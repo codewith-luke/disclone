@@ -3,7 +3,7 @@ import {Elysia} from "elysia";
 import {Environments, Routes} from "./types";
 import {createApp} from "./server";
 import {HttpErrorMessages} from "./util/error";
-import {createTestDB, deleteAllUsersBesidesAdmin, deleteUser} from "./scripts/delete-user";
+import {createTestDB, deleteAllUsersBesidesAdmin} from "./scripts/delete-user";
 
 const domain = "http://localhost";
 
@@ -34,11 +34,11 @@ describe("dsa", () => {
     });
 
     describe(`[${Routes.register}]`, function () {
-        it(`should return 400 if invalid email`, async () => {
-            const expected = {
-                status: 400,
-            }
+        afterAll(() => {
+            deleteAllUsersBesidesAdmin();
+        });
 
+        it(`should return 400 if invalid email`, async () => {
             const actual = await sut.handle(
                 new Request(`${domain}${Routes.register}`, {
                     method: 'POST',
@@ -53,14 +53,10 @@ describe("dsa", () => {
                 })
             ).then(res => res.json());
 
-            expect(actual.status).toBe(expected.status);
+            expect(actual.status).toBe(HttpErrorMessages.PARSE.status);
         });
 
         it(`should return 400 if invalid password`, async () => {
-            const expected = {
-                status: 400,
-            }
-
             const actual = await sut.handle(
                 new Request(`${domain}${Routes.register}`, {
                     method: 'POST',
@@ -75,14 +71,11 @@ describe("dsa", () => {
                 })
             ).then(res => res.json());
 
-            expect(actual.status).toBe(expected.status);
+            expect(actual.status).toBe(HttpErrorMessages.PARSE.status);
         });
 
         it(`should return 400 if invalid username`, async () => {
-            const expected = {
-                status: 400,
-                message: "Username must not contain any special characters"
-            }
+            const expected = "Username must not contain any special characters"
 
             const actual = await sut.handle(
                 new Request(`${domain}${Routes.register}`, {
@@ -98,8 +91,8 @@ describe("dsa", () => {
                 })
             ).then(res => res.json());
 
-            expect(actual.status).toBe(expected.status);
-            expect(actual?.body?.message).toBe(expected.message);
+            expect(actual.status).toBe(HttpErrorMessages.PARSE.status);
+            expect(actual?.body?.message).toBe(expected);
         });
 
         it(`should run a user through a registration and archive process`, async () => {
@@ -133,10 +126,13 @@ describe("dsa", () => {
             expect(registerResult.token).toBeDefined();
             expect(registerResult.username).toEqual(expected.username);
 
+            // 2) Archive user
             const archiveResult = await sut.handle(
                 new Request(`${domain}${Routes.archive}`, {
                     method: 'PUT',
                     headers: {
+                        'Authorization': `Bearer ${registerResult.token}`,
+                        'Cookie': cookies,
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
@@ -145,15 +141,59 @@ describe("dsa", () => {
                 })
             ).then((res: Response) => res.json());
 
-            const archivedUser = await dbAccess.authDB.userAccess.getUser(expected.username);
-
             expect(archiveResult.userID).toEqual(userResult?.id);
+
+            // 3) Check if user is archived
+            const archivedUser = await dbAccess.authDB.userAccess.getUser(expected.username);
             expect(archivedUser?.archived).toBeTrue();
+        });
+
+        it(`should not allow archiving of another user`, async () => {
+            let cookies = "";
+
+            // 1) Register user
+            const registerResult = await sut.handle(
+                new Request(`${domain}${Routes.register}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: "test2",
+                        password: "test!221T",
+                        email: "test2@test.com"
+                    }),
+                })
+            ).then((res: Response) => {
+                cookies = res.headers.get("Set-Cookie") ?? "";
+                return res.json();
+            });
+
+            // 2) Archive admin user
+            const archiveResult = await sut.handle(
+                new Request(`${domain}${Routes.archive}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${registerResult.token}`,
+                        'Cookie': cookies,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userID: 1,
+                    }),
+                })
+            ).then((res: Response) => res.json());
+
+            expect(archiveResult.status).toBe(HttpErrorMessages.VALIDATION.status);
+
+            // 3) Check if user is archived
+            const archivedUser = await dbAccess.authDB.userAccess.getUser("admin");
+            expect(archivedUser?.archived).toBeFalse();
         });
     });
 
     describe(`${Routes.login} and ${Routes.logout}`, function () {
-        it(`[${Routes.login}] error on invalid user`, async () => {
+        it(`should error on invalid user`, async () => {
 
             const actual = await sut.handle(
                 new Request(`${domain}${Routes.login}`, {
@@ -171,7 +211,7 @@ describe("dsa", () => {
             expect(actual.status).toBe(HttpErrorMessages.VALIDATION.status);
         });
 
-        it(`[${Routes.login}] return a user in response`, async () => {
+        it(`should login and set a cookie and logout, while clearing the session`, async () => {
             let cookies = "";
 
             const actual = await sut.handle(

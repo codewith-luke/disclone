@@ -3,7 +3,7 @@ import {type RegisterUserInput} from "../use-cases/user-access";
 import {type Logger} from "../util/logger";
 import {type DB} from "../db";
 import {QueryError} from "../util/error";
-import {User, UserwithAuth} from "../types";
+import {User, UserWithAuth} from "../types";
 
 type RegisterUserAccess = {} & RegisterUserInput;
 
@@ -25,7 +25,8 @@ function createUserAccess(logger: Logger, db: DB) {
         deleteSession,
         registerUser,
         archive,
-        sessionByUserID
+        sessionByUserID,
+        userFromSession
     }
 
     async function getUser(username: string) {
@@ -95,7 +96,7 @@ function createUserAccess(logger: Logger, db: DB) {
     async function registerUser({email, username, password}: RegisterUserAccess) {
         try {
             await db.query.begin(async sql => {
-                const [...users] = await sql<UserwithAuth[]>`
+                const [...users] = await sql<UserWithAuth[]>`
                     select distinct username, email
                     from users
                     where username = ${username}
@@ -127,29 +128,21 @@ function createUserAccess(logger: Logger, db: DB) {
         }
     }
 
-    async function archive(userID: number) {
+    async function archive(userID: number, sessionID: string) {
         try {
             await db.query.begin(async sql => {
-                const [user] = await sql<UserwithAuth[]>`
-                    select distinct id
-                    from users
-                    where id = ${userID}
+                await sql`
+                    update users
+                    set archived = true
+                    where id in (select user_id
+                                 from sessions
+                                 where session_id = ${sessionID})
                 `;
-
-                if (!user) {
-                    throw new QueryError(`User ${userID} not found`);
-                }
 
                 await sql`
                     delete
                     from sessions
-                    where user_id = ${userID}
-                `;
-
-                await sql`
-                    update users
-                    set archived = true
-                    where id = ${userID}
+                    where session_id = ${sessionID}
                 `;
             })
         } catch (e) {
@@ -174,9 +167,26 @@ function createUserAccess(logger: Logger, db: DB) {
             throw new QueryError(message);
         }
     }
+
+    async function userFromSession(sessionID: string) {
+        try {
+            const [user] = await db.query`
+                select distinct u.*
+                from users u
+                         join sessions s on u.id = s.user_id
+                where s.session_id = ${sessionID}
+            `;
+
+            return user as UserWithAuth;
+        } catch (e) {
+            const message = `Failed to get user for session ${sessionID}`;
+            logger.error(message, e);
+            throw new QueryError(message);
+        }
+    }
 }
 
-function getDuplicateKeys(users: UserwithAuth[], user: { email: string; username: string }) {
+function getDuplicateKeys(users: UserWithAuth[], user: { email: string; username: string }) {
     return users.reduce((acc, usr) => {
         if (usr.username === user.username) {
             acc.add("username");
