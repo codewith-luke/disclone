@@ -47,7 +47,7 @@ export function validateUsername(username: string) {
     }
 
     if (username.match(Regexes.spaceAndSlashes)) {
-        return new Error("Username must not contain any spaces or slashes");
+        return new Error("Username must not contain spaces");
     }
 
     return null;

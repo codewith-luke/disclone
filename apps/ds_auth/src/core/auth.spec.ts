@@ -1,5 +1,5 @@
 import {describe, expect, it, test} from "bun:test";
-import {createSignatureToken, hashPassword, passwordMatches, validatePassword} from "./auth";
+import {createSignatureToken, hashPassword, passwordMatches, validatePassword, validateUsername} from "./auth";
 import {User} from "../types";
 
 describe("auth", () => {
@@ -137,6 +137,30 @@ describe("auth", () => {
             expect(async () => {
                 await hashPassword("123462", "");
             }).toThrow('Password pepper is missing');
+        });
+    });
+
+    describe('validateUsername', function () {
+        it('should not contain any slashes or spaces', function () {
+            const expected = 'Username must not contain any special characters';
+            const tests = [{
+                input: 'username!',
+            }, {
+                input: 'username/',
+            }, {
+                input: 'username\\',
+            }];
+
+            for (const test of tests) {
+                const actual = validateUsername(test.input);
+                expect(actual?.message).toBe(expected);
+            }
+        });
+
+        it('should not contain any spaces', function () {
+            const expected = "Username must not contain spaces"
+            const actual = validateUsername('username ');
+            expect(actual?.message).toBe(expected);
         });
     });
 });
