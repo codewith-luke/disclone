@@ -4,7 +4,7 @@ Content-Type: application/json
 X-Trace-ID: 1234567890
 
 {
-  "username": "user!",
+  "username": "user",
   "password": "User123@",
   "email": "user@test.com"
 }
@@ -24,5 +24,13 @@ POST http://127.0.0.1:{{port}}/logout
 X-Trace-ID: 1234567890
 Cookie: session_id=eyJ1c2VybmFtZSI6InVzZXIxIiwiaWF0IjoxNTY0NjQ0NjQ2LCJleHAiOjE1Nj
 
+### /archive
+PUT http://127.0.0.1:{{port}}/archive
+Content-Type: application/json
+X-Trace-ID: 1234567890
+Cookie: session_id=eyJ1c2VybmFtZSI6InVzZXIxIiwiaWF0IjoxNTY0NjQ0NjQ2LCJleHAiOjE1Nj
 
+{
+  "userID": 2
+}
 

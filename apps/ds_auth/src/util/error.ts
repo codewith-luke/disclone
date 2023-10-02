@@ -35,8 +35,8 @@ export class BaseError extends Error implements IError {
 }
 
 export class ValidationError extends BaseError {
-    constructor(message?: string) {
-        super(ErrorCodes.VALIDATION, message || "Validation Error");
+    constructor(message?: string, code?: ErrorCode) {
+        super(code || ErrorCodes.VALIDATION, message || "Validation Error");
     }
 }
 

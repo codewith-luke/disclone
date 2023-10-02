@@ -9,6 +9,7 @@ export type User = {
     id: number;
     username: string;
     password: string;
+    archived: boolean;
     permissions: Permission[];
 }
 
@@ -35,6 +36,7 @@ export const Routes = {
     heartbeat: '/heartbeat',
     login: '/login',
     logout: '/logout',
+    archive: '/archive',
     register: '/register',
 } as const;
 

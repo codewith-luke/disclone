@@ -27,13 +27,32 @@ const RegisterRequest = t.Object({
     }),
 });
 
+const ArchiveRequest = t.Object({
+    userID: t.Number(),
+});
+
 export function createUserHandler(userAccess: UserAccess) {
     return new Elysia()
         .use(setup)
+        // TODO: implement Guard to validate sessionID && token
         .state(State.userAccess, userAccess)
-        .post(Routes.register, async ({store: {userAccess}, body}) => {
-            await userAccess.registerUser(body);
-            return {}
+        .post(Routes.register, async ({store: {userAccess}, setCookie, set, body}) => {
+            const result = await userAccess.registerUser(body);
+
+            if (!result) {
+                const error = new ValidationError().createHttpResponse();
+                set.status = error.status;
+                return error;
+            }
+
+            const {sessionID, token} = result;
+
+            setCookie(Cookies.sessionID, sessionID);
+
+            return {
+                username: body.username,
+                token,
+            }
         }, {
             body: RegisterRequest
         })
@@ -64,10 +83,20 @@ export function createUserHandler(userAccess: UserAccess) {
                 }
             }
         })
-        .post(Routes.logout, async ({cookie, store: {userAccess}, removeCookie, setCookie}) => {
+        .post(Routes.logout, async ({cookie, store: {userAccess}, removeCookie}) => {
             await userAccess.logoutUser(cookie[Cookies.sessionID]);
             removeCookie(Cookies.sessionID);
         }, {
             body: t.Undefined()
+        })
+        .put(Routes.archive, async ({body, removeCookie}) => {
+            await userAccess.archive(body.userID);
+            removeCookie(Cookies.sessionID);
+
+            return {
+                userID: body.userID
+            }
+        }, {
+            body: ArchiveRequest
         });
 }

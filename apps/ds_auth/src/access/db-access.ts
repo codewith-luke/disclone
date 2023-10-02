@@ -5,12 +5,6 @@ import {type DB} from "../db";
 import {QueryError} from "../util/error";
 import {User, UserwithAuth} from "../types";
 
-const DBErrorCodes = {
-    UNIQUE_VIOLATION: "23505"
-} as const;
-
-type UserAccess = ReturnType<typeof createUserAccess>;
-
 type RegisterUserAccess = {} & RegisterUserInput;
 
 export type AuthDB = ReturnType<typeof createAuthDB>
@@ -29,7 +23,9 @@ function createUserAccess(logger: Logger, db: DB) {
         getPermissions,
         saveSession,
         deleteSession,
-        registerUser
+        registerUser,
+        archive,
+        sessionByUserID
     }
 
     async function getUser(username: string) {
@@ -62,7 +58,7 @@ function createUserAccess(logger: Logger, db: DB) {
 
     async function saveSession(userID: number, sessionID: string, token: string) {
         try {
-            const res = await db.query`
+            await db.query`
                 insert into sessions (user_id, session_id, token)
                 values (${userID}, ${sessionID}, ${token})
                 on conflict (user_id)
@@ -80,7 +76,20 @@ function createUserAccess(logger: Logger, db: DB) {
     }
 
     async function deleteSession(sessionID: string) {
-        await sleep(200);
+        try {
+            await db.query`
+                delete
+                from sessions
+                where session_id = ${sessionID}
+            `;
+
+            logger.info(`db-access: Deleted session ${sessionID}`);
+            return null
+        } catch (e) {
+            const message = `db-access: Failed to delete session ${sessionID}`;
+            logger.error(message, e);
+            throw new QueryError(message);
+        }
     }
 
     async function registerUser({email, username, password}: RegisterUserAccess) {
@@ -113,6 +122,54 @@ function createUserAccess(logger: Logger, db: DB) {
             }
 
             const message = `db-access: Failed to register user ${username}`;
+            logger.error(message, e);
+            throw new QueryError(message);
+        }
+    }
+
+    async function archive(userID: number) {
+        try {
+            await db.query.begin(async sql => {
+                const [user] = await sql<UserwithAuth[]>`
+                    select distinct id
+                    from users
+                    where id = ${userID}
+                `;
+
+                if (!user) {
+                    throw new QueryError(`User ${userID} not found`);
+                }
+
+                await sql`
+                    delete
+                    from sessions
+                    where user_id = ${userID}
+                `;
+
+                await sql`
+                    update users
+                    set archived = true
+                    where id = ${userID}
+                `;
+            })
+        } catch (e) {
+            const message = `Failed to archive user ${userID}`;
+            logger.error(message, e);
+            throw new QueryError(message);
+        }
+    }
+
+    async function sessionByUserID(userID: number) {
+        try {
+            const [session] = await db.query`
+                select distinct *
+                from sessions
+                where user_id = ${userID}
+            `;
+
+            return session;
+        } catch (e) {
+            const message = `Failed to get session for user ${userID}`;
             logger.error(message, e);
             throw new QueryError(message);
         }

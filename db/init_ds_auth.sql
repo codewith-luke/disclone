@@ -1,4 +1,5 @@
-CREATE USER ds_auth WITH PASSWORD 'password';
+CREATE
+USER ds_auth WITH PASSWORD 'password';
 CREATE SCHEMA ds_auth AUTHORIZATION ds_auth;
 
 CREATE TABLE ds_auth.users
@@ -7,6 +8,7 @@ CREATE TABLE ds_auth.users
     username   VARCHAR(100) NOT NULL UNIQUE,
     password   VARCHAR(255) NOT NULL,
     email      VARCHAR(255) NOT NULL UNIQUE,
+    archived   BOOLEAN      NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP    NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP    NOT NULL DEFAULT NOW()
 );
@@ -22,21 +24,39 @@ create TABLE ds_auth.sessions
 );
 
 
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA ds_auth TO ds_auth;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA ds_auth TO ds_auth;
+GRANT
+ALL
+PRIVILEGES
+ON
+ALL
+TABLES IN SCHEMA ds_auth TO ds_auth;
+GRANT USAGE,
+SELECT
+ON ALL SEQUENCES IN SCHEMA ds_auth TO ds_auth;
 
-CREATE OR REPLACE FUNCTION update_modified_column()
+CREATE
+OR REPLACE FUNCTION update_modified_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = now();
+    NEW.updated_at
+= now();
 RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$
+language 'plpgsql';
 
-CREATE TRIGGER update_modified_time_sessions BEFORE UPDATE ON ds_auth.sessions FOR EACH ROW EXECUTE PROCEDURE  update_modified_column();
-CREATE TRIGGER update_modified_time_users BEFORE UPDATE ON ds_auth.users FOR EACH ROW EXECUTE PROCEDURE  update_modified_column();
+CREATE TRIGGER update_modified_time_sessions
+    BEFORE UPDATE
+    ON ds_auth.sessions
+    FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+CREATE TRIGGER update_modified_time_users
+    BEFORE UPDATE
+    ON ds_auth.users
+    FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 
 INSERT into ds_auth.users
     (username, password, email)
-values ('admin', '$argon2id$v=19$m=65536,t=2,p=1$l8dOxo5QkVOiKKa+QNpEGNTgUkCrGrzj2CXFZ5xhPYs$0jyFFb643s0c/f2OsZ1gddtLXFxR4tqArkMUpN9xUwk', 'admin@localhost');
+values ('admin',
+        '$argon2id$v=19$m=65536,t=2,p=1$l8dOxo5QkVOiKKa+QNpEGNTgUkCrGrzj2CXFZ5xhPYs$0jyFFb643s0c/f2OsZ1gddtLXFxR4tqArkMUpN9xUwk',
+        'admin@localhost');
 

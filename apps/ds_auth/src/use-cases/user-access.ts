@@ -7,7 +7,7 @@ import {
     validateUsername
 } from "../core/auth";
 import {AuthDB} from "../access/db-access";
-import {ValidationError} from "../util/error";
+import {ErrorCodes, ValidationError} from "../util/error";
 import {Logger} from "../util/logger";
 
 export type RegisterUserInput = {
@@ -22,7 +22,8 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
     return {
         loginUser,
         logoutUser,
-        registerUser
+        registerUser,
+        archive
     }
 
     async function registerUser(data: RegisterUserInput) {
@@ -30,14 +31,14 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
 
         if (passwordErr) {
             logger.error(`User ${data.username} failed to register: ${passwordErr.message}`);
-            throw new ValidationError(passwordErr.message);
+            throw new ValidationError(passwordErr.message, ErrorCodes.PARSE);
         }
 
         const usernameErr = validateUsername(data.username);
 
         if (usernameErr) {
             logger.error(`User ${data.username} failed to register: ${usernameErr.message}`);
-            throw new ValidationError(usernameErr.message);
+            throw new ValidationError(usernameErr.message, ErrorCodes.PARSE);
         }
 
         await db.userAccess.registerUser({
@@ -98,5 +99,9 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
             sessionID,
             token
         }
+    }
+
+    async function archive(userID: number) {
+        await db.userAccess.archive(userID);
     }
 }
