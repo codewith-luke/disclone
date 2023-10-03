@@ -6,7 +6,7 @@ info:
   description: Basic API proxy for Disclone
 
 servers:
-  - url: http://localhost:8080
+  - url: http://localhost:4000
 
 tags:
   - name: auth
@@ -520,10 +520,10 @@ components:
     LoginRequest:
       type: object
       required:
-        - email
+        - username
         - password
       properties:
-        email:
+        username:
           type: string
         password:
           type: string
@@ -532,8 +532,10 @@ components:
       required:
         - User
       properties:
-        User:
-          $ref: '#/components/schemas/User'
+        username:
+          type: string
+        token:
+          type: string
     LogoutResponse:
       type: object
       required:

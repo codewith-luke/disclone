@@ -64,6 +64,9 @@ func main() {
 		Handler: &srv,
 	}
 
+	e.GET("/doc", srv.GetDoc)
+	e.GET("/docs", srv.GetDocs)
+
 	registerBaseHandlers(e, wrapper)
 	registerGroupHandlers(e, wrapper)
 	registerProfileHandlers(e, wrapper)
@@ -83,8 +86,6 @@ func main() {
 }
 
 func registerBaseHandlers(e *echo.Echo, srv api.ServerInterfaceWrapper) {
-	e.GET("/doc", srv.GetDoc)
-	e.GET("/docs", srv.GetDocs)
 	e.POST("/login", srv.Login)
 	e.POST("/logout", srv.Logout)
 	e.POST("/register", srv.Register)

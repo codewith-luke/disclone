@@ -4,15 +4,19 @@
 package main
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
+	"io"
 	"net/http"
+	"net/url"
+	"time"
 )
 
 type Server struct {
 }
 
 func (s *Server) GetProxy(ctx echo.Context) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "Doc: not implemented")
+	return echo.NewHTTPError(http.StatusNotImplemented, "Proxy: not implemented")
 }
 
 func (s *Server) GetDoc(ctx echo.Context) error {
@@ -24,7 +28,35 @@ func (s *Server) GetDocs(ctx echo.Context) error {
 }
 
 func (s *Server) Login(ctx echo.Context) error {
-	return echo.NewHTTPError(http.StatusNotImplemented, "this is a test")
+	req := ctx.Request()
+
+	fmt.Printf("[reverse proxy server] received request at: %s\n", time.Now())
+
+	originServerURL, err := url.Parse("http://127.0.0.1:4020")
+	if err != nil {
+		fmt.Printf("invalid origin server URL")
+	}
+
+	// set req Host, URL and Request URI to forward a request to the origin server
+	req.Host = originServerURL.Host
+	req.URL.Host = originServerURL.Host
+	req.URL.Scheme = originServerURL.Scheme
+	req.RequestURI = ""
+
+	// send a request to the origin server
+	response, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to proxy")
+	}
+
+	_, err = io.Copy(ctx.Response().Writer, response.Body)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to write response")
+	}
+
+	return nil
 }
 
 func (s *Server) Logout(ctx echo.Context) error {
