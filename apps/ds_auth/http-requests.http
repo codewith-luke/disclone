@@ -31,6 +31,6 @@ X-Trace-ID: 1234567890
 Cookie: session_id=eyJ1c2VybmFtZSI6InVzZXIxIiwiaWF0IjoxNTY0NjQ0NjQ2LCJleHAiOjE1Nj
 
 {
-  "userID": 2
+  "userID": 1
 }
 

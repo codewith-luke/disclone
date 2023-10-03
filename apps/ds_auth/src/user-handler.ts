@@ -1,5 +1,5 @@
 import {Elysia, t} from "elysia";
-import {setup} from "./setup";
+import {setupRoutes, setupLogger} from "./setup";
 import {Cookies, Routes, State} from "./types";
 import {ErrorCodes, ValidationError} from "./util/error";
 import {UserAccess} from "./use-cases/user-access";
@@ -32,15 +32,47 @@ const ArchiveRequest = t.Object({
 });
 
 export function createUserHandler(userAccess: UserAccess) {
-    return new Elysia()
-        .use(setup)
-        // TODO: implement Guard to validate sessionID && token
-        .state(State.userAccess, userAccess)
-        .derive(({request: {headers}}) => {
-            return {
-                authorization: headers.get('Authorization')
+    const AuthRoutes = new Elysia()
+        .use(setupRoutes)
+        .derive(({cookie, set, request: {headers}}) => ({
+            validateAuth: async () => {
+                const authorization = headers.get('Authorization')
+                const sessionID = cookie[Cookies.sessionID];
+                const token = authorization?.split("Bearer ")[1];
+
+                if (!sessionID || !token) {
+                    set.status = 401;
+                    return false;
+                }
+
+                const user = await userAccess.validateAuth(sessionID, token);
+
+                if (!user) {
+                    set.status = 401;
+                    return false;
+                }
             }
-        })
+        }))
+        .guard({},
+            app => app
+                .onBeforeHandle(({validateAuth}) => validateAuth())
+                .put(Routes.archive, async ({body, removeCookie, cookie}) => {
+                    const sessionID = cookie[Cookies.sessionID];
+                    await userAccess.archive(body.userID, sessionID);
+                    removeCookie(Cookies.sessionID);
+
+                    return {
+                        userID: body.userID
+                    }
+                }, {
+                    body: ArchiveRequest
+                })
+        );
+
+    return new Elysia()
+        .use(setupRoutes)
+        .state(State.userAccess, userAccess)
+        .use(AuthRoutes)
         .post(Routes.register, async ({store: {userAccess}, setCookie, set, body}) => {
             const result = await userAccess.registerUser(body);
 
@@ -94,33 +126,4 @@ export function createUserHandler(userAccess: UserAccess) {
         }, {
             body: t.Undefined()
         })
-        .put(Routes.archive, async ({body, removeCookie, cookie}) => {
-            const sessionID = cookie[Cookies.sessionID];
-            await userAccess.archive(body.userID, sessionID);
-            removeCookie(Cookies.sessionID);
-
-            return {
-                userID: body.userID
-            }
-        }, {
-            beforeHandle: async ({cookie, set, authorization}) => {
-                const sessionID = cookie[Cookies.sessionID];
-                const token = authorization?.split("Bearer ")[1];
-
-                if (!sessionID || !token) {
-                    set.status = 401;
-                    return false;
-                }
-
-                const user = await userAccess.validateAuth(sessionID, token);
-
-                if (!user) {
-                    set.status = 401;
-                    return false;
-                }
-
-            },
-            body: ArchiveRequest
-        });
 }
-

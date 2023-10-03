@@ -114,6 +114,7 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
     }
 
     async function validateAuth(sessionID: string, token: string) {
+        // TODO: Replace with a Redis call
         const user = await db.userAccess.userFromSession(sessionID);
 
         if (!user) {

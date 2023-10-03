@@ -1,6 +1,5 @@
 import createDBConn from "./db";
 import {Elysia, ValidationError} from "elysia";
-import {setup} from "./setup";
 import {cors} from "@elysiajs/cors";
 import {loggers, RequestLifeCycle} from "./util/logger";
 import {Routes} from "./types";
@@ -8,6 +7,7 @@ import {createUserHandler} from "./user-handler";
 import {BaseError, ErrorCodes} from "./util/error";
 import {createAuthDB} from "./access/db-access";
 import {createUserAccess} from "./use-cases/user-access";
+import {setupLogger, setupRoutes} from "./setup";
 
 function setupHandlers() {
     const dbConn = createDBConn();
@@ -25,7 +25,8 @@ export function createApp() {
     const {dbConn, userHandler} = setupHandlers();
 
     return new Elysia()
-        .use(setup)
+        .use(setupRoutes)
+        .use(setupLogger)
         .use(cors())
         .onResponse(({logger}) => {
             logger.info(RequestLifeCycle.end)
