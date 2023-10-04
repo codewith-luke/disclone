@@ -1,0 +1,3 @@
+tasks:
+  build:
+    command: 'npx @openapitools/openapi-generator-cli generate -i ./proxy-api.yaml -g html2 -o ./docs/'

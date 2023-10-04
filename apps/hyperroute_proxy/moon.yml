@@ -1,5 +1,0 @@
-tasks:
-  build:
-    command: 'go build github.com/codewith-luke/disclone/apps/proxy'
-  dev:
-    command: 'go run github.com/codewith-luke/disclone/apps/proxy'

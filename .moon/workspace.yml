@@ -13,8 +13,8 @@ $schema: 'https://moonrepo.dev/schemas/workspace.json'
 # and cannot reference projects located outside the workspace boundary.
 projects:
   client: 'apps/client'
-  proxy: 'apps/proxy'
-  registry: 'apps/registry'
+  proxy: 'apps/hyper_route_proxy'
+  auth: 'apps/ds_auth'
 
 # Configures the version control system to utilize within the workspace. A VCS
 # is required for determining touched (added, modified, etc) files, calculating file hashes,
