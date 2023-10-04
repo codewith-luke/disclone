@@ -1,0 +1,27 @@
+version: '3'
+services:
+  ds_auth:
+    build:
+      context: ./apps/ds_auth
+      dockerfile: Dockerfile
+    image: disclone-ds_auth
+    env_file:
+      - apps/ds_auth/.env.development
+  hyper_route_proxy:
+    image: nginx
+    volumes:
+      - ./apps/hyperroute_proxy/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./apps/hyperroute_proxy/site:/usr/share/nginx/html
+    ports:
+      - "4000:80"
+  coruscant_db:
+    env_file:
+      - db/.env.development
+    image: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./db/init_ds_auth.sql:/docker-entrypoint-initdb.d/1.sql"
+      - "postgres-data:/var/lib/postgresql/data"
+volumes:
+  postgres-data:

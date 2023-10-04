@@ -1,9 +1,10 @@
 {
-  "name": "hi-elysia",
-  "version": "1.0.50",
+  "name": "ds_auth",
+  "version": "0.1.0",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --inspect --watch src/index.ts"
+    "test": "bun test",
+    "dev": "bun run --inspect --watch src/index.ts",
+    "start": "bun run src/index.ts"
   },
   "dependencies": {
     "@bogeychan/elysia-logger": "^0.0.9",

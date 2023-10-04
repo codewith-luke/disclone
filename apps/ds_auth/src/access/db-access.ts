@@ -1,4 +1,3 @@
-import {sleep} from "bun";
 import {type RegisterUserInput} from "../use-cases/user-access";
 import {type Logger} from "../util/logger";
 import {type DB} from "../db";
@@ -53,7 +52,6 @@ function createUserAccess(logger: Logger, db: DB) {
     }
 
     async function getPermissions() {
-        await sleep(200);
         return ["read", "write"]
     }
 
