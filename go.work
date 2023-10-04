@@ -1,5 +1,2 @@
 go 1.21.0
 
-use (
-	./apps/hyperroute_proxy
-)
