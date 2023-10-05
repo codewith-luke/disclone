@@ -1,6 +1,6 @@
 import {Elysia, t} from "elysia";
-import {setupRoutes, setupLogger} from "./setup";
-import {Cookies, Routes, State} from "./types";
+import {setupRoutes} from "./setup";
+import {Cookies, ErrorResponseMessage, Routes, State, User} from "./types";
 import {ErrorCodes, ValidationError} from "./util/error";
 import {UserAccess} from "./use-cases/user-access";
 
@@ -29,6 +29,11 @@ const RegisterRequest = t.Object({
 
 const ArchiveRequest = t.Object({
     userID: t.Number(),
+});
+
+export const LoginResponse = t.Object({
+    user: t.Omit(User, ['password', 'permissions']),
+    token: t.String(),
 });
 
 export function createUserHandler(userAccess: UserAccess) {
@@ -70,6 +75,10 @@ export function createUserHandler(userAccess: UserAccess) {
         );
 
     return new Elysia()
+        .model({
+            login: LoginResponse,
+            errorResponse: ErrorResponseMessage,
+        })
         .use(setupRoutes)
         .state(State.userAccess, userAccess)
         .use(AuthRoutes)
@@ -87,10 +96,14 @@ export function createUserHandler(userAccess: UserAccess) {
             setCookie(Cookies.sessionID, sessionID);
 
             return {
-                username: body.username,
+                user: User.toJSON(result.user),
                 token,
             }
         }, {
+            response: {
+                200: 'login',
+                default: 'errorResponse'
+            },
             body: RegisterRequest
         })
         .post(Routes.login, async ({store: {userAccess}, setCookie, body, set}) => {
@@ -107,11 +120,15 @@ export function createUserHandler(userAccess: UserAccess) {
             setCookie(Cookies.sessionID, sessionID);
 
             return {
-                username: body.username,
+                user: User.toJSON(result.user),
                 token,
             }
         }, {
             body: LoginRequest,
+            response: {
+                200: 'login',
+                default: 'errorResponse'
+            },
             error({code, error}) {
                 switch (code) {
                     case ErrorCodes.QUERY_ERROR: {

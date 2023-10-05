@@ -1,28 +1,15 @@
-export type SensitiveKeys = {
-    password: string;
-    email: string;
-}
+import {t, UnwrapSchema} from "elysia";
 
-type Permission = "read" | "write" | "delete" | "update";
+export type User = UnwrapSchema<typeof User>
 
-export type User = {
-    id: number;
-    username: string;
-    password: string;
-    archived: boolean;
-    permissions: Permission[];
-}
+export type ErrorResponseMessage = UnwrapSchema<typeof ErrorResponseMessage>;
 
-export type UserWithAuth = User & {
-    [K in keyof SensitiveKeys]: SensitiveKeys[K];
-}
-
-export type ErrorResponseMessage = {
-    status: number;
-    body: {
-        message: string;
-    }
-}
+const Permissions = {
+    read: "read",
+    write: "write",
+    delete: "delete",
+    update: "update",
+} as const;
 
 export const Cookies = {
     sessionID: 'session_id'
@@ -45,3 +32,30 @@ export const Environments = {
     production: 'production',
 }
 
+export const User = t.Object({
+    id: t.Number(),
+    username: t.String(),
+    email: t.String(),
+    permissions: t.Union([
+        t.Literal(Permissions.read),
+        t.Literal(Permissions.write),
+        t.Literal(Permissions.delete),
+        t.Literal(Permissions.update),
+    ]),
+    password: t.String(),
+    archived: t.Boolean(),
+    created_at: t.Date(),
+    updated_at: t.Date(),
+});
+
+User.toJSON = (user: User) => {
+    const {password, permissions, ...rest} = user;
+    return rest;
+};
+
+export const ErrorResponseMessage = t.Object({
+    status: t.Number(),
+    body: t.Object({
+        message: t.String()
+    })
+});

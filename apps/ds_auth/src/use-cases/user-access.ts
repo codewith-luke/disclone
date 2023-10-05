@@ -97,6 +97,7 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
         logger.info(`User ${username} logged in successfully`);
 
         return {
+            user,
             sessionID,
             token
         }

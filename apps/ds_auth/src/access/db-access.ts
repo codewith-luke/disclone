@@ -2,7 +2,7 @@ import {type RegisterUserInput} from "../use-cases/user-access";
 import {type Logger} from "../util/logger";
 import {type DB} from "../db";
 import {QueryError} from "../util/error";
-import {User, UserWithAuth} from "../types";
+import {User} from "../types";
 
 type RegisterUserAccess = {} & RegisterUserInput;
 
@@ -31,7 +31,7 @@ function createUserAccess(logger: Logger, db: DB) {
     async function getUser(username: string) {
         logger.info(`db-access: Fetching user ${username}`);
         try {
-            const [user] = await db.query`
+            const [user] = await db.query<User[]>`
                 select distinct username, *
                 from users
                 where username = ${username}
@@ -43,7 +43,7 @@ function createUserAccess(logger: Logger, db: DB) {
             }
 
             logger.info(`db-access: Found user ${user?.username}`);
-            return user as User;
+            return user;
         } catch (e) {
             const message = `Failed to get user ${username}`;
             logger.error(message, e);
@@ -94,7 +94,7 @@ function createUserAccess(logger: Logger, db: DB) {
     async function registerUser({email, username, password}: RegisterUserAccess) {
         try {
             await db.query.begin(async sql => {
-                const [...users] = await sql<UserWithAuth[]>`
+                const [...users] = await sql<User[]>`
                     select distinct username, email
                     from users
                     where username = ${username}
@@ -168,14 +168,14 @@ function createUserAccess(logger: Logger, db: DB) {
 
     async function userFromSession(sessionID: string) {
         try {
-            const [user] = await db.query`
+            const [user] = await db.query<User[]>`
                 select distinct u.*
                 from users u
                          join sessions s on u.id = s.user_id
                 where s.session_id = ${sessionID}
             `;
 
-            return user as UserWithAuth;
+            return user;
         } catch (e) {
             const message = `Failed to get user for session ${sessionID}`;
             logger.error(message, e);
@@ -184,7 +184,7 @@ function createUserAccess(logger: Logger, db: DB) {
     }
 }
 
-function getDuplicateKeys(users: UserWithAuth[], user: { email: string; username: string }) {
+function getDuplicateKeys(users: User[], user: { email: string; username: string }) {
     return users.reduce((acc, usr) => {
         if (usr.username === user.username) {
             acc.add("username");
