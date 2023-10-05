@@ -1,0 +1,1 @@
+npx @openapitools/openapi-generator-cli generate -i ./apps/hyper_route_proxy/proxy-api.yaml -g typescript-fetch -o ./packages/disclone-sdk

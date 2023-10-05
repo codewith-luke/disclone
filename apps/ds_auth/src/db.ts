@@ -9,17 +9,17 @@ export class DB {
     }
 
     async end() {
-        await this.query.end({ timeout: 5 })
+        await this.query.end({timeout: 5})
     }
 }
 
 export default function createDBConn() {
     const pg = postgres({
-        host: 'localhost',
-        port: 5432,
-        database: 'disclone',
-        username: 'ds_auth',
-        password: 'password'
+        host: Bun.env.POSTGRES_HOST,
+        port: Bun.env.POSTGRES_PORT,
+        database: Bun.env.POSTGRES_DB,
+        username: Bun.env.POSTGRES_USER,
+        password: Bun.env.POSTGRES_PASSWORD,
     });
 
     return new DB(pg);

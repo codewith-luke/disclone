@@ -1,0 +1,5 @@
+{
+  "name": "disclone-sdk",
+  "private": true,
+  "main": "apis/index.ts"
+}

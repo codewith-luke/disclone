@@ -1,5 +1,5 @@
 {
-	"name": "my-app",
+	"name": "disclone",
 	"version": "0.0.1",
 	"scripts": {
 		"dev": "vite dev",
@@ -48,6 +48,7 @@
 		"@boringer-avatars/svelte": "^0.2.1",
 		"@floating-ui/dom": "^1.5.1",
 		"@tauri-apps/api": "^1.4.0",
+		"disclone-sdk": "workspace:^",
 		"lucide-svelte": "^0.268.0",
 		"w3c-keys": "^1.0.3"
 	},

@@ -1,5 +1,5 @@
 ### /register
-POST http://127.0.0.1:{{port}}/register
+POST http://127.0.0.1:{{port}}/auth/register
 Content-Type: application/json
 X-Trace-ID: 1234567890
 
@@ -10,7 +10,7 @@ X-Trace-ID: 1234567890
 }
 
 ### /login
-POST http://127.0.0.1:{{port}}/login
+POST http://127.0.0.1:{{port}}/auth/login
 Content-Type: application/json
 X-Trace-ID: 1234567890
 
@@ -20,12 +20,12 @@ X-Trace-ID: 1234567890
 }
 
 ### /logout
-POST http://127.0.0.1:{{port}}/logout
+POST http://127.0.0.1:{{port}}/auth/logout
 X-Trace-ID: 1234567890
 Cookie: session_id=eyJ1c2VybmFtZSI6InVzZXIxIiwiaWF0IjoxNTY0NjQ0NjQ2LCJleHAiOjE1Nj
 
 ### /archive
-PUT http://127.0.0.1:{{port}}/archive
+PUT http://127.0.0.1:{{port}}/auth/archive
 Content-Type: application/json
 X-Trace-ID: 1234567890
 Cookie: session_id=eyJ1c2VybmFtZSI6InVzZXIxIiwiaWF0IjoxNTY0NjQ0NjQ2LCJleHAiOjE1Nj

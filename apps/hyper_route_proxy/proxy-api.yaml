@@ -48,7 +48,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AnyValue'
   # ACCOUNT
-  /login:
+  /auth/login:
     post:
       tags:
         - auth
@@ -78,7 +78,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /logout:
+  /auth/logout:
     post:
       tags:
         - auth
@@ -97,7 +97,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /register:
+  /auth/register:
     post:
       tags:
         - auth
@@ -398,10 +398,9 @@ components:
         - id
         - email
         - username
-        - profileImage
-        - status
-        - createdAt
-        - updatedAt
+        - archived
+        - created_at
+        - updated_at
       properties:
         id:
           type: string
@@ -409,13 +408,11 @@ components:
           type: string
         username:
           type: string
-        profileImage:
+        archived:
+          type: boolean
+        created_at:
           type: string
-        status:
-          type: string
-        createdAt:
-          type: string
-        updatedAt:
+        updated_at:
           type: string
     Profile:
       type: object
@@ -530,10 +527,10 @@ components:
     LoginResponse:
       type: object
       required:
-        - User
+        - user
       properties:
-        username:
-          type: string
+        user:
+          $ref: '#/components/schemas/User'
         token:
           type: string
     LogoutResponse:
@@ -559,10 +556,27 @@ components:
     RegisterResponse:
       type: object
       required:
-        - User
+        - user
+        - token
       properties:
-        User:
+        user:
           $ref: '#/components/schemas/User'
+        token:
+          type: string
+    ArchiveRequest:
+      type: object
+      required:
+        - userID
+      properties:
+        userID:
+          type: number
+    ArchiveResponse:
+      type: object
+      required:
+        - userID
+      properties:
+        userID:
+          type: number
 
     UpdateProfileRequest:
       type: object

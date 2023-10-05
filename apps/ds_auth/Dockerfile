@@ -1,9 +1,15 @@
-FROM oven/bun:latest
+# AS: dev
+FROM oven/bun:debian
 
-COPY package.json ./
-COPY bun.lockb ./
-COPY src/ ./src
+WORKDIR /ds_auth
+
+# HTTP Port
+EXPOSE 4020
+
+COPY bun.lockb package.json /ds_auth/
 
 RUN bun install
+
+COPY . /ds_auth
 
 CMD ["bun", "start"]

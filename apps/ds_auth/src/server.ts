@@ -27,11 +27,10 @@ export function createApp() {
     return new Elysia()
         .use(setupRoutes)
         .use(setupLogger)
-        .use(cors())
         .onResponse(({logger}) => {
             logger.info(RequestLifeCycle.end)
         })
-        .get(Routes.heartbeat, () => "ok")
+        .get(Routes.heartbeat, () => "test")
         .use(userHandler)
         .onError(({code, error}) => {
             if (error instanceof BaseError) {

@@ -30,9 +30,7 @@ export const setupLogger = new Elysia({name: "setupLogger"})
     });
 
 export const setupRoutes = new Elysia({name: "setupRoutes"})
-    .use(cookie({
-        httpOnly: true,
-    }))
+    .use(cookie())
     .state('userCache', new UserCache())
     .addError({
         [ErrorCodes.VALIDATION]: ValidationError,

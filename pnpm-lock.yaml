@@ -19,6 +19,9 @@ importers:
       '@tauri-apps/api':
         specifier: ^1.4.0
         version: 1.4.0
+      disclone-sdk:
+        specifier: workspace:^
+        version: link:../../packages/disclone-sdk
       lucide-svelte:
         specifier: ^0.268.0
         version: 0.268.0(svelte@4.0.5)
@@ -110,6 +113,8 @@ importers:
       vitest:
         specifier: ^0.32.2
         version: 0.32.2
+
+  packages/disclone-sdk: {}
 
 packages:
 

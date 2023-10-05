@@ -7,6 +7,11 @@ services:
     image: disclone-ds_auth
     env_file:
       - apps/ds_auth/.env.development
+    volumes:
+      - ./apps/ds_auth:/ds_auth
+      - ds_auth_node_modules:/ds_auth/node_modules
+    command: "bun dev"
+
   hyper_route_proxy:
     image: nginx
     volumes:
@@ -14,6 +19,7 @@ services:
       - ./apps/hyper_route_proxy/docs:/usr/share/nginx/html
     ports:
       - "4000:80"
+
   coruscant_db:
     env_file:
       - db/.env.development
@@ -23,5 +29,7 @@ services:
     volumes:
       - "./db/init_ds_auth.sql:/docker-entrypoint-initdb.d/1.sql"
       - "postgres-data:/var/lib/postgresql/data"
+
 volumes:
   postgres-data:
+  ds_auth_node_modules:
