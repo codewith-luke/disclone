@@ -140,6 +140,10 @@ export function createUserHandler(userAccess: UserAccess) {
         .post(Routes.logout, async ({cookie, store: {userAccess}, removeCookie}) => {
             await userAccess.logoutUser(cookie[Cookies.sessionID]);
             removeCookie(Cookies.sessionID);
+
+            return {
+                success: true
+            }
         }, {
             body: t.Undefined()
         })

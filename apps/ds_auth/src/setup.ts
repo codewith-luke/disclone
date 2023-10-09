@@ -9,6 +9,7 @@ const traceIDHeader = "x-trace-id";
 export const setupLogger = new Elysia({name: "setupLogger"})
     .derive((ctx) => {
         const traceID = ctx.headers[traceIDHeader];
+        console.log("=====", JSON.stringify(ctx.headers));
 
         if (!traceID) {
             loggers.basicLogger.warn(`No traceID found in headers`);

@@ -22,14 +22,6 @@
         });
 
         console.log(response);
-
-        setTimeout(() => {
-            authApi.logout({
-                credentials: "include"
-            }).then(() => {
-                console.log("Logged out");
-            });
-        }, 5000);
     }());
 
 </script>

@@ -1,0 +1,20 @@
+{
+  "host": "ds_auth",
+  "connection": "close",
+  "content-length": "39",
+  "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",
+  "content-type": "application/json",
+  "accept": "*/*",
+  "origin": "http://localhost:5173",
+  "sec-fetch-mode": "cors",
+  "sec-fetch-dest": "empty",
+  "referer": "http://localhost:5173/",
+  "accept-encoding": "gzip, deflate, br",
+  "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+  "cookie": "session_id=wgC%2BctKQ0KOMEkkfiG74Ag%3D%3D",
+  "x-trace-id": "a4aa518f7c8db332c16cbf6810a86a0f",
+  "sec-ch-ua": "\"Google Chrome\";v=\"117\", \"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"117\"",
+  "sec-ch-ua-platform": "\"Linux\"",
+  "sec-ch-ua-mobile": "?0",
+  "sec-fetch-site": "same-site"
+}
