@@ -14,10 +14,10 @@ export function createSessionID() {
     return randomBytes(16).toString("base64");
 }
 
-export function createSignatureToken(secret: string, user: User) {
+export function createSignatureToken(sessionID: string, secret: string, user: User) {
     return new Bun.CryptoHasher("sha256")
         .update(secret)
-        .update(new Date().toString())
+        .update(sessionID)
         .update(user.username)
         .digest("base64");
 }

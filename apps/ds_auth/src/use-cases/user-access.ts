@@ -80,7 +80,7 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
         }
 
         const sessionID = createSessionID();
-        const token = createSignatureToken(Bun.env.SECRET, user);
+        const token = createSignatureToken(sessionID, Bun.env.SECRET, user);
 
         if (!sessionID) {
             logger.error(`User ${username} failed to login, session creation failed.`);
@@ -123,7 +123,7 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
             return null;
         }
 
-        const isValid = createSignatureToken(Bun.env.SECRET, user) === token;
+        const isValid = createSignatureToken(sessionID, Bun.env.SECRET, user) === token;
 
         if (!isValid) {
             logger.error(`User failed to validate auth, token mismatch.`);

@@ -32,8 +32,7 @@ const ArchiveRequest = t.Object({
 });
 
 export const LoginResponse = t.Object({
-    user: t.Omit(User, ['password', 'permissions']),
-    token: t.String(),
+    user: t.Omit(User, ['password', 'permissions'])
 });
 
 export function createUserHandler(userAccess: UserAccess) {
@@ -41,9 +40,8 @@ export function createUserHandler(userAccess: UserAccess) {
         .use(setupRoutes)
         .derive(({cookie, set, request: {headers}}) => ({
             validateAuth: async () => {
-                const authorization = headers.get('Authorization')
                 const sessionID = cookie[Cookies.sessionID];
-                const token = authorization?.split("Bearer ")[1];
+                const token = cookie[Cookies.sessionToken];
 
                 if (!sessionID || !token) {
                     set.status = 401;
@@ -64,7 +62,9 @@ export function createUserHandler(userAccess: UserAccess) {
                 .put(Routes.archive, async ({body, removeCookie, cookie}) => {
                     const sessionID = cookie[Cookies.sessionID];
                     await userAccess.archive(body.userID, sessionID);
+
                     removeCookie(Cookies.sessionID);
+                    removeCookie(Cookies.sessionToken);
 
                     return {
                         userID: body.userID
@@ -94,10 +94,10 @@ export function createUserHandler(userAccess: UserAccess) {
             const {sessionID, token} = result;
 
             setCookie(Cookies.sessionID, sessionID);
+            setCookie(Cookies.sessionToken, token);
 
             return {
                 user: User.toJSON(result.user),
-                token,
             }
         }, {
             response: {
@@ -118,10 +118,10 @@ export function createUserHandler(userAccess: UserAccess) {
             const {sessionID, token} = result;
 
             setCookie(Cookies.sessionID, sessionID);
+            setCookie(Cookies.sessionToken, token);
 
             return {
                 user: User.toJSON(result.user),
-                token,
             }
         }, {
             body: LoginRequest,
@@ -139,7 +139,9 @@ export function createUserHandler(userAccess: UserAccess) {
         })
         .post(Routes.logout, async ({cookie, store: {userAccess}, removeCookie}) => {
             await userAccess.logoutUser(cookie[Cookies.sessionID]);
+
             removeCookie(Cookies.sessionID);
+            removeCookie(Cookies.sessionToken);
 
             return {
                 success: true

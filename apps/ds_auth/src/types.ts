@@ -12,7 +12,8 @@ const Permissions = {
 } as const;
 
 export const Cookies = {
-    sessionID: 'session_id'
+    sessionID: 'session_id',
+    sessionToken: 'session_token'
 }
 
 export const State = {

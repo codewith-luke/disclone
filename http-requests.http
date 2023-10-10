@@ -28,7 +28,7 @@ Cookie: session_id=eyJ1c2VybmFtZSI6InVzZXIxIiwiaWF0IjoxNTY0NjQ0NjQ2LCJleHAiOjE1N
 PUT http://127.0.0.1:{{port}}/auth/archive
 Content-Type: application/json
 X-Trace-ID: 1234567890
-Cookie: session_id=eyJ1c2VybmFtZSI6InVzZXIxIiwiaWF0IjoxNTY0NjQ0NjQ2LCJleHAiOjE1Nj
+Cookie: session_id=1kab7dUlVs9EaG9lKYziYA%3D%3D;session_token=agK2YEi2P%2Fiv54pntS2FNSpDDbqrAzKJyt4dxH4nrj0%3D;
 
 {
   "userID": 1

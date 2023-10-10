@@ -14,7 +14,7 @@
 </script>
 
 <div class="h-screen flex flex-col">
-    Root
+    <slot/>
 </div>
 
 <style>
