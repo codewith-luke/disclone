@@ -12,15 +12,14 @@ describe("dsa", () => {
     let sut = createApp();
 
     beforeAll(() => {
-        Bun.env.NODE_ENV = Environments.development;
-        Bun.env.PASSWORD_PEPPER = "pepper";
+        deleteAllUsersBesidesAdmin();
         sut.listen(Bun.env.PORT);
     });
 
     afterAll(function () {
         sut.stop();
         dbAccess.dbConn.end();
-        deleteAllUsersBesidesAdmin()
+        deleteAllUsersBesidesAdmin();
     });
 
     it(`[${Routes.heartbeat}] return an ok in response`, async () => {
@@ -97,8 +96,12 @@ describe("dsa", () => {
 
         it(`should run a user through a registration and archive process`, async () => {
             const expected = {
-                username: "test1",
+                archived: false,
+                email: "test@test.com",
+                id: 9,
+                username: "test1"
             }
+
             let cookies = "";
 
             // 1) Register user
@@ -121,17 +124,19 @@ describe("dsa", () => {
 
             const userResult = await dbAccess.authDB.userAccess.getUser(expected.username);
 
-            expect(userResult?.username).toEqual(expected.username);
             expect(cookies.includes("session_id")).toBeTrue();
-            expect(registerResult.token).toBeDefined();
-            expect(registerResult.username).toEqual(expected.username);
+            expect(cookies.includes("session_token")).toBeTrue();
+
+            const {user} = registerResult;
+            expect(user.username).toEqual(expected.username);
+            expect(user.email).toEqual(expected.email);
+            expect(user.archived).toBeFalse();
 
             // 2) Archive user
             const archiveResult = await sut.handle(
                 new Request(`${domain}${Routes.archive}`, {
                     method: 'PUT',
                     headers: {
-                        'Authorization': `Bearer ${registerResult.token}`,
                         'Cookie': cookies,
                         'Content-Type': 'application/json',
                     },
@@ -141,7 +146,7 @@ describe("dsa", () => {
                 })
             ).then((res: Response) => res.json());
 
-            expect(archiveResult.userID).toEqual(userResult?.id);
+            expect(archiveResult.userID).toEqual(user.id);
 
             // 3) Check if user is archived
             const archivedUser = await dbAccess.authDB.userAccess.getUser(expected.username);
@@ -174,7 +179,6 @@ describe("dsa", () => {
                 new Request(`${domain}${Routes.archive}`, {
                     method: 'PUT',
                     headers: {
-                        'Authorization': `Bearer ${registerResult.token}`,
                         'Cookie': cookies,
                         'Content-Type': 'application/json',
                     },
@@ -194,7 +198,6 @@ describe("dsa", () => {
 
     describe(`${Routes.login} and ${Routes.logout}`, function () {
         it(`should error on invalid user`, async () => {
-
             const actual = await sut.handle(
                 new Request(`${domain}${Routes.login}`, {
                     method: 'POST',
@@ -231,7 +234,6 @@ describe("dsa", () => {
             });
 
             expect(cookies.includes("session_id")).toBeTrue();
-            expect(actual.token).toBeDefined();
 
             await sut.handle(
                 new Request(`${domain}${Routes.logout}`, {

@@ -106,7 +106,7 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
     async function archive(userID: number, sessionID: string) {
         const user = await db.userAccess.userFromSession(sessionID);
 
-        if (user.id !== userID) {
+        if (user?.id !== userID) {
             logger.error(`User failed to archive, user mismatch.`);
             throw new ValidationError("User mismatch");
         }

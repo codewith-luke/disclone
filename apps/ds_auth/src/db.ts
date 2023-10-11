@@ -3,10 +3,8 @@ import postgres, {Sql} from 'postgres'
 export interface DB {
     readonly query: Sql;
 }
-
 export class DB {
-    constructor(public readonly query: Sql) {
-    }
+    constructor(public readonly query: Sql) {}
 
     async end() {
         await this.query.end({timeout: 5})
@@ -14,6 +12,8 @@ export class DB {
 }
 
 export default function createDBConn() {
+    console.log("loading db conn to", Bun.env.POSTGRES_HOST);
+
     const pg = postgres({
         host: Bun.env.POSTGRES_HOST,
         port: Bun.env.POSTGRES_PORT,

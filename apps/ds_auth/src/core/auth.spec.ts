@@ -7,11 +7,11 @@ describe("auth", () => {
         it(`create a token and should miss-match given wrong username`, async () => {
             const expected = "ok";
             const timestamp = new Date();
-            const tokenA = createSignatureToken('secret', {
+            const tokenA = createSignatureToken('session_id', 'secret', {
                 username: "test",
             } as User);
 
-            const tokenB = createSignatureToken('secret', {
+            const tokenB = createSignatureToken('session_id', 'secret', {
                 username: "tes",
             } as User);
 
@@ -21,11 +21,25 @@ describe("auth", () => {
         it(`create a token and should miss-match given wrong secret`, async () => {
             const expected = "ok";
             const timestamp = new Date();
-            const tokenA = createSignatureToken('secret', {
+            const tokenA = createSignatureToken('session_id', 'secret', {
                 username: "test",
             } as User);
 
-            const tokenB = createSignatureToken('secre', {
+            const tokenB = createSignatureToken('session_id', 'secre', {
+                username: "test",
+            } as User);
+
+            expect(tokenA).not.toBe(tokenB);
+        });
+
+        it(`create a token and should miss-match given wrong session`, async () => {
+            const expected = "ok";
+            const timestamp = new Date();
+            const tokenA = createSignatureToken('session_id', 'secret', {
+                username: "test",
+            } as User);
+
+            const tokenB = createSignatureToken('session', 'secret', {
                 username: "test",
             } as User);
 

@@ -11,6 +11,7 @@ X-Trace-ID: 1234567890
 
 ### /login
 POST http://127.0.0.1:{{port}}/auth/login
+#POST http://127.0.0.1:{{port}}/login
 Content-Type: application/json
 X-Trace-ID: 1234567890
 

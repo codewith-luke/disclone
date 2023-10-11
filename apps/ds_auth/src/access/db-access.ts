@@ -30,6 +30,7 @@ function createUserAccess(logger: Logger, db: DB) {
 
     async function getUser(username: string) {
         logger.info(`db-access: Fetching user ${username}`);
+
         try {
             const [user] = await db.query<User[]>`
                 select distinct username, *
@@ -43,11 +44,11 @@ function createUserAccess(logger: Logger, db: DB) {
             }
 
             logger.info(`db-access: Found user ${user?.username}`);
+
             return user;
         } catch (e) {
             const message = `Failed to get user ${username}`;
-            logger.error(message, e);
-            throw new QueryError(message);
+            handleDBError(e, logger, message);
         }
     }
 
@@ -69,8 +70,7 @@ function createUserAccess(logger: Logger, db: DB) {
             return null
         } catch (e) {
             const message = `db-access: Failed to create session ${sessionID}`;
-            logger.error(message, e);
-            throw new QueryError(message);
+            handleDBError(e, logger, message);
         }
     }
 
@@ -86,8 +86,7 @@ function createUserAccess(logger: Logger, db: DB) {
             return null
         } catch (e) {
             const message = `db-access: Failed to delete session ${sessionID}`;
-            logger.error(message, e);
-            throw new QueryError(message);
+            handleDBError(e, logger, message);
         }
     }
 
@@ -117,12 +116,11 @@ function createUserAccess(logger: Logger, db: DB) {
             return null
         } catch (e) {
             if (e instanceof QueryError) {
-                throw e;
+                handleDBError(e, logger, "");
             }
 
             const message = `db-access: Failed to register user ${username}`;
-            logger.error(message, e);
-            throw new QueryError(message);
+            handleDBError(e, logger, message)
         }
     }
 
@@ -145,8 +143,7 @@ function createUserAccess(logger: Logger, db: DB) {
             })
         } catch (e) {
             const message = `Failed to archive user ${userID}`;
-            logger.error(message, e);
-            throw new QueryError(message);
+            handleDBError(e, logger, message);
         }
     }
 
@@ -161,8 +158,7 @@ function createUserAccess(logger: Logger, db: DB) {
             return session;
         } catch (e) {
             const message = `Failed to get session for user ${userID}`;
-            logger.error(message, e);
-            throw new QueryError(message);
+            handleDBError(e, logger, message);
         }
     }
 
@@ -178,8 +174,7 @@ function createUserAccess(logger: Logger, db: DB) {
             return user;
         } catch (e) {
             const message = `Failed to get user for session ${sessionID}`;
-            logger.error(message, e);
-            throw new QueryError(message);
+            handleDBError(e, logger, message);
         }
     }
 }
@@ -196,5 +191,17 @@ function getDuplicateKeys(users: User[], user: { email: string; username: string
 
         return acc;
     }, new Set<string>())
+}
+
+function handleDBError(e: any, logger: Logger, message: string) {
+    let errMessage = "";
+
+    if (e instanceof Error) {
+        errMessage = e.message;
+    }
+
+    logger.error(message, errMessage);
+
+    throw new QueryError(message);
 }
 

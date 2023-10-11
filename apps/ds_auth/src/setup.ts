@@ -8,7 +8,7 @@ const traceIDHeader = "x-trace-id";
 
 export const setupLogger = new Elysia({name: "setupLogger"})
     .derive((ctx) => {
-        const traceID = ctx.headers[traceIDHeader];
+        const traceID = ctx?.headers ? ctx?.headers[traceIDHeader] : null;
 
         if (!traceID) {
             loggers.basicLogger.warn(`No traceID found in headers`);
@@ -34,7 +34,7 @@ export const setupRoutes = new Elysia({name: "setupRoutes"})
         httpOnly: true,
     }))
     .state('userCache', new UserCache())
-    .addError({
+    .error({
         [ErrorCodes.VALIDATION]: ValidationError,
         [ErrorCodes.UNKNOWN]: UnknownError,
         [ErrorCodes.INTERNAL_SERVER_ERROR]: InternalError,

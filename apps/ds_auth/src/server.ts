@@ -30,7 +30,7 @@ export function createApp() {
         .onResponse(({logger}) => {
             logger.info(RequestLifeCycle.end)
         })
-        .get(Routes.heartbeat, () => "test")
+        .get(Routes.heartbeat, () => "ok")
         .use(userHandler)
         .onError(({code, error}) => {
             if (error instanceof BaseError) {

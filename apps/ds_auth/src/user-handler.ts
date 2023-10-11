@@ -1,8 +1,9 @@
 import {Elysia, t} from "elysia";
-import {setupRoutes} from "./setup";
+import {setupLogger, setupRoutes} from "./setup";
 import {Cookies, ErrorResponseMessage, Routes, State, User} from "./types";
 import {ErrorCodes, ValidationError} from "./util/error";
 import {UserAccess} from "./use-cases/user-access";
+import jwt from "@elysiajs/jwt";
 
 const LoginRequest = t.Object({
     username: t.String(),
@@ -37,8 +38,9 @@ export const LoginResponse = t.Object({
 
 export function createUserHandler(userAccess: UserAccess) {
     const AuthRoutes = new Elysia()
+        .use(setupLogger)
         .use(setupRoutes)
-        .derive(({cookie, set, request: {headers}}) => ({
+        .derive(({cookie, set}) => ({
             validateAuth: async () => {
                 const sessionID = cookie[Cookies.sessionID];
                 const token = cookie[Cookies.sessionToken];
@@ -58,7 +60,11 @@ export function createUserHandler(userAccess: UserAccess) {
         }))
         .guard({},
             app => app
-                .onBeforeHandle(({validateAuth}) => validateAuth())
+                .onBeforeHandle(({validateAuth, logger}) => {
+                    logger.info('validating auth');
+                    validateAuth();
+                    logger.info('auth validated');
+                })
                 .put(Routes.archive, async ({body, removeCookie, cookie}) => {
                     const sessionID = cookie[Cookies.sessionID];
                     await userAccess.archive(body.userID, sessionID);
@@ -75,6 +81,12 @@ export function createUserHandler(userAccess: UserAccess) {
         );
 
     return new Elysia()
+        .use(
+            jwt({
+                name: 'jwt',
+                secret: 'Fischl von Luftschloss Narfidort'
+            })
+        )
         .model({
             login: LoginResponse,
             errorResponse: ErrorResponseMessage,
@@ -82,6 +94,18 @@ export function createUserHandler(userAccess: UserAccess) {
         .use(setupRoutes)
         .state(State.userAccess, userAccess)
         .use(AuthRoutes)
+        .post(Routes.logout, async ({cookie, store: {userAccess}, removeCookie}) => {
+            await userAccess.logoutUser(cookie[Cookies.sessionID]);
+
+            removeCookie(Cookies.sessionID);
+            removeCookie(Cookies.sessionToken);
+
+            return {
+                success: true
+            }
+        }, {
+            body: t.Undefined()
+        })
         .post(Routes.register, async ({store: {userAccess}, setCookie, set, body}) => {
             const result = await userAccess.registerUser(body);
 
@@ -100,13 +124,9 @@ export function createUserHandler(userAccess: UserAccess) {
                 user: User.toJSON(result.user),
             }
         }, {
-            response: {
-                200: 'login',
-                default: 'errorResponse'
-            },
             body: RegisterRequest
         })
-        .post(Routes.login, async ({store: {userAccess}, setCookie, body, set}) => {
+        .post(Routes.login, async ({store: {userAccess}, jwt, params, setCookie, body, set}) => {
             const result = await userAccess.loginUser(body.username, body.password);
 
             if (!result) {
@@ -119,16 +139,16 @@ export function createUserHandler(userAccess: UserAccess) {
 
             setCookie(Cookies.sessionID, sessionID);
             setCookie(Cookies.sessionToken, token);
+            setCookie('auth', await jwt.sign(params), {
+                httpOnly: true,
+                maxAge: 7 * 86400,
+            })
 
             return {
                 user: User.toJSON(result.user),
             }
         }, {
             body: LoginRequest,
-            response: {
-                200: 'login',
-                default: 'errorResponse'
-            },
             error({code, error}) {
                 switch (code) {
                     case ErrorCodes.QUERY_ERROR: {
@@ -136,17 +156,5 @@ export function createUserHandler(userAccess: UserAccess) {
                     }
                 }
             }
-        })
-        .post(Routes.logout, async ({cookie, store: {userAccess}, removeCookie}) => {
-            await userAccess.logoutUser(cookie[Cookies.sessionID]);
-
-            removeCookie(Cookies.sessionID);
-            removeCookie(Cookies.sessionToken);
-
-            return {
-                success: true
-            }
-        }, {
-            body: t.Undefined()
         })
 }
