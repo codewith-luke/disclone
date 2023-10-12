@@ -1,20 +1,8 @@
 <script lang="ts">
-    import {AuthApi} from "disclone-sdk";
+    import {enhance} from '$app/forms'
+    import type {ActionData} from './$types';
 
-    const authApi = new AuthApi();
-
-    authApi.login({
-        loginRequest: {
-            username: "admin",
-            password: "admin"
-        }
-    }, {
-       credentials: "include"
-    }).then((res) => {
-        console.log(res);
-    }).catch((err) => {
-        console.log(err);
-    });
+    export let form: ActionData;
 </script>
 
 <svelte:head>
@@ -22,8 +10,19 @@
     <meta name="description" content="Disclone"/>
 </svelte:head>
 
-<h1>Login Page</h1>
+{#if !form?.success}
+    <form method="post" class="flex flex-col justify-center gap-y-6 text-black" use:enhance>
+        <input type="text" name="username" class="rounded-xl" placeholder="Username" value="admin"/>
+        <input type="password" name="password" class="rounded-xl" placeholder="Password" value="admin"/>
+        <button class="btn variant-filled-primary">Submit</button>
+    </form>
+{/if}
 
+<div>
+    {#if form?.success}
+        <p>Successfully logged in! Welcome back, {JSON.stringify(form?.user.username)}</p>
+    {/if}
+</div>
 
 
 

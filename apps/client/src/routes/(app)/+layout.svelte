@@ -16,10 +16,3 @@ import SideNav from "$lib/SideNav.svelte";
 </div>
 
 <Modal/>
-
-<style>
-    html,
-    body {
-        min-height: 100%;
-    }
-</style>

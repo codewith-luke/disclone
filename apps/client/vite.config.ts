@@ -5,7 +5,7 @@ export default defineConfig({
     plugins: [sveltekit()],
     server: {
         fs: {
-            allow: ['.../../packages'],
+            allow: ['../../'],
         },
     },
     test: {

@@ -17,9 +17,3 @@
     <slot/>
 </div>
 
-<style>
-    html,
-    body {
-        min-height: 100%;
-    }
-</style>

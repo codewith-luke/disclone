@@ -1,5 +1,6 @@
 {
   "name": "disclone-sdk",
   "private": true,
-  "main": "apis/index.ts"
+  "main": "apis/index.ts",
+  "workspaces": []
 }
