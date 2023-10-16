@@ -23,6 +23,9 @@ more information.
 
 ## Contributing
 
+Each story, bug, feature will and should be prepended with what part of the system it affects. If it is multiple then add commas.
+If it is all then add ALL.
+
 Create your fork and then check below:
 
 **Stories:**
