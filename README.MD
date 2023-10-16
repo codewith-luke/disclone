@@ -36,6 +36,8 @@ To run the repo locally just follow along:
 1. Clone down
 2. Install docker if you do not have it already
 3. (Optional) - It is not required but the application is a mono repo that is managed with [moon repo](https://moonrepo.dev/) 
+4. `pnpm i`
+5. Create .env.development file in `./db` and `./apps/ds_auth`. You can just copy the example one and rename/fill out what you want.
 4. `docker compose up -d`
 5. `moon run client:dev`
 6. This should now open the client and have everything up and running
