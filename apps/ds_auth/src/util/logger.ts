@@ -13,7 +13,7 @@ export interface Logger {
 
 const {combine, timestamp, printf} = format;
 
-const filterList = [Routes.login];
+const filterList = new Set([Routes.login]);
 
 export const RequestLifeCycle = {
     start: "start",
@@ -39,7 +39,7 @@ const requestFormat = printf((logData) => {
         body
     };
 
-    if (filterList.includes(path) && Bun.env.NODE_ENV !== Environments.development) {
+    if (filterList.has(path) && Bun.env.NODE_ENV !== Environments.development) {
         data = 'private';
     }
 
