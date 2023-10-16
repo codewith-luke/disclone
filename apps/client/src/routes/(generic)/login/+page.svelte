@@ -1,8 +1,22 @@
 <script lang="ts">
     import {enhance} from '$app/forms'
     import type {ActionData} from './$types';
+    import {getUserStore} from "$lib/stores/store";
+    import {goto} from "$app/navigation";
 
     export let form: ActionData;
+
+    const user = getUserStore();
+
+    $: {
+        if (form?.success) {
+            user.set(form.user);
+        }
+
+        if ($user?.id) {
+            goto('/');
+        }
+    }
 </script>
 
 <svelte:head>
@@ -18,11 +32,8 @@
     </form>
 {/if}
 
-<div>
-    {#if form?.success}
-        <p>Successfully logged in! Welcome back, {JSON.stringify(form?.user.username)}</p>
-    {/if}
-</div>
+
+
 
 
 

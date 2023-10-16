@@ -1,7 +1,5 @@
 <script>
-import {Modal} from "@skeletonlabs/skeleton";
-import Header from "$lib/Header.svelte";
-import SideNav from "$lib/SideNav.svelte";
+    import {Modal} from "@skeletonlabs/skeleton";
 </script>
 
 <div class="h-screen flex flex-col justify-center items-center">

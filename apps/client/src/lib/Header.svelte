@@ -4,6 +4,9 @@
     import {Search} from "lucide-svelte";
     import {slide} from 'svelte/transition';
     import {Key} from "w3c-keys";
+    import {getUserStore} from "$lib/stores/store";
+
+    const user = getUserStore();
 
     let searchIsVisible = false;
     let searchBarEl: HTMLInputElement;
@@ -12,7 +15,7 @@
         searchBarEl.focus();
     }
 
-    function handleKeydown(event) {
+    function handleKeydown(event: KeyboardEvent) {
         if (event.getModifierState(Key.Control) && event.key === Key.k) {
             event.preventDefault();
             searchIsVisible = !searchIsVisible;
@@ -49,6 +52,8 @@
 <header class="flex relative justify-between gap-x-4 min-h-[5rem] bg-surface-900 drop-shadow-lg z-10">
     <div class="flex items-center w-48 pl-5">
         <UserProfileAvatar/>
+        User {$user.username}
+        <a href="/login">Go Login</a>
     </div>
     <div class="flex flex-1 items-center">
         <div class="w-full flex items-center gap-x-4 justify-end">

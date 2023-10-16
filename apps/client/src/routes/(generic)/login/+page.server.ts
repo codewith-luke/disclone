@@ -1,10 +1,11 @@
 import type {Actions} from "@sveltejs/kit";
+import type { PageLoad } from './$types';
 import {AuthApi} from "disclone-sdk";
 import {parseString} from "set-cookie-parser";
-import {fail} from "@sveltejs/kit";
+import {fail, redirect} from "@sveltejs/kit";
 
 export const actions = /**/{
-    default: async ({cookies, request, setHeaders}) => {
+    default: async ({cookies, request}) => {
         try {
             const data = await request.formData();
             const username = data.get('username') as string;
@@ -43,3 +44,14 @@ export const actions = /**/{
         }
     },
 } satisfies Actions;
+
+export const load: PageLoad = async ({ params , locals}) => {
+    const authAPI = new AuthApi();
+    
+	return {
+		post: {
+			title: `Title for ${params.slug} goes here`,
+			content: `Content for ${params.slug} goes here`,
+		},
+	};
+};
