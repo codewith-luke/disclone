@@ -1,3 +1,4 @@
+# client
 .DS_Store
 node_modules
 /build
@@ -11,19 +12,11 @@ node_modules
 .output
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
 # moon
 .moon/cache
 .moon/docker
 
+# ide
 .idea
-
-apps/server/tmp
-
-*.env*
-# moon
-.moon/cache
-.moon/docker
-
-# moon
-.moon/cache
-.moon/docker
+*.env.json
