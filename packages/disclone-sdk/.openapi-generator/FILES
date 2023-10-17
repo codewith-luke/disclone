@@ -16,6 +16,7 @@ models/Groups.ts
 models/LoginRequest.ts
 models/LoginResponse.ts
 models/LogoutResponse.ts
+models/MeResponse.ts
 models/Message.ts
 models/ModelError.ts
 models/Profile.ts

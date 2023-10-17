@@ -5,6 +5,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.moon/cache" />
       <excludeFolder url="file://$MODULE_DIR$/apps/client/src-tauri/target" />
+      <excludeFolder url="file://$MODULE_DIR$/apps/hyper_route_proxy/docs" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

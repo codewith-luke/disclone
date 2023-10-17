@@ -1,13 +1,24 @@
-<script>
+<script lang="ts">
+    import {AuthApi} from "disclone-sdk";
     import {Modal} from "@skeletonlabs/skeleton";
+    import {onMount} from "svelte";
     import Header from "$lib/Header.svelte";
     import SideNav from "$lib/SideNav.svelte";
-    import {beforeNavigate} from "$app/navigation";
     import {getUserStore} from "$lib/stores/store";
 
     const user = getUserStore();
 
-    $: beforeNavigate((navigation) => {
+    onMount(() => {
+        const authAPI = new AuthApi();
+
+        authAPI.me({
+            credentials: "include"
+        }).then((res) => {
+            user.set(res.user);
+        });
+
+        return () => {
+        }
     });
 </script>
 

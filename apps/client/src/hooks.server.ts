@@ -7,6 +7,7 @@ export async function handle({event, resolve}): Promise<Handle> {
 
     if (sessionID && sessionToken) {
         event.locals.hasAuth = true;
+        event.locals.sessioID = sessionID;
         event.locals.sessionToken = sessionToken;
     }
 

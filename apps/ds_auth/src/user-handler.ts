@@ -98,7 +98,6 @@ export function createUserHandler(userAccess: UserAccess) {
         .get(Routes.me, async ({cookie}) => {
             const sessionID = cookie[Cookies.sessionID];
             const user = await userAccess.getUserBySession(sessionID);
-
             return {
                 user: User.sanatize(user),
             }
@@ -126,8 +125,13 @@ export function createUserHandler(userAccess: UserAccess) {
 
             const {sessionID, token} = result;
 
-            setCookie(Cookies.sessionID, sessionID);
-            setCookie(Cookies.sessionToken, token);
+            setCookie(Cookies.sessionID, sessionID, {
+                httpOnly: true,
+            });
+
+            setCookie(Cookies.sessionToken, token, {
+                httpOnly: true,
+            });
 
             return {
                 user: User.sanatize(result.user)
@@ -146,8 +150,14 @@ export function createUserHandler(userAccess: UserAccess) {
 
             const {sessionID, token} = result;
 
-            setCookie(Cookies.sessionID, sessionID);
-            setCookie(Cookies.sessionToken, token);
+            setCookie(Cookies.sessionID, sessionID, {
+                httpOnly: true,
+            });
+
+            setCookie(Cookies.sessionToken, token, {
+                httpOnly: true,
+            });
+
             setCookie('auth', await jwt.sign(params), {
                 httpOnly: true,
                 maxAge: 7 * 86400,

@@ -2,7 +2,7 @@
     import {enhance} from '$app/forms'
     import type {ActionData} from './$types';
     import {getUserStore} from "$lib/stores/store";
-    import {goto, beforeNavigate} from "$app/navigation";
+    import {goto} from "$app/navigation";
 
     export let form: ActionData;
 

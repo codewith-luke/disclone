@@ -127,14 +127,14 @@ paths:
       tags:
         - auth
       description: Gets the current user
-      operationId: getCurrentUser
+      operationId: me
       responses:
         '200':
           description: user response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/MeResponse'
         default:
           description: unexpected error
           content:
@@ -532,6 +532,13 @@ components:
             $ref: '#/components/schemas/Message'
 
     # HTTP Models
+    MeResponse:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
     LoginRequest:
       type: object
       required:

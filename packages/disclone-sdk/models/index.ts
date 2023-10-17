@@ -12,6 +12,7 @@ export * from './Groups';
 export * from './LoginRequest';
 export * from './LoginResponse';
 export * from './LogoutResponse';
+export * from './MeResponse';
 export * from './Message';
 export * from './ModelError';
 export * from './Profile';

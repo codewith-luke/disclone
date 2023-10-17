@@ -18,9 +18,9 @@ import type {
   LoginRequest,
   LoginResponse,
   LogoutResponse,
+  MeResponse,
   RegisterRequest,
   RegisterResponse,
-  User,
 } from '../models/index';
 import {
     LoginRequestFromJSON,
@@ -29,12 +29,12 @@ import {
     LoginResponseToJSON,
     LogoutResponseFromJSON,
     LogoutResponseToJSON,
+    MeResponseFromJSON,
+    MeResponseToJSON,
     RegisterRequestFromJSON,
     RegisterRequestToJSON,
     RegisterResponseFromJSON,
     RegisterResponseToJSON,
-    UserFromJSON,
-    UserToJSON,
 } from '../models/index';
 
 export interface LoginOperationRequest {
@@ -49,32 +49,6 @@ export interface RegisterOperationRequest {
  * 
  */
 export class AuthApi extends runtime.BaseAPI {
-
-    /**
-     * Gets the current user
-     */
-    async getCurrentUserRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<User>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/auth/me`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => UserFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets the current user
-     */
-    async getCurrentUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<User> {
-        const response = await this.getCurrentUserRaw(initOverrides);
-        return await response.value();
-    }
 
     /**
      * Logs in a user
@@ -132,6 +106,32 @@ export class AuthApi extends runtime.BaseAPI {
      */
     async logout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LogoutResponse> {
         const response = await this.logoutRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets the current user
+     */
+    async meRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MeResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/auth/me`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MeResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the current user
+     */
+    async me(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MeResponse> {
+        const response = await this.meRaw(initOverrides);
         return await response.value();
     }
 

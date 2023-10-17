@@ -1,5 +1,6 @@
 <script lang="ts">
     import ChatArea from "$lib/ChatArea.svelte";
+
 </script>
 
 <svelte:head>
