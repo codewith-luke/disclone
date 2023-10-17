@@ -20,6 +20,7 @@ import type {
   LogoutResponse,
   RegisterRequest,
   RegisterResponse,
+  User,
 } from '../models/index';
 import {
     LoginRequestFromJSON,
@@ -32,6 +33,8 @@ import {
     RegisterRequestToJSON,
     RegisterResponseFromJSON,
     RegisterResponseToJSON,
+    UserFromJSON,
+    UserToJSON,
 } from '../models/index';
 
 export interface LoginOperationRequest {
@@ -46,6 +49,32 @@ export interface RegisterOperationRequest {
  * 
  */
 export class AuthApi extends runtime.BaseAPI {
+
+    /**
+     * Gets the current user
+     */
+    async getCurrentUserRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<User>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/auth/me`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the current user
+     */
+    async getCurrentUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<User> {
+        const response = await this.getCurrentUserRaw(initOverrides);
+        return await response.value();
+    }
 
     /**
      * Logs in a user

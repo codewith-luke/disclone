@@ -65,6 +65,7 @@ export function createUserHandler(userAccess: UserAccess) {
                     validateAuth();
                     logger.info('auth validated');
                 })
+
                 .put(Routes.archive, async ({body, removeCookie, cookie}) => {
                     const sessionID = cookie[Cookies.sessionID];
                     await userAccess.archive(body.userID, sessionID);
@@ -94,6 +95,14 @@ export function createUserHandler(userAccess: UserAccess) {
         .use(setupRoutes)
         .state(State.userAccess, userAccess)
         .use(AuthRoutes)
+        .get(Routes.me, async ({cookie}) => {
+            const sessionID = cookie[Cookies.sessionID];
+            const user = await userAccess.getUserBySession(sessionID);
+
+            return {
+                user: User.sanatize(user),
+            }
+        })
         .post(Routes.logout, async ({cookie, store: {userAccess}, removeCookie}) => {
             await userAccess.logoutUser(cookie[Cookies.sessionID]);
 
@@ -121,7 +130,7 @@ export function createUserHandler(userAccess: UserAccess) {
             setCookie(Cookies.sessionToken, token);
 
             return {
-                user: User.toJSON(result.user),
+                user: User.sanatize(result.user)
             }
         }, {
             body: RegisterRequest
@@ -145,7 +154,7 @@ export function createUserHandler(userAccess: UserAccess) {
             })
 
             return {
-                user: User.toJSON(result.user),
+                user: User.sanatize(result.user),
             }
         }, {
             body: LoginRequest,

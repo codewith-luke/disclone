@@ -254,5 +254,39 @@ describe("dsa", () => {
             expect(session).not.toBeDefined();
             expect(sessionID.length).toBe(0);
         });
+
+        it(`should login and retrieve user`, async () => {
+            const expected = 'admin';
+            let cookies = "";
+
+            await sut.handle(
+                new Request(`${domain}${Routes.login}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: "admin",
+                        password: "admin",
+                    }),
+                })
+            ).then((res: Response) => {
+                cookies = res.headers.get("Set-Cookie") ?? "";
+                return res.json();
+            });
+
+            const actual = await sut.handle(
+                new Request(`${domain}${Routes.me}`, {
+                    method: 'GET',
+                    headers: {
+                        'Cookie': cookies,
+                    }
+                })
+            ).then((res: Response) => {
+                return res.json();
+            });
+
+            expect(actual.username).toEqual(expected);
+        });
     });
 });

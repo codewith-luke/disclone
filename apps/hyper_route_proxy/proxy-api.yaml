@@ -122,7 +122,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
+  /auth/me:
+    get:
+      tags:
+        - auth
+      description: Gets the current user
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: user response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   # PROFILE
   /profile:
     get:

@@ -10,6 +10,10 @@ export async function handle({event, resolve}): Promise<Handle> {
         event.locals.sessionToken = sessionToken;
     }
 
+    if (event.url.pathname === "/login" && event.locals.hasAuth) {
+        throw redirect(303, "/");
+    }
+
     if (event.url.pathname === "/" && !event.locals.hasAuth) {
         throw redirect(303, "/login");
     }

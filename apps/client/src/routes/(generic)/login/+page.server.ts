@@ -44,14 +44,3 @@ export const actions = /**/{
         }
     },
 } satisfies Actions;
-
-export const load: PageLoad = async ({ params , locals}) => {
-    const authAPI = new AuthApi();
-    
-	return {
-		post: {
-			title: `Title for ${params.slug} goes here`,
-			content: `Content for ${params.slug} goes here`,
-		},
-	};
-};

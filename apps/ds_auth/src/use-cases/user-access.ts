@@ -20,11 +20,16 @@ export type UserAccess = ReturnType<typeof createUserAccess>;
 
 export function createUserAccess(db: AuthDB, logger: Logger) {
     return {
+        getUserBySession,
         loginUser,
         logoutUser,
         registerUser,
         archive,
         validateAuth
+    }
+
+    async function getUserBySession(sessionID: string) {
+        return db.userAccess.userFromSession(sessionID);
     }
 
     async function registerUser(data: RegisterUserInput) {

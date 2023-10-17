@@ -26,6 +26,7 @@ export const Routes = {
     logout: '/logout',
     archive: '/archive',
     register: '/register',
+    me: '/me',
 } as const;
 
 export const Environments = {
@@ -49,7 +50,7 @@ export const User = t.Object({
     updated_at: t.Date(),
 });
 
-User.toJSON = (user: User) => {
+User.sanatize = (user: User) => {
     const {password, permissions, ...rest} = user;
     return rest;
 };

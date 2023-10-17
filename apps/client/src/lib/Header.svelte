@@ -53,7 +53,6 @@
     <div class="flex items-center w-48 pl-5">
         <UserProfileAvatar/>
         User {$user.username}
-        <a href="/login">Go Login</a>
     </div>
     <div class="flex flex-1 items-center">
         <div class="w-full flex items-center gap-x-4 justify-end">
