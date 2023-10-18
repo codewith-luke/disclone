@@ -1,6 +1,16 @@
 import {Elysia, t} from "elysia";
 import {setupLogger, setupRoutes} from "./setup";
-import {Cookies, ErrorResponseMessage, Routes, State, User} from "./types";
+import {
+    Cookies,
+    ErrorResponseMessage,
+    JWTProfile,
+    JWTSign,
+    RemoveCookie,
+    Routes,
+    SetCookie,
+    State,
+    User
+} from "./types";
 import {ErrorCodes, ValidationError} from "./util/error";
 import {UserAccess} from "./use-cases/user-access";
 import jwt from "@elysiajs/jwt";
@@ -36,23 +46,73 @@ export const LoginResponse = t.Object({
     user: t.Omit(User, ['password', 'permissions'])
 });
 
+async function signToken(userID: number, username: string, sessionID: string, jwt: JWTSign) {
+    return await jwt.sign({
+        id: `${userID}`,
+        username: username,
+        session_id: sessionID
+    });
+}
+
+function setAuth(sessionID: string, token: string, setCookie: SetCookie) {
+    setCookie(Cookies.sessionID, sessionID, {
+        httpOnly: true,
+    });
+    setCookie(Cookies.sessionToken, token, {
+        httpOnly: true,
+    });
+}
+
+function clearAuth(removeCookie: RemoveCookie) {
+    removeCookie(Cookies.sessionID);
+    removeCookie(Cookies.sessionToken);
+}
+
 export function createUserHandler(userAccess: UserAccess) {
     const AuthRoutes = new Elysia()
         .use(setupLogger)
         .use(setupRoutes)
-        .derive(({cookie, set}) => ({
+        .derive(({cookie, set, logger, jwt, removeCookie}) => ({
             validateAuth: async () => {
                 const sessionID = cookie[Cookies.sessionID];
                 const token = cookie[Cookies.sessionToken];
 
                 if (!sessionID || !token) {
+                    logger.error("Missing session id or token");
                     set.status = 401;
                     return false;
                 }
 
-                const user = await userAccess.validateAuth(sessionID, token);
+                let profile: JWTProfile;
 
-                if (!user) {
+                try {
+                    profile = await jwt.verify(token) as JWTProfile;
+                } catch (e) {
+                    let errMessage = "Failed to verify token"
+                    if (e instanceof Error) {
+                        errMessage += `: ${e.message}`;
+                    }
+                    logger.error(`Failed to verify token: ${errMessage}`);
+                    set.status = 401;
+                    return false;
+                }
+
+                let user = null;
+
+                try {
+                    user = await userAccess.validateSession(sessionID, profile);
+
+                    if (!user) {
+                        clearAuth(removeCookie);
+                        set.status = 401;
+                        return false;
+                    }
+                } catch (e) {
+                    let errMessage = "Failed to verify session"
+                    if (e instanceof Error) {
+                        errMessage += `: ${e.message}`;
+                    }
+                    logger.error(`Failed to verify token: ${errMessage}`);
                     set.status = 401;
                     return false;
                 }
@@ -62,10 +122,8 @@ export function createUserHandler(userAccess: UserAccess) {
             app => app
                 .onBeforeHandle(({validateAuth, logger}) => {
                     logger.info('validating auth');
-                    validateAuth();
-                    logger.info('auth validated');
+                    return validateAuth();
                 })
-
                 .put(Routes.archive, async ({body, removeCookie, cookie}) => {
                     const sessionID = cookie[Cookies.sessionID];
                     await userAccess.archive(body.userID, sessionID);
@@ -85,7 +143,8 @@ export function createUserHandler(userAccess: UserAccess) {
         .use(
             jwt({
                 name: 'jwt',
-                secret: 'Fischl von Luftschloss Narfidort'
+                // TODO: Needs to be stored somewhere safe. idk like a env
+                secret: 'Fischl von Luftschloss Narfidort',
             })
         )
         .model({
@@ -104,17 +163,14 @@ export function createUserHandler(userAccess: UserAccess) {
         })
         .post(Routes.logout, async ({cookie, store: {userAccess}, removeCookie}) => {
             await userAccess.logoutUser(cookie[Cookies.sessionID]);
-
-            removeCookie(Cookies.sessionID);
-            removeCookie(Cookies.sessionToken);
-
+            clearAuth(removeCookie);
             return {
                 success: true
             }
         }, {
             body: t.Undefined()
         })
-        .post(Routes.register, async ({store: {userAccess}, setCookie, set, body}) => {
+        .post(Routes.register, async ({store: {userAccess}, setCookie, params, jwt, set, body}) => {
             const result = await userAccess.registerUser(body);
 
             if (!result) {
@@ -123,15 +179,10 @@ export function createUserHandler(userAccess: UserAccess) {
                 return error;
             }
 
-            const {sessionID, token} = result;
-
-            setCookie(Cookies.sessionID, sessionID, {
-                httpOnly: true,
-            });
-
-            setCookie(Cookies.sessionToken, token, {
-                httpOnly: true,
-            });
+            const {sessionID} = result;
+            const token = await signToken(result.user.id, result.user.username, sessionID, jwt)
+            await userAccess.saveUserSession(result.user.id, result.sessionID, token);
+            setAuth(sessionID, token, setCookie);
 
             return {
                 user: User.sanatize(result.user)
@@ -148,20 +199,10 @@ export function createUserHandler(userAccess: UserAccess) {
                 return error;
             }
 
-            const {sessionID, token} = result;
-
-            setCookie(Cookies.sessionID, sessionID, {
-                httpOnly: true,
-            });
-
-            setCookie(Cookies.sessionToken, token, {
-                httpOnly: true,
-            });
-
-            setCookie('auth', await jwt.sign(params), {
-                httpOnly: true,
-                maxAge: 7 * 86400,
-            })
+            const {sessionID} = result;
+            const token = await signToken(result.user.id, result.user.username, sessionID, jwt)
+            await userAccess.saveUserSession(result.user.id, result.sessionID, token);
+            setAuth(sessionID, token, setCookie);
 
             return {
                 user: User.sanatize(result.user),
@@ -177,3 +218,5 @@ export function createUserHandler(userAccess: UserAccess) {
             }
         })
 }
+
+

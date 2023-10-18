@@ -200,7 +200,7 @@ function handleDBError(e: any, logger: Logger, message: string) {
         errMessage = e.message;
     }
 
-    logger.error(message, errMessage);
+    logger.error(`${message} : ${errMessage}`);
 
     throw new QueryError(message);
 }

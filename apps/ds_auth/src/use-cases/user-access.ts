@@ -9,6 +9,7 @@ import {
 import {AuthDB} from "../access/db-access";
 import {ErrorCodes, ValidationError} from "../util/error";
 import {Logger} from "../util/logger";
+import {JWTProfile, User} from "../types";
 
 export type RegisterUserInput = {
     email: string;
@@ -25,7 +26,8 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
         logoutUser,
         registerUser,
         archive,
-        validateAuth
+        validateSession,
+        saveUserSession
     }
 
     async function getUserBySession(sessionID: string) {
@@ -85,27 +87,24 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
         }
 
         const sessionID = createSessionID();
-        const token = createSignatureToken(sessionID, Bun.env.SECRET, user);
 
         if (!sessionID) {
             logger.error(`User ${username} failed to login, session creation failed.`);
             return null;
         }
 
-        if (!token) {
-            logger.error(`User ${username} failed to login, token creation failed.`);
-            return null;
-        }
-
-        await db.userAccess.saveSession(user.id, sessionID, token);
 
         logger.info(`User ${username} logged in successfully`);
 
         return {
             user,
-            sessionID,
-            token
+            sessionID
         }
+    }
+
+    async function saveUserSession(userID: number, sessionID: string, token: string) {
+        await db.userAccess.saveSession(userID, sessionID, token);
+        logger.info(`User ${userID} session saved successfully`);
     }
 
     async function archive(userID: number, sessionID: string) {
@@ -119,7 +118,7 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
         await db.userAccess.archive(userID, sessionID);
     }
 
-    async function validateAuth(sessionID: string, token: string) {
+    async function validateSession(sessionID: string, token: JWTProfile) {
         // TODO: Replace with a Redis call
         const user = await db.userAccess.userFromSession(sessionID);
 
@@ -128,10 +127,8 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
             return null;
         }
 
-        const isValid = createSignatureToken(sessionID, Bun.env.SECRET, user) === token;
-
-        if (!isValid) {
-            logger.error(`User failed to validate auth, token mismatch.`);
+        if (sessionID !== token.session_id) {
+            logger.error(`User failed to validate auth, user mismatch.`);
             return null;
         }
 

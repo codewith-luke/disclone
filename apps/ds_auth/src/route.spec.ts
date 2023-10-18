@@ -7,6 +7,13 @@ import {createTestDB, deleteAllUsersBesidesAdmin} from "./scripts/delete-user";
 
 const domain = "http://localhost";
 
+function cookieSetter(cookieHeader: string[]) {
+    return cookieHeader.reduce((acc, curr) => {
+        const [value] = curr.split(';');
+        return `${acc}${value};`;
+    }, "");
+}
+
 describe("dsa", () => {
     const dbAccess = createTestDB();
     let sut = createApp();
@@ -118,7 +125,8 @@ describe("dsa", () => {
                     }),
                 })
             ).then((res: Response) => {
-                cookies = res.headers.get("Set-Cookie") ?? "";
+                const cookieHeader = res.headers.getSetCookie();
+                cookies = cookieSetter(cookieHeader)
                 return res.json();
             });
 
@@ -146,6 +154,7 @@ describe("dsa", () => {
                 })
             ).then((res: Response) => res.json());
 
+            console.log(archiveResult);
             expect(archiveResult.userID).toEqual(user.id);
 
             // 3) Check if user is archived
@@ -170,7 +179,8 @@ describe("dsa", () => {
                     }),
                 })
             ).then((res: Response) => {
-                cookies = res.headers.get("Set-Cookie") ?? "";
+                const cookieHeader = res.headers.getSetCookie();
+                cookies = cookieSetter(cookieHeader)
                 return res.json();
             });
 
@@ -229,7 +239,8 @@ describe("dsa", () => {
                     }),
                 })
             ).then((res: Response) => {
-                cookies = res.headers.get("Set-Cookie") ?? "";
+                const cookieHeader = res.headers.getSetCookie();
+                cookies = cookieSetter(cookieHeader)
                 return res.json();
             });
 
@@ -243,7 +254,8 @@ describe("dsa", () => {
                     }
                 })
             ).then(res => {
-                cookies = res.headers.get("Set-Cookie") ?? "";
+                const cookieHeader = res.headers.getSetCookie();
+                cookies = cookieSetter(cookieHeader)
             });
             const user = await dbAccess.authDB.userAccess.getUser("admin");
             const session = await dbAccess.authDB.userAccess.sessionByUserID(user?.id ?? -1);
@@ -271,7 +283,8 @@ describe("dsa", () => {
                     }),
                 })
             ).then((res: Response) => {
-                cookies = res.headers.get("Set-Cookie") ?? "";
+                const cookieHeader = res.headers.getSetCookie();
+                cookies = cookieSetter(cookieHeader)
                 return res.json();
             });
 
@@ -286,7 +299,8 @@ describe("dsa", () => {
                 return res.json();
             });
 
-            expect(actual.username).toEqual(expected);
+            const {user} = actual;
+            expect(user.username).toEqual(expected);
         });
     });
 });

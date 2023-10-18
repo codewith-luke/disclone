@@ -4,6 +4,18 @@ export type User = UnwrapSchema<typeof User>
 
 export type ErrorResponseMessage = UnwrapSchema<typeof ErrorResponseMessage>;
 
+export type SetCookie = (name: string, value: string, options: any) => void;
+export type RemoveCookie = (name: string) => void;
+export type JWTSign = {
+    sign: (payload: Record<string, string>) => Promise<string>;
+}
+
+export type JWTProfile = {
+    id: string;
+    username: string;
+    session_id: string;
+}
+
 const Permissions = {
     read: "read",
     write: "write",
