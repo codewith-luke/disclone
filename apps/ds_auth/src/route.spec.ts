@@ -39,14 +39,14 @@ describe("dsa", () => {
         expect(actual).toBe(expected);
     });
 
-    describe(`[${Routes.register}]`, function () {
+    describe(`[${Routes.auth.keys.register}]`, function () {
         afterAll(() => {
             deleteAllUsersBesidesAdmin();
         });
 
         it(`should return 400 if invalid email`, async () => {
             const actual = await sut.handle(
-                new Request(`${domain}${Routes.register}`, {
+                new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.register}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ describe("dsa", () => {
 
         it(`should return 400 if invalid password`, async () => {
             const actual = await sut.handle(
-                new Request(`${domain}${Routes.register}`, {
+                new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.register}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ describe("dsa", () => {
             const expected = "Username must not contain any special characters"
 
             const actual = await sut.handle(
-                new Request(`${domain}${Routes.register}`, {
+                new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.register}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ describe("dsa", () => {
 
             // 1) Register user
             const registerResult = await sut.handle(
-                new Request(`${domain}${Routes.register}`, {
+                new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.register}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -142,7 +142,7 @@ describe("dsa", () => {
 
             // 2) Archive user
             const archiveResult = await sut.handle(
-                new Request(`${domain}${Routes.archive}`, {
+                new Request(`${domain}${Routes.profile.base}${Routes.profile.keys.archive}`, {
                     method: 'PUT',
                     headers: {
                         'Cookie': cookies,
@@ -167,7 +167,7 @@ describe("dsa", () => {
 
             // 1) Register user
             const registerResult = await sut.handle(
-                new Request(`${domain}${Routes.register}`, {
+                new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.register}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ describe("dsa", () => {
 
             // 2) Archive admin user
             const archiveResult = await sut.handle(
-                new Request(`${domain}${Routes.archive}`, {
+                new Request(`${domain}${Routes.profile.base}${Routes.profile.keys.archive}`, {
                     method: 'PUT',
                     headers: {
                         'Cookie': cookies,
@@ -206,10 +206,10 @@ describe("dsa", () => {
         });
     });
 
-    describe(`${Routes.login} and ${Routes.logout}`, function () {
+    describe(`${Routes.auth.keys.login} and ${Routes.auth.keys.logout}`, function () {
         it(`should error on invalid user`, async () => {
             const actual = await sut.handle(
-                new Request(`${domain}${Routes.login}`, {
+                new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.login}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -228,7 +228,7 @@ describe("dsa", () => {
             let cookies = "";
 
             const actual = await sut.handle(
-                new Request(`${domain}${Routes.login}`, {
+                new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.login}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -247,7 +247,7 @@ describe("dsa", () => {
             expect(cookies.includes("session_id")).toBeTrue();
 
             await sut.handle(
-                new Request(`${domain}${Routes.logout}`, {
+                new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.logout}`, {
                     method: 'POST',
                     headers: {
                         'Cookie': cookies,
@@ -272,7 +272,7 @@ describe("dsa", () => {
             let cookies = "";
 
             await sut.handle(
-                new Request(`${domain}${Routes.login}`, {
+                new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.login}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -289,7 +289,7 @@ describe("dsa", () => {
             });
 
             const actual = await sut.handle(
-                new Request(`${domain}${Routes.me}`, {
+                new Request(`${domain}${Routes.profile.base}${Routes.profile.keys.me}`, {
                     method: 'GET',
                     headers: {
                         'Cookie': cookies,

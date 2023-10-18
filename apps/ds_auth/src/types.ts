@@ -34,11 +34,21 @@ export const State = {
 
 export const Routes = {
     heartbeat: '/heartbeat',
-    login: '/login',
-    logout: '/logout',
-    archive: '/archive',
-    register: '/register',
-    me: '/me',
+    auth: {
+        base: '/auth',
+        keys: {
+            login: '/login',
+            logout: '/logout',
+            register: '/register',
+        }
+    },
+    profile: {
+        base: '/profile',
+        keys: {
+            archive: '/archive',
+            me: '/me',
+        }
+    }
 } as const;
 
 export const Environments = {

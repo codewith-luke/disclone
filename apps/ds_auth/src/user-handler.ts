@@ -57,6 +57,7 @@ function setAuth(sessionID: string, token: string, setCookie: SetCookie) {
     setCookie(Cookies.sessionID, sessionID, {
         httpOnly: true,
     });
+
     setCookie(Cookies.sessionToken, token, {
         httpOnly: true,
     });
@@ -68,7 +69,68 @@ function clearAuth(removeCookie: RemoveCookie) {
 }
 
 export function createUserHandler(userAccess: UserAccess) {
-    const AuthRoutes = new Elysia()
+    const AuthRouter = new Elysia()
+        .use(setupLogger)
+        .use(setupRoutes)
+        .state(State.userAccess, userAccess)
+        .post(Routes.auth.keys.logout, async ({cookie, store: {userAccess}, removeCookie}) => {
+            await userAccess.logoutUser(cookie[Cookies.sessionID]);
+            clearAuth(removeCookie);
+            return {
+                success: true
+            }
+        }, {
+            body: t.Undefined()
+        })
+        .post(Routes.auth.keys.register, async ({store: {userAccess}, setCookie, params, jwt, set, body}) => {
+            const result = await userAccess.registerUser(body);
+
+            if (!result) {
+                const error = new ValidationError().createHttpResponse();
+                set.status = error.status;
+                return error;
+            }
+
+            const {sessionID} = result;
+            const token = await signToken(result.user.id, result.user.username, sessionID, jwt)
+            await userAccess.saveUserSession(result.user.id, result.sessionID, token);
+            setAuth(sessionID, token, setCookie);
+
+            return {
+                user: User.sanatize(result.user)
+            }
+        }, {
+            body: RegisterRequest
+        })
+        .post(Routes.auth.keys.login, async ({store: {userAccess}, jwt, params, setCookie, body, set}) => {
+            const result = await userAccess.loginUser(body.username, body.password);
+
+            if (!result) {
+                const error = new ValidationError().createHttpResponse();
+                set.status = error.status;
+                return error;
+            }
+
+            const {sessionID} = result;
+            const token = await signToken(result.user.id, result.user.username, sessionID, jwt)
+            await userAccess.saveUserSession(result.user.id, result.sessionID, token);
+            setAuth(sessionID, token, setCookie);
+
+            return {
+                user: User.sanatize(result.user),
+            }
+        }, {
+            body: LoginRequest,
+            error({code, error}) {
+                switch (code) {
+                    case ErrorCodes.QUERY_ERROR: {
+                        return error.createHttpResponse();
+                    }
+                }
+            }
+        });
+
+    const ProfileRouter = new Elysia()
         .use(setupLogger)
         .use(setupRoutes)
         .derive(({cookie, set, logger, jwt, removeCookie}) => ({
@@ -123,7 +185,14 @@ export function createUserHandler(userAccess: UserAccess) {
                     logger.info('validating auth');
                     return validateAuth();
                 })
-                .put(Routes.archive, async ({body, removeCookie, cookie}) => {
+                .get(Routes.profile.keys.me, async ({cookie}) => {
+                    const sessionID = cookie[Cookies.sessionID];
+                    const user = await userAccess.getUserBySession(sessionID);
+                    return {
+                        user: User.sanatize(user),
+                    }
+                })
+                .put(Routes.profile.keys.archive, async ({body, removeCookie, cookie}) => {
                     const sessionID = cookie[Cookies.sessionID];
                     await userAccess.archive(body.userID, sessionID);
 
@@ -144,6 +213,7 @@ export function createUserHandler(userAccess: UserAccess) {
                 name: 'jwt',
                 // TODO: Needs to be stored somewhere safe. idk like a env
                 secret: 'Fischl von Luftschloss Narfidort',
+                exp: '14d',
             })
         )
         .model({
@@ -151,70 +221,13 @@ export function createUserHandler(userAccess: UserAccess) {
             errorResponse: ErrorResponseMessage,
         })
         .use(setupRoutes)
-        .state(State.userAccess, userAccess)
-        .use(AuthRoutes)
-        .get(Routes.me, async ({cookie}) => {
-            const sessionID = cookie[Cookies.sessionID];
-            const user = await userAccess.getUserBySession(sessionID);
-            return {
-                user: User.sanatize(user),
-            }
+        .group(Routes.auth.base, (app) => {
+            return app
+                .use(AuthRouter)
         })
-        .post(Routes.logout, async ({cookie, store: {userAccess}, removeCookie}) => {
-            await userAccess.logoutUser(cookie[Cookies.sessionID]);
-            clearAuth(removeCookie);
-            return {
-                success: true
-            }
-        }, {
-            body: t.Undefined()
-        })
-        .post(Routes.register, async ({store: {userAccess}, setCookie, params, jwt, set, body}) => {
-            const result = await userAccess.registerUser(body);
-
-            if (!result) {
-                const error = new ValidationError().createHttpResponse();
-                set.status = error.status;
-                return error;
-            }
-
-            const {sessionID} = result;
-            const token = await signToken(result.user.id, result.user.username, sessionID, jwt)
-            await userAccess.saveUserSession(result.user.id, result.sessionID, token);
-            setAuth(sessionID, token, setCookie);
-
-            return {
-                user: User.sanatize(result.user)
-            }
-        }, {
-            body: RegisterRequest
-        })
-        .post(Routes.login, async ({store: {userAccess}, jwt, params, setCookie, body, set}) => {
-            const result = await userAccess.loginUser(body.username, body.password);
-
-            if (!result) {
-                const error = new ValidationError().createHttpResponse();
-                set.status = error.status;
-                return error;
-            }
-
-            const {sessionID} = result;
-            const token = await signToken(result.user.id, result.user.username, sessionID, jwt)
-            await userAccess.saveUserSession(result.user.id, result.sessionID, token);
-            setAuth(sessionID, token, setCookie);
-
-            return {
-                user: User.sanatize(result.user),
-            }
-        }, {
-            body: LoginRequest,
-            error({code, error}) {
-                switch (code) {
-                    case ErrorCodes.QUERY_ERROR: {
-                        return error.createHttpResponse();
-                    }
-                }
-            }
+        .group(Routes.profile.base, (app) => {
+            return app
+                .use(ProfileRouter)
         })
 }
 

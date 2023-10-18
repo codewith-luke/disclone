@@ -13,7 +13,7 @@ export interface Logger {
 
 const {combine, timestamp, printf} = format;
 
-const filterList = new Set([Routes.login]);
+const filterList = new Set([Routes.auth.keys.login]);
 
 export const RequestLifeCycle = {
     start: "start",

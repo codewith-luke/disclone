@@ -45,6 +45,9 @@ export function createApp() {
             }
 
             switch (code) {
+                case ErrorCodes.NOT_FOUND:
+                    err.status = 404;
+                    break;
                 case ErrorCodes.VALIDATION:
                     const {status} = error as ValidationError;
                     err.status = status;
