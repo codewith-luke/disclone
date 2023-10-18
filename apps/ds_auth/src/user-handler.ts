@@ -49,8 +49,7 @@ export const LoginResponse = t.Object({
 async function signToken(userID: number, username: string, sessionID: string, jwt: JWTSign) {
     return await jwt.sign({
         id: `${userID}`,
-        username: username,
-        session_id: sessionID
+        username: username
     });
 }
 

@@ -127,7 +127,7 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
             return null;
         }
 
-        if (sessionID !== token.session_id) {
+        if (user.id !== parseInt(token.id)) {
             logger.error(`User failed to validate auth, user mismatch.`);
             return null;
         }
