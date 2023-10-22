@@ -65,4 +65,4 @@ Need to installed on your machine: Docker, Bun ( https://bun.sh ),
 9. go to your forked repo and open a pull request
 10. write some edgy mean derogatory comment, make sure to insult the work of whoever's bug you fixed
 11. Click 'Create pull request'
-12. Done ! Write "OpenSource Core team contributor on your resume"
+12. Done ! Write "OpenSource Core team contributor" on your resume
