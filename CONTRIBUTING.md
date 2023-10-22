@@ -1,11 +1,11 @@
 # Disclaimer on Contributing to this project
 
 This is not a project that will be used by thousands, this is not a project that will be used by many.
-If you are wanting to contrubute it is because you are in one of the following pools:
+If you are wanting to contribute it is because you are in one of the following pools:
 
 1. You want to learn how to build using the technologies used in this project
 2. You want to learn about system design and architecture
-3. You are new to OSS and want to learn how to work in a bigger ecosystem and collab with other devs
+3. You are new to OSS and want to learn how to work in a bigger ecosystem and collaborate with other devs
 4. You want to be able to showcase your work to future employers
 
 This project will be deployed and managed by me. Your code will make it into the real world and people will be able to
@@ -45,4 +45,24 @@ I am not going to be taking feature requests at this time. I want to build the c
 
 Make sure to check out the [discord](https://discord.gg/46JKsxmSRJ) and ask questions if you have any.
 
+### How to effectively contribute
 
+**requirements**
+Need to installed on your machine: Docker, Bun ( https://bun.sh ), 
+
+1. Fork the repo
+2. take an issue and notify that you're working on it or log an issue
+3. git clone your fork
+( if you already forked the repo, sync your fork with main and do 'git pull' to be sure to be up-to-date )
+4. git branch fix/<"insert here number of the issue you fix"> or feat/<"name of the feat">
+( let's say it's fix/420)
+5. git switch fix/420
+( work on your branch)
+( when done => review yourself => remove console.log)
+6. git add <"files affected">
+7. git commit -m "insert some meaningful message here"
+8. git push --set-upstream origin fix/420
+9. go to your forked repo and open a pull request
+10. write some edgy mean derogatory comment, make sure to insult the work of whoever's bug you fixed
+11. Click 'Create pull request'
+12. Done ! Write "OpenSource Core team contributor on your resume"
