@@ -35,7 +35,7 @@ export const State = {
 export const Routes = {
     heartbeat: '/heartbeat',
     auth: {
-        base: '/auth',
+        base: '',
         keys: {
             login: '/login',
             logout: '/logout',
