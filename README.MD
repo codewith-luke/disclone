@@ -37,7 +37,7 @@ The project uses a number of technologies (if the project does not have the spec
 
 - AWS CDK
 
-## Getting Started (*Disclaimer*, if stuff goes wrong here. Message me.)
+## Getting Started (_Disclaimer_, if stuff goes wrong here. Message me.)
 
 To run the repo locally just follow along:
 
@@ -48,12 +48,11 @@ To run the repo locally just follow along:
 4. `pnpm i`
 5. Create .env.development file in `./db` and `./apps/ds_auth`. You can just copy the example one and rename/fill out
    what you want.
-4. `docker compose up -d`
-5. `moon run client:dev`
-6. This should now open the client and have everything up and running
-7. You can login to the app with the default account `u: admin` `p: admin` (very secure)
+6. `docker compose up -d`
+7. `moon run client:dev`
+8. This should now open the client and have everything up and running
+9. You can login to the app with the default account `u: admin` `p: admin` (very secure)
 
 ## Contributing
 
 Check out the [contributing](./CONTRIBUTING.md) guide for more information.
-

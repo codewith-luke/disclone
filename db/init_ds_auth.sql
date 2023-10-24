@@ -1,3 +1,5 @@
+SET TIME ZONE TO 'Europe/London';
+
 CREATE
 USER ds_auth WITH PASSWORD 'password';
 CREATE SCHEMA ds_auth AUTHORIZATION ds_auth;
@@ -9,8 +11,8 @@ CREATE TABLE ds_auth.users
     password   VARCHAR(255) NOT NULL,
     email      VARCHAR(255) NOT NULL UNIQUE,
     archived   BOOLEAN      NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP    NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP    NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ    NOT NULL DEFAULT NOW()
 );
 
 create TABLE ds_auth.sessions
@@ -19,8 +21,8 @@ create TABLE ds_auth.sessions
     user_id    INTEGER      NOT NULL UNIQUE REFERENCES ds_auth.users (id),
     session_id VARCHAR(25)  NOT NULL UNIQUE,
     token      VARCHAR(255) NOT NULL UNIQUE,
-    created_at TIMESTAMP    NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP    NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ    NOT NULL DEFAULT NOW()
 );
 
 
