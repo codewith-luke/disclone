@@ -73,9 +73,6 @@ export function createUserHandler(userAccess: UserAccess) {
         .use(setupLogger)
         .use(setupRoutes)
         .state(State.userAccess, userAccess)
-        .get('/test', async ({store: {userAccess}}) => {
-            return 'test';
-        })
         .post(Routes.auth.keys.logout, async ({cookie, store: {userAccess}, removeCookie}) => {
             await userAccess.logoutUser(cookie[Cookies.sessionID]);
             clearAuth(removeCookie);
