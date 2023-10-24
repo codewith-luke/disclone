@@ -68,6 +68,6 @@ Not sure: you may need versions of NodeJS for sveltekit and sveltekit installati
 7. git commit -m "insert some meaningful message here"
 8. git push --set-upstream origin fix/420
 9. go to your forked repo and open a pull request
-10. write some edgy mean derogatory commentso we know what the Pull Request is about
+10. write some edgy mean derogatory comment so we know what the Pull Request is about
 11. Click 'Create pull request'
 12. Done ! Write "OpenSource Core team contributor" on your resume
