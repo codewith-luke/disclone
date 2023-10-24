@@ -122,7 +122,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /auth/me:
+  /auth/profile:
     get:
       tags:
         - auth

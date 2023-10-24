@@ -208,14 +208,6 @@ export function createUserHandler(userAccess: UserAccess) {
         );
 
     return new Elysia()
-        .use(
-            jwt({
-                name: 'jwt',
-                // TODO: Needs to be stored somewhere safe. idk like a env
-                secret: 'Fischl von Luftschloss Narfidort',
-                exp: '14d',
-            })
-        )
         .model({
             login: LoginResponse,
             errorResponse: ErrorResponseMessage,

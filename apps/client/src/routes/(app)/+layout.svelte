@@ -11,6 +11,11 @@
     onMount(() => {
         const authAPI = new AuthApi();
 
+        if ($user.id) {
+            return () => {
+            };
+        }
+
         authAPI.me({
             credentials: "include"
         }).then((res) => {

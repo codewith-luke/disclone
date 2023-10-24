@@ -118,7 +118,7 @@ export class AuthApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/auth/me`,
+            path: `/auth/profile`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,

@@ -37,6 +37,7 @@ export const Routes = {
     auth: {
         base: '',
         keys: {
+            me: '/me',
             login: '/login',
             logout: '/logout',
             register: '/register',
@@ -46,7 +47,7 @@ export const Routes = {
         base: '/profile',
         keys: {
             archive: '/archive',
-            me: '/me',
+            me: '/',
         }
     }
 } as const;

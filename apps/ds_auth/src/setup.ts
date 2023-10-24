@@ -3,6 +3,7 @@ import {ErrorCodes, InternalError, UnknownError, ValidationError} from "./util/e
 import {loggers, RequestLifeCycle} from "./util/logger";
 import {cookie} from "@elysiajs/cookie";
 import {UserCache} from "./core/user-cache";
+import jwt from "@elysiajs/jwt";
 
 const traceIDHeader = "x-trace-id";
 
@@ -30,6 +31,14 @@ export const setupLogger = new Elysia({name: "setupLogger"})
     });
 
 export const setupRoutes = new Elysia({name: "setupRoutes"})
+    .use(
+        jwt({
+            name: 'jwt',
+            // TODO: Needs to be stored somewhere safe. idk like a env
+            secret: 'Fischl von Luftschloss Narfidort',
+            exp: '14d',
+        })
+    )
     .use(cookie({
         httpOnly: true,
     }))

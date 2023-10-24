@@ -28,7 +28,7 @@ export function createApp() {
         .use(setupRoutes)
         .use(setupLogger)
         .onResponse(({logger}) => {
-            // logger.info(RequestLifeCycle.end)
+            logger.info(RequestLifeCycle.end)
         })
         .get(Routes.heartbeat, () => "ok")
         .use(userHandler)
