@@ -52,7 +52,7 @@
 <header class="flex relative justify-between gap-x-4 min-h-[5rem] bg-surface-900 drop-shadow-lg z-10">
     <div class="flex items-center w-48 pl-5">
         <UserProfileAvatar/>
-        #{$user.username}
+        #{$user.displayName}
     </div>
     <div class="flex flex-1 items-center">
         <div class="w-full flex items-center gap-x-4 justify-end">

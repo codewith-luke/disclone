@@ -1,4 +1,5 @@
-SET TIMEZONE TO 'Europe/London';
+SET
+TIMEZONE TO 'Europe/London';
 
 CREATE
 USER ds_auth WITH PASSWORD 'password';
@@ -6,13 +7,14 @@ CREATE SCHEMA ds_auth AUTHORIZATION ds_auth;
 
 CREATE TABLE ds_auth.users
 (
-    id         SERIAL PRIMARY KEY,
-    username   VARCHAR(100) NOT NULL UNIQUE,
-    password   VARCHAR(255) NOT NULL,
-    email      VARCHAR(255) NOT NULL UNIQUE,
-    archived   BOOLEAN      NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    id           SERIAL PRIMARY KEY,
+    username     VARCHAR(100) NOT NULL UNIQUE,
+    display_name VARCHAR(100) NOT NULL,
+    password     VARCHAR(255) NOT NULL,
+    email        VARCHAR(255) NOT NULL UNIQUE,
+    archived     BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
 create TABLE ds_auth.sessions
@@ -57,8 +59,9 @@ CREATE TRIGGER update_modified_time_users
     FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 
 INSERT into ds_auth.users
-    (username, password, email)
+    (username, display_name, password, email)
 values ('admin',
+        'IAmAdmin',
         '$argon2id$v=19$m=65536,t=2,p=1$l8dOxo5QkVOiKKa+QNpEGNTgUkCrGrzj2CXFZ5xhPYs$0jyFFb643s0c/f2OsZ1gddtLXFxR4tqArkMUpN9xUwk',
         'admin@localhost');
 

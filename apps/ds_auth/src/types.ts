@@ -60,6 +60,7 @@ export const Environments = {
 export const User = t.Object({
     id: t.Number(),
     username: t.String(),
+    display_name: t.String(),
     email: t.String(),
     permissions: t.Union([
         t.Literal(Permissions.read),
