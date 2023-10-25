@@ -34,6 +34,8 @@ jobs:
      POSTGRES_PORT: 5432
      POSTGRES_DB: disclone
      POSTGRES_USER: ds_auth
+    volumes:
+     - "./db/init_ds_auth.sql:/docker-entrypoint-initdb.d/1.sql"
     # Set health checks to wait until postgres has started
     options: >-
      --health-cmd pg_isready
@@ -59,17 +61,19 @@ jobs:
      working-directory: "./apps/ds_auth"
      run: bun install
    # updating for some reason
-   # installing postgresql-client aka psql
-   - run: |
-      sudo apt-get update
-      sudo apt-get install postgresql-client
-   - name:
-      "step 4 seeding the database"
-      # translation : psql connect to host coruscant_db with user ds_auth on the port 5432 to database disclone with the file init_ds_auth as script to be ran.
-     working-directory: "./db"
-     # the pipe thingy indicates multiline command(s) incoming
-     run: |
-      psql --host coruscant_db --username ds_auth --port 5432 --dbname disclone --file init_ds_auth.sql --echo-all --echo-erros --echo-queries
+   ########### test docker image first and try this if it doesn't work
+   #  # installing postgresql-client aka psql
+   #  - run: |
+   #     sudo apt-get update
+   #     sudo apt-get install postgresql-client
+   #  - name:
+   #     "step 4 seeding the database"
+   #     # translation : psql connect to host coruscant_db with user ds_auth on the port 5432 to database disclone with the file init_ds_auth as script to be ran.
+   #    working-directory: "./db"
+   #    # the pipe thingy indicates multiline command(s) incoming
+   #    run: |
+   #     psql --host coruscant_db --username ds_auth --port 5432 --dbname disclone --file init_ds_auth.sql --echo-all --echo-erros --echo-queries
+   ############ test docker image first ############
    - name: "step 5 - run bun test"
      run: bun test
 env:
