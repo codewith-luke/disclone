@@ -47,10 +47,19 @@ Make sure to check out the [discord](https://discord.gg/46JKsxmSRJ) and ask ques
 
 ### How to effectively contribute
 
-**requirements**
-Need to installed on your machine: Docker, Bun ( https://bun.sh ), pnpm ( https://pnpm.io/installation), and Go 1.21 ( installed with either https://moonrepo.dev/docs/proto/tools or https://go.dev/doc/install)
+**Security**
 
-We also recommend to install proto & moonrepo ( https://moonrepo.dev/docs/proto/install )
+to remove sensitive files or leaked data from git, please check the following resources : 
+https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository, 
+https://www.baeldung.com/git-remove-file-without-deleting-it, 
+https://www.baeldung.com/git-remove-file-commit-history
+
+if anything, don't panic, contact your Security Officer or repositories' owners.
+
+**requirements**
+though required, we recommend to install proto & moonrepo ( https://moonrepo.dev/docs/proto/install ).
+
+Need to have installed on your machine: Docker, Bun ( https://bun.sh ), pnpm ( https://pnpm.io/installation), and Go 1.21.0 ( installed with either https://moonrepo.dev/docs/proto/tools or https://go.dev/doc/install)
 
 Not sure: you may need versions of NodeJS for sveltekit and sveltekit installations scripts that rely on it
 
@@ -66,7 +75,7 @@ Not sure: you may need versions of NodeJS for sveltekit and sveltekit installati
 5. git switch fix/420
    ( work on your branch)
    ( when done => review yourself => remove console.logs)
-6. git add <"files affected"> or git add -A 
+6. git add <"files affected"> or git add -A
 7. git commit -m "insert some meaningful message here"
 8. git push --set-upstream origin fix/420
 9. go to your forked repo and open a pull request
