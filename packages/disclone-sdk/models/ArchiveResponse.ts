@@ -13,6 +13,19 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ArchiveResponseResult } from './ArchiveResponseResult';
+import {
+    ArchiveResponseResultFromJSON,
+    ArchiveResponseResultFromJSONTyped,
+    ArchiveResponseResultToJSON,
+} from './ArchiveResponseResult';
+import type { ErrorResult } from './ErrorResult';
+import {
+    ErrorResultFromJSON,
+    ErrorResultFromJSONTyped,
+    ErrorResultToJSON,
+} from './ErrorResult';
+
 /**
  * 
  * @export
@@ -21,10 +34,16 @@ import { exists, mapValues } from '../runtime';
 export interface ArchiveResponse {
     /**
      * 
-     * @type {number}
+     * @type {ErrorResult}
      * @memberof ArchiveResponse
      */
-    userID: number;
+    error?: ErrorResult;
+    /**
+     * 
+     * @type {ArchiveResponseResult}
+     * @memberof ArchiveResponse
+     */
+    result?: ArchiveResponseResult;
 }
 
 /**
@@ -32,7 +51,6 @@ export interface ArchiveResponse {
  */
 export function instanceOfArchiveResponse(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "userID" in value;
 
     return isInstance;
 }
@@ -47,7 +65,8 @@ export function ArchiveResponseFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
-        'userID': json['userID'],
+        'error': !exists(json, 'error') ? undefined : ErrorResultFromJSON(json['error']),
+        'result': !exists(json, 'result') ? undefined : ArchiveResponseResultFromJSON(json['result']),
     };
 }
 
@@ -60,7 +79,8 @@ export function ArchiveResponseToJSON(value?: ArchiveResponse | null): any {
     }
     return {
         
-        'userID': value.userID,
+        'error': ErrorResultToJSON(value.error),
+        'result': ArchiveResponseResultToJSON(value.result),
     };
 }
 

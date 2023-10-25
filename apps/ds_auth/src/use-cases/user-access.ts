@@ -64,7 +64,6 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
     }
 
     async function loginUser(username: string, password: string) {
-        throw new QueryError("sheeesh")
         let user = await db.userAccess.getUser(username);
         let isMatch = false;
 

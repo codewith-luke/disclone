@@ -16,6 +16,7 @@
 import * as runtime from '../runtime';
 import type {
   CreateGroupRequest,
+  ErrorResult,
   Group,
   GroupMembers,
   GroupMessages,
@@ -25,6 +26,8 @@ import type {
 import {
     CreateGroupRequestFromJSON,
     CreateGroupRequestToJSON,
+    ErrorResultFromJSON,
+    ErrorResultToJSON,
     GroupFromJSON,
     GroupToJSON,
     GroupMembersFromJSON,

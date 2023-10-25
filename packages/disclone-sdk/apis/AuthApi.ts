@@ -15,22 +15,22 @@
 
 import * as runtime from '../runtime';
 import type {
+  ErrorResult,
   LoginRequest,
   LoginResponse,
   LogoutResponse,
-  MeResponse,
   RegisterRequest,
   RegisterResponse,
 } from '../models/index';
 import {
+    ErrorResultFromJSON,
+    ErrorResultToJSON,
     LoginRequestFromJSON,
     LoginRequestToJSON,
     LoginResponseFromJSON,
     LoginResponseToJSON,
     LogoutResponseFromJSON,
     LogoutResponseToJSON,
-    MeResponseFromJSON,
-    MeResponseToJSON,
     RegisterRequestFromJSON,
     RegisterRequestToJSON,
     RegisterResponseFromJSON,
@@ -106,32 +106,6 @@ export class AuthApi extends runtime.BaseAPI {
      */
     async logout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LogoutResponse> {
         const response = await this.logoutRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Gets the current user
-     */
-    async meRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MeResponse>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/auth/profile`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => MeResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets the current user
-     */
-    async me(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MeResponse> {
-        const response = await this.meRaw(initOverrides);
         return await response.value();
     }
 

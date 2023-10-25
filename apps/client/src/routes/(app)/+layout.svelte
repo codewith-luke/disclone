@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {AuthApi} from "disclone-sdk";
+    import {ProfileApi} from "disclone-sdk";
     import {Modal} from "@skeletonlabs/skeleton";
     import {onMount} from "svelte";
     import Header from "$lib/Header.svelte";
@@ -9,17 +9,29 @@
     const user = getUserStore();
 
     onMount(() => {
-        const authAPI = new AuthApi();
+        const profileApi = new ProfileApi();
 
         if ($user.id) {
             return () => {
             };
         }
 
-        authAPI.me({
+        profileApi.getProfile({
             credentials: "include"
         }).then((res) => {
-            user.set(res.user);
+            const {result, error} = res;
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            if (!result) {
+                console.error("No user found");
+                return;
+            }
+
+            user.set(result.user);
         });
 
         return () => {
