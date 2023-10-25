@@ -1,0 +1,75 @@
+# https://docs.github.com/en/actions/using-containerized-services/creating-postgresql-service-containers#running-jobs-directly-on-the-runner-machine
+
+# Bun github-action documentation
+# https://bun.sh/guides/runtime/cicd
+# https://github.com/oven-sh/setup-bun
+
+name: ds_auth_test
+
+on:
+ push:
+  branches: [main]
+ pull_request_review:
+  types: [submitted]
+ pull_request:
+  branches: [main]
+
+jobs:
+ # Label of the container job
+ first-job:
+  name:
+   first-job
+   # Containers must run in Linux based operating systems
+  runs-on: ubuntu-latest
+  services:
+   postgres:
+    image: postgres
+    env:
+     # See if this can reference env file
+     POSTGRES_PASSWORD: password
+     POSTGRES_HOST: coruscant_db
+     POSTGRES_PORT: 5432
+     POSTGRES_DB: disclone
+     POSTGRES_USER: ds_auth
+    # Set health checks to wait until postgres has started
+    options: >-
+     --health-cmd pg_isready
+     --health-interval 10s
+     --health-timeout 5s
+     --health-retries 5
+    ports:
+     # Maps tcp port 5432 on service container to the host
+     - 5432:5432
+
+  steps:
+   # Downloads a copy of the code in your repository before running CI tests
+   - name: copy code into runner
+     # official github action => copy repository's code into runner
+     uses: actions/checkout@v4
+     id: some id
+   - name: setting-up bun
+     # official bun action => sets up bun
+     uses: oven-sh/setup-bun@v1
+     with:
+      bun-version: latest
+   - run: cd "./apps/ds_auth"
+   - run: bun install
+   - name: Installing psql and seeding the database
+     # using the directory
+     uses: "./db"
+   # install postresql-client aka psql
+   - run: |
+      apt-get update
+      apt-get install --yes postgresql-client
+   # translation : psql connect to host coruscant_db with user ds_auth on the port 5432 to database disclone
+   - run: psql -h coruscant_db -U ds_auth -p 5432 -d disclone
+   # inside psql shell import the file init_ds_auth.sql
+   - run: \i  init_ds_auth.sql
+   # quit psql shell
+   - run: \q
+   - run: bun test
+env:
+ # The hostname used to communicate with the PostgreSQL service container
+ POSTGRES_HOST: localhost
+ # The default PostgreSQL port
+ POSTGRES_PORT: 5432

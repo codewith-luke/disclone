@@ -1,0 +1,85 @@
+# https://docs.github.com/en/actions/using-containerized-services/creating-postgresql-service-containers#running-jobs-directly-on-the-runner-machine
+
+# Bun github-action documentation
+# https://bun.sh/guides/runtime/cicd
+# https://github.com/oven-sh/setup-bun
+
+# Resources used:
+# - https://medium.com/chrisrbailey/github-actions-using-postgres-postgis-and-psql-e920a2aea7e1
+
+name: ds_auth_test
+
+on:
+ push:
+  branches: [main]
+ pull_request_review:
+  types: [submitted]
+ pull_request:
+  branches: [main]
+
+jobs:
+ # Label of the container job
+ first-job:
+  name:
+   first-job
+   # Containers must run in Linux based operating systems
+  runs-on: ubuntu-latest
+  services:
+   postgres:
+    image: postgres
+    env:
+     # See if this can reference env file
+     POSTGRES_PASSWORD: password
+     POSTGRES_HOST: coruscant_db
+     POSTGRES_PORT: 5432
+     POSTGRES_DB: disclone
+     POSTGRES_USER: ds_auth
+    # Set health checks to wait until postgres has started
+    options: >-
+     --health-cmd pg_isready
+     --health-interval 10s
+     --health-timeout 5s
+     --health-retries 5
+    ports:
+     # Maps tcp port 5432 on service container to the host
+     - 5432:5432
+
+  steps:
+   # Downloads a copy of the code in your repository before running CI tests
+   - name: "step 1 - copy code into the github action runner"
+     # official github action => copy repository's code into runner
+     uses: actions/checkout@v4
+     id: some id
+   - name: "step 2 - setting-up bun"
+     # official bun action => sets up bun ( see top of the file for doc)
+     uses: oven-sh/setup-bun@v1
+     with:
+      bun-version: latest
+   - name: "step 3 - installing dependencies"
+     working-directory: "./apps/ds_auth"
+     run: bun install
+   # updating for some reason
+   # installing postgresql-client aka psql
+   - run: |
+      sudo apt-get update
+      sudo apt-get install postgresql-client
+   - name:
+      "step 4 seeding the database"
+      # translation : psql connect to host coruscant_db with user ds_auth on the port 5432 to database disclone with the file init_ds_auth as script to be ran.
+     working-directory: "./db"
+     # the pipe thingy indicates multiline command(s) incoming
+     run: |
+      psql --host coruscant_db --username ds_auth --port 5432 --dbname disclone --file init_ds_auth.sql --echo-all --echo-erros --echo-queries
+   - name: "step 5 - run bun test"
+     run: bun test
+env:
+ # The hostname used to communicate with the PostgreSQL service container
+ POSTGRES_HOST: coruscant_db
+ # The default PostgreSQL port
+ POSTGRES_PORT: 5432
+ # the database we're talking to
+ POSTGRES_DB: disclone
+ # the database user running commands
+ POSTGRES_USER: ds_auth
+ # the password for our POSTGRES_USER
+ POSTGRES_PASSWORD: password
