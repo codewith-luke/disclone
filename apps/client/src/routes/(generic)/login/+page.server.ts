@@ -1,5 +1,5 @@
 import type {Actions} from "@sveltejs/kit";
-import type { PageLoad } from './$types';
+import type {PageLoad} from './$types';
 import {AuthApi} from "disclone-sdk";
 import {parseString} from "set-cookie-parser";
 import {fail, redirect} from "@sveltejs/kit";
@@ -22,7 +22,19 @@ export const actions = /**/{
             });
 
             const loginResponse = apiResponse.raw;
-            const {user} = await apiResponse.value();
+            const {result, error} = await apiResponse.value();
+
+            if (error) {
+                console.log(error.message);
+                return fail(error.status, {message: error.message});
+            }
+
+            const user = result?.user;
+
+            if (!user) {
+                console.log('No user found');
+                return fail(401, {message: 'Invalid user credentials'})
+            }
 
             const loginCookies = loginResponse.headers.getSetCookie();
 

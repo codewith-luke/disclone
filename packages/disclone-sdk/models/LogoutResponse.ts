@@ -13,6 +13,19 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ErrorResult } from './ErrorResult';
+import {
+    ErrorResultFromJSON,
+    ErrorResultFromJSONTyped,
+    ErrorResultToJSON,
+} from './ErrorResult';
+import type { LogoutResponseResult } from './LogoutResponseResult';
+import {
+    LogoutResponseResultFromJSON,
+    LogoutResponseResultFromJSONTyped,
+    LogoutResponseResultToJSON,
+} from './LogoutResponseResult';
+
 /**
  * 
  * @export
@@ -21,10 +34,16 @@ import { exists, mapValues } from '../runtime';
 export interface LogoutResponse {
     /**
      * 
-     * @type {string}
+     * @type {ErrorResult}
      * @memberof LogoutResponse
      */
-    id: string;
+    error?: ErrorResult;
+    /**
+     * 
+     * @type {LogoutResponseResult}
+     * @memberof LogoutResponse
+     */
+    result?: LogoutResponseResult;
 }
 
 /**
@@ -32,7 +51,6 @@ export interface LogoutResponse {
  */
 export function instanceOfLogoutResponse(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "id" in value;
 
     return isInstance;
 }
@@ -47,7 +65,8 @@ export function LogoutResponseFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'id': json['id'],
+        'error': !exists(json, 'error') ? undefined : ErrorResultFromJSON(json['error']),
+        'result': !exists(json, 'result') ? undefined : LogoutResponseResultFromJSON(json['result']),
     };
 }
 
@@ -60,7 +79,8 @@ export function LogoutResponseToJSON(value?: LogoutResponse | null): any {
     }
     return {
         
-        'id': value.id,
+        'error': ErrorResultToJSON(value.error),
+        'result': LogoutResponseResultToJSON(value.result),
     };
 }
 

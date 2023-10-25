@@ -13,12 +13,18 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { User } from './User';
+import type { ErrorResult } from './ErrorResult';
 import {
-    UserFromJSON,
-    UserFromJSONTyped,
-    UserToJSON,
-} from './User';
+    ErrorResultFromJSON,
+    ErrorResultFromJSONTyped,
+    ErrorResultToJSON,
+} from './ErrorResult';
+import type { RegisterResponseResult } from './RegisterResponseResult';
+import {
+    RegisterResponseResultFromJSON,
+    RegisterResponseResultFromJSONTyped,
+    RegisterResponseResultToJSON,
+} from './RegisterResponseResult';
 
 /**
  * 
@@ -28,16 +34,16 @@ import {
 export interface RegisterResponse {
     /**
      * 
-     * @type {User}
+     * @type {ErrorResult}
      * @memberof RegisterResponse
      */
-    user: User;
+    error?: ErrorResult;
     /**
      * 
-     * @type {string}
+     * @type {RegisterResponseResult}
      * @memberof RegisterResponse
      */
-    token: string;
+    result?: RegisterResponseResult;
 }
 
 /**
@@ -45,8 +51,6 @@ export interface RegisterResponse {
  */
 export function instanceOfRegisterResponse(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "user" in value;
-    isInstance = isInstance && "token" in value;
 
     return isInstance;
 }
@@ -61,8 +65,8 @@ export function RegisterResponseFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
-        'user': UserFromJSON(json['user']),
-        'token': json['token'],
+        'error': !exists(json, 'error') ? undefined : ErrorResultFromJSON(json['error']),
+        'result': !exists(json, 'result') ? undefined : RegisterResponseResultFromJSON(json['result']),
     };
 }
 
@@ -75,8 +79,8 @@ export function RegisterResponseToJSON(value?: RegisterResponse | null): any {
     }
     return {
         
-        'user': UserToJSON(value.user),
-        'token': value.token,
+        'error': ErrorResultToJSON(value.error),
+        'result': RegisterResponseResultToJSON(value.result),
     };
 }
 

@@ -19,58 +19,58 @@ import {
     ErrorResultFromJSONTyped,
     ErrorResultToJSON,
 } from './ErrorResult';
-import type { LoginResponseResult } from './LoginResponseResult';
+import type { ProfileResponseResult } from './ProfileResponseResult';
 import {
-    LoginResponseResultFromJSON,
-    LoginResponseResultFromJSONTyped,
-    LoginResponseResultToJSON,
-} from './LoginResponseResult';
+    ProfileResponseResultFromJSON,
+    ProfileResponseResultFromJSONTyped,
+    ProfileResponseResultToJSON,
+} from './ProfileResponseResult';
 
 /**
  * 
  * @export
- * @interface LoginResponse
+ * @interface ProfileResponse
  */
-export interface LoginResponse {
+export interface ProfileResponse {
     /**
      * 
      * @type {ErrorResult}
-     * @memberof LoginResponse
+     * @memberof ProfileResponse
      */
     error?: ErrorResult;
     /**
      * 
-     * @type {LoginResponseResult}
-     * @memberof LoginResponse
+     * @type {ProfileResponseResult}
+     * @memberof ProfileResponse
      */
-    result?: LoginResponseResult;
+    result?: ProfileResponseResult;
 }
 
 /**
- * Check if a given object implements the LoginResponse interface.
+ * Check if a given object implements the ProfileResponse interface.
  */
-export function instanceOfLoginResponse(value: object): boolean {
+export function instanceOfProfileResponse(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function LoginResponseFromJSON(json: any): LoginResponse {
-    return LoginResponseFromJSONTyped(json, false);
+export function ProfileResponseFromJSON(json: any): ProfileResponse {
+    return ProfileResponseFromJSONTyped(json, false);
 }
 
-export function LoginResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): LoginResponse {
+export function ProfileResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ProfileResponse {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
         'error': !exists(json, 'error') ? undefined : ErrorResultFromJSON(json['error']),
-        'result': !exists(json, 'result') ? undefined : LoginResponseResultFromJSON(json['result']),
+        'result': !exists(json, 'result') ? undefined : ProfileResponseResultFromJSON(json['result']),
     };
 }
 
-export function LoginResponseToJSON(value?: LoginResponse | null): any {
+export function ProfileResponseToJSON(value?: ProfileResponse | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -80,7 +80,7 @@ export function LoginResponseToJSON(value?: LoginResponse | null): any {
     return {
         
         'error': ErrorResultToJSON(value.error),
-        'result': LoginResponseResultToJSON(value.result),
+        'result': ProfileResponseResultToJSON(value.result),
     };
 }
 

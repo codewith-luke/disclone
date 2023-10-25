@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ErrorError } from './ErrorError';
+import {
+    ErrorErrorFromJSON,
+    ErrorErrorFromJSONTyped,
+    ErrorErrorToJSON,
+} from './ErrorError';
+
 /**
  * 
  * @export
@@ -21,10 +28,10 @@ import { exists, mapValues } from '../runtime';
 export interface ModelError {
     /**
      * 
-     * @type {string}
+     * @type {ErrorError}
      * @memberof ModelError
      */
-    error: string;
+    error: ErrorError;
 }
 
 /**
@@ -47,7 +54,7 @@ export function ModelErrorFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     }
     return {
         
-        'error': json['error'],
+        'error': ErrorErrorFromJSON(json['error']),
     };
 }
 
@@ -60,7 +67,7 @@ export function ModelErrorToJSON(value?: ModelError | null): any {
     }
     return {
         
-        'error': value.error,
+        'error': ErrorErrorToJSON(value.error),
     };
 }
 
