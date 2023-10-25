@@ -48,7 +48,9 @@ Make sure to check out the [discord](https://discord.gg/46JKsxmSRJ) and ask ques
 ### How to effectively contribute
 
 **requirements**
-Need to installed on your machine: Docker, Bun ( https://bun.sh ), pnpm ( https://pnpm.io/installation)
+Need to installed on your machine: Docker, Bun ( https://bun.sh ), pnpm ( https://pnpm.io/installation), and Go 1.21 ( installed with either https://moonrepo.dev/docs/proto/tools or https://go.dev/doc/install)
+
+We also recommend to install proto & moonrepo ( https://moonrepo.dev/docs/proto/install )
 
 Not sure: you may need versions of NodeJS for sveltekit and sveltekit installations scripts that rely on it
 
