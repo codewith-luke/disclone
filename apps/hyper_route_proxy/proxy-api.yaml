@@ -122,25 +122,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /auth/profile:
-    get:
-      tags:
-        - auth
-      description: Gets the current user
-      operationId: me
-      responses:
-        '200':
-          description: user response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MeResponse'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   # PROFILE
   /profile:
     get:
@@ -393,6 +374,14 @@ paths:
 
 components:
   schemas:
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+
     # Data Models
     AnyValue:
       anyOf:
@@ -403,13 +392,6 @@ components:
         - type: array
           items: { }
         - type: object
-    Error:
-      type: object
-      required:
-        - error
-      properties:
-        error:
-          type: string
     User:
       type: object
       required:
@@ -537,11 +519,15 @@ components:
     # HTTP Models
     MeResponse:
       type: object
-      required:
-        - user
       properties:
-        user:
-          $ref: '#/components/schemas/User'
+        error:
+          $ref: '#/components/schemas/Error'
+        result:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+
     LoginRequest:
       type: object
       required:
@@ -552,22 +538,33 @@ components:
           type: string
         password:
           type: string
+
     LoginResponse:
       type: object
-      required:
-        - user
       properties:
-        user:
-          $ref: '#/components/schemas/User'
-        token:
-          type: string
+        error:
+          $ref: '#/components/schemas/Error'
+        result:
+          type: object
+          required:
+            - user
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+
     LogoutResponse:
       type: object
-      required:
-        - id
       properties:
-        id:
-          type: string
+        error:
+          $ref: '#/components/schemas/Error'
+        result:
+          type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+
     RegisterRequest:
       type: object
       required:
@@ -581,16 +578,23 @@ components:
           type: string
         password:
           type: string
+
     RegisterResponse:
       type: object
-      required:
-        - user
-        - token
       properties:
-        user:
-          $ref: '#/components/schemas/User'
-        token:
-          type: string
+        error:
+          $ref: '#/components/schemas/Error'
+        result:
+          type: object
+          required:
+            - user
+            - token
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+            token:
+              type: string
+
     ArchiveRequest:
       type: object
       required:
@@ -598,13 +602,19 @@ components:
       properties:
         userID:
           type: number
+
     ArchiveResponse:
       type: object
-      required:
-        - userID
       properties:
-        userID:
-          type: number
+        error:
+          $ref: '#/components/schemas/Error'
+        result:
+          type: object
+          required:
+            - userID
+          properties:
+            userID:
+              type: number
 
     UpdateProfileRequest:
       type: object
@@ -616,6 +626,7 @@ components:
           type: string
         status:
           type: string
+
     UpdateSettingsRequest:
       type: object
       required:
@@ -623,6 +634,7 @@ components:
       properties:
         enabled:
           type: boolean
+
     CreateGroupRequest:
       type: object
       required:
@@ -635,6 +647,7 @@ components:
           type: array
           items:
             type: string
+
     SendMessageToGroupRequest:
       type: object
       required:

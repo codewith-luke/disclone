@@ -7,7 +7,7 @@ import {
     validateUsername
 } from "../core/auth";
 import {AuthDB} from "../access/db-access";
-import {ErrorCodes, ValidationError} from "../util/error";
+import {ErrorCodes, QueryError, ValidationError} from "../util/error";
 import {Logger} from "../util/logger";
 import {JWTProfile, User} from "../types";
 
@@ -64,6 +64,7 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
     }
 
     async function loginUser(username: string, password: string) {
+        throw new QueryError("sheeesh")
         let user = await db.userAccess.getUser(username);
         let isMatch = false;
 
