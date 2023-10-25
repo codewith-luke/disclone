@@ -48,21 +48,26 @@ Make sure to check out the [discord](https://discord.gg/46JKsxmSRJ) and ask ques
 ### How to effectively contribute
 
 **requirements**
-Need to installed on your machine: Docker, Bun ( https://bun.sh ), 
+Need to installed on your machine: Docker, Bun ( https://bun.sh ), pnpm ( https://pnpm.io/installation)
+
+Not sure: you may need versions of NodeJS for sveltekit and sveltekit installations scripts that rely on it
 
 1. Fork the repo
 2. take an issue and notify that you're working on it or log an issue
 3. git clone your fork
-( if you already forked the repo, sync your fork with main and do 'git pull' to be sure to be up-to-date )
+   ( if you already forked the repo, sync your fork with main and do 'git pull' to be sure to be up-to-date )
+   to install dependencies
+   a. at root level run : 'pnpm install'
+   b. inside disclone/apps/ds_auth, run : 'bun install'
 4. git branch fix/<"insert here number of the issue you fix"> or feat/<"name of the feat">
-( let's say it's fix/420)
+   ( let's say it's fix/420 )
 5. git switch fix/420
-( work on your branch)
-( when done => review yourself => remove console.log)
-6. git add <"files affected">
+   ( work on your branch)
+   ( when done => review yourself => remove console.logs)
+6. git add <"files affected"> or git add -A 
 7. git commit -m "insert some meaningful message here"
 8. git push --set-upstream origin fix/420
 9. go to your forked repo and open a pull request
-10. write some edgy mean derogatory comment, make sure to insult the work of whoever's bug you fixed
+10. write some edgy mean derogatory comment so we know what the Pull Request is about
 11. Click 'Create pull request'
 12. Done ! Write "OpenSource Core team contributor" on your resume
