@@ -36,6 +36,10 @@ const RegisterRequest = t.Object({
         maxLength: 64,
         errorMessage: {format: "Password must be at least 8 characters long"},
     }),
+    display_name: t.String({
+        minLength: 3,
+        maxLength: 20,
+    }),
 });
 
 const ArchiveRequest = t.Object({
@@ -96,6 +100,7 @@ export function createUserHandler(userAccess: UserAccess) {
             const {sessionID} = result;
             const token = await signToken(result.user.id, result.user.username, sessionID, jwt)
             await userAccess.saveUserSession(result.user.id, result.sessionID, token);
+
             setAuth(sessionID, token, setCookie);
 
             return {
@@ -139,7 +144,7 @@ export function createUserHandler(userAccess: UserAccess) {
                 if (!sessionID || !token) {
                     logger.error("Missing session id or token");
                     set.status = 401;
-                    return false;
+                    throw new ValidationError("Invalid user");
                 }
 
                 let profile: JWTProfile;
@@ -153,7 +158,7 @@ export function createUserHandler(userAccess: UserAccess) {
                     }
                     logger.error(`Failed to verify token: ${errMessage}`);
                     set.status = 401;
-                    return false;
+                    throw new ValidationError("Invalid user");
                 }
 
                 let user = null;
@@ -175,7 +180,7 @@ export function createUserHandler(userAccess: UserAccess) {
                     }
                     logger.error(`Failed to verify token: ${errMessage}`);
                     set.status = 401;
-                    return false;
+                    throw new ValidationError("Invalid user");
                 }
             }
         }))

@@ -32,9 +32,9 @@ describe("dsa", () => {
     it(`[${Routes.heartbeat}] return an ok in response`, async () => {
         const expected = "ok";
 
-        const actual = await sut.handle(
+        const {result: actual} = await sut.handle(
             new Request(`${domain}${Routes.heartbeat}`)
-        ).then(res => res.text());
+        ).then(res => res.json());
 
         expect(actual).toBe(expected);
     });
@@ -44,8 +44,8 @@ describe("dsa", () => {
             deleteAllUsersBesidesAdmin();
         });
 
-        it(`should return 400 if invalid email`, async () => {
-            const actual = await sut.handle(
+        it(`mytest should return 400 if invalid email`, async () => {
+            const {error: actual} = await sut.handle(
                 new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.register}`, {
                     method: 'POST',
                     headers: {
@@ -63,7 +63,7 @@ describe("dsa", () => {
         });
 
         it(`should return 400 if invalid password`, async () => {
-            const actual = await sut.handle(
+            const {error: actual} = await sut.handle(
                 new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.register}`, {
                     method: 'POST',
                     headers: {
@@ -83,7 +83,7 @@ describe("dsa", () => {
         it(`should return 400 if invalid username`, async () => {
             const expected = "Username must not contain any special characters"
 
-            const actual = await sut.handle(
+            const {error: actual} = await sut.handle(
                 new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.register}`, {
                     method: 'POST',
                     headers: {
@@ -92,13 +92,14 @@ describe("dsa", () => {
                     body: JSON.stringify({
                         username: "tes!t",
                         password: "test!221T",
-                        email: "test@test.com"
+                        email: "test@test.com",
+                        display_name: "test"
                     }),
                 })
             ).then(res => res.json());
 
             expect(actual.status).toBe(HttpErrorMessages.PARSE.status);
-            expect(actual?.body?.message).toBe(expected);
+            expect(actual?.message).toBe(expected);
         });
 
         it(`should run a user through a registration and archive process`, async () => {
@@ -112,7 +113,7 @@ describe("dsa", () => {
             let cookies = "";
 
             // 1) Register user
-            const registerResult = await sut.handle(
+            const {result} = await sut.handle(
                 new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.register}`, {
                     method: 'POST',
                     headers: {
@@ -121,7 +122,8 @@ describe("dsa", () => {
                     body: JSON.stringify({
                         username: "test1",
                         password: "test!221T",
-                        email: "test@test.com"
+                        email: "test@test.com",
+                        display_name: "test1"
                     }),
                 })
             ).then((res: Response) => {
@@ -135,13 +137,13 @@ describe("dsa", () => {
             expect(cookies.includes("session_id")).toBeTrue();
             expect(cookies.includes("session_token")).toBeTrue();
 
-            const {user} = registerResult;
+            const {user} = result;
             expect(user.username).toEqual(expected.username);
             expect(user.email).toEqual(expected.email);
             expect(user.archived).toBeFalse();
 
             // 2) Archive user
-            const archiveResult = await sut.handle(
+            const {result: archiveResult} = await sut.handle(
                 new Request(`${domain}${Routes.profile.base}${Routes.profile.keys.archive}`, {
                     method: 'PUT',
                     headers: {
@@ -154,7 +156,6 @@ describe("dsa", () => {
                 })
             ).then((res: Response) => res.json());
 
-            console.log(archiveResult);
             expect(archiveResult.userID).toEqual(user.id);
 
             // 3) Check if user is archived
@@ -185,7 +186,7 @@ describe("dsa", () => {
             });
 
             // 2) Archive admin user
-            const archiveResult = await sut.handle(
+            const {error: archiveResult} = await sut.handle(
                 new Request(`${domain}${Routes.profile.base}${Routes.profile.keys.archive}`, {
                     method: 'PUT',
                     headers: {
@@ -288,7 +289,7 @@ describe("dsa", () => {
                 return res.json();
             });
 
-            const actual = await sut.handle(
+            const {result: actual} = await sut.handle(
                 new Request(`${domain}${Routes.profile.base}${Routes.profile.keys.me}`, {
                     method: 'GET',
                     headers: {

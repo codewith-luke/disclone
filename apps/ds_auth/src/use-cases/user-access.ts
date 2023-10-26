@@ -15,6 +15,7 @@ export type RegisterUserInput = {
     email: string;
     username: string;
     password: string;
+    display_name: string;
 }
 
 export type UserAccess = ReturnType<typeof createUserAccess>;

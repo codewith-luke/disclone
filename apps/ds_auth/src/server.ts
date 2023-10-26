@@ -56,6 +56,13 @@ export function createApp() {
                 message: error.message ?? "Unknown Error",
             }
 
+            switch (code) {
+                case ErrorCodes.VALIDATION:
+                    const {status} = error as ValidationError;
+                    err.status = status;
+                    break;
+            }
+
             if (error instanceof BaseError) {
                 err.status = error.status;
                 set.status = error.status;

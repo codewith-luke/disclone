@@ -110,7 +110,7 @@ function createUserAccess(logger: Logger, db: DB) {
         }
     }
 
-    async function registerUser({email, username, password}: RegisterUserAccess) {
+    async function registerUser({email, username, password, display_name}: RegisterUserAccess) {
         try {
             await db.query.begin(async sql => {
                 const [...users] = await sql<User[]>`
@@ -127,8 +127,8 @@ function createUserAccess(logger: Logger, db: DB) {
                 }
 
                 await db.query`
-                    insert into users (email, username, password)
-                    values (${email}, ${username}, ${password})
+                    insert into users (email, username, password, display_name)
+                    values (${email}, ${username}, ${password}, ${display_name})
                 `;
             })
 
