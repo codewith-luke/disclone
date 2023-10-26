@@ -7,7 +7,7 @@ import {
     validateUsername
 } from "../core/auth";
 import {AuthDB} from "../access/db-access";
-import {ErrorCodes, ValidationError} from "../util/error";
+import {ErrorCodes, QueryError, ValidationError} from "../util/error";
 import {Logger} from "../util/logger";
 import {JWTProfile, User} from "../types";
 

@@ -29,7 +29,7 @@ export class BaseError extends Error implements IError {
 
     createHttpResponse(message?: string) {
         const httpMessage = HttpErrorMessages[this.code];
-        httpMessage.body.message = message || this.message;
+        httpMessage.message = message || this.message;
         return httpMessage;
     }
 }
@@ -61,38 +61,26 @@ export class UnknownError extends BaseError {
 export const HttpErrorMessages: Record<keyof typeof ErrorCodes, ErrorResponseMessage> = {
     NOT_FOUND: {
         status: 404,
-        body: {
-            message: "Not Found",
-        }
+        message: "Not Found",
     },
     INTERNAL_SERVER_ERROR: {
         status: 500,
-        body: {
-            message: "Internal Server Error",
-        }
+        message: "Internal Server Error",
     },
     QUERY_ERROR: {
         status: 501,
-        body: {
-            message: "Query Error",
-        }
+        message: "Query Error",
     },
     VALIDATION: {
         status: 401,
-        body: {
-            message: "Validation Error",
-        }
+        message: "Validation Error",
     },
     PARSE: {
         status: 400,
-        body: {
-            message: "Parse Error",
-        }
+        message: "Parse Error",
     },
     UNKNOWN: {
         status: 500,
-        body: {
-            message: "Unknown Error",
-        }
+        message: "Unknown Error",
     }
 }

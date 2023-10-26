@@ -27,21 +27,41 @@ export function createApp() {
     return new Elysia()
         .use(setupRoutes)
         .use(setupLogger)
+        .onAfterHandle((context) => {
+            let error = null;
+            let result = null;
+
+            if (context.response instanceof BaseError) {
+                error = context.response.createHttpResponse();
+                context.set.status = error.status;
+            } else if (context.response instanceof Error) {
+                error = context.response.message;
+                context.set.status = 500;
+            } else {
+                result = context.response;
+            }
+
+            context.response = {
+                error,
+                result
+            }
+        })
         .onResponse(({logger}) => {
-            logger.info(RequestLifeCycle.end)
+            logger.info(RequestLifeCycle.end);
         })
         .get(Routes.heartbeat, () => "ok")
         .use(userHandler)
         .onError(({code, error}) => {
             if (error instanceof BaseError) {
-                return error.createHttpResponse();
+                return {
+                    error: error.createHttpResponse(),
+                    result: null
+                }
             }
 
             const err = {
                 status: 500,
-                body: {
-                    message: error.message ?? "Unknown Error",
-                }
+                message: error.message ?? "Unknown Error",
             }
 
             switch (code) {
@@ -54,7 +74,10 @@ export function createApp() {
                     break;
             }
 
-            return err;
+            return {
+                error: err,
+                result: null
+            };
         })
         .onStop(async () => {
             if (dbConn) {

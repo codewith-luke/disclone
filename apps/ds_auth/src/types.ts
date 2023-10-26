@@ -81,7 +81,5 @@ User.sanatize = (user: User) => {
 
 export const ErrorResponseMessage = t.Object({
     status: t.Number(),
-    body: t.Object({
-        message: t.String()
-    })
+    message: t.String()
 });

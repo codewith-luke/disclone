@@ -77,7 +77,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResult'
   /auth/logout:
     post:
       tags:
@@ -96,7 +96,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResult'
   /auth/register:
     post:
       tags:
@@ -121,28 +121,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  /auth/profile:
-    get:
-      tags:
-        - auth
-      description: Gets the current user
-      operationId: me
-      responses:
-        '200':
-          description: user response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MeResponse'
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResult'
   # PROFILE
-  /profile:
+  /auth/profile:
     get:
       tags:
         - profile
@@ -154,13 +135,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Profile'
+                $ref: '#/components/schemas/ProfileResponse'
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResult'
     patch:
       tags:
         - profile
@@ -179,14 +160,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Profile'
+                $ref: '#/components/schemas/ProfileResponse'
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  /profile/settings:
+                $ref: '#/components/schemas/ErrorResult'
+  /auth/profile/settings:
     get:
       tags:
         - profile
@@ -204,7 +185,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResult'
     patch:
       tags:
         - profile
@@ -229,7 +210,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResult'
 
   # GROUPS
   /groups:
@@ -250,7 +231,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResult'
     post:
       tags:
         - groups
@@ -275,7 +256,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResult'
   /groups/{id}/:
     get:
       tags:
@@ -302,7 +283,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResult'
   /groups/{id}/members:
     get:
       tags:
@@ -329,7 +310,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResult'
   /groups/{id}/messages:
     get:
       tags:
@@ -356,7 +337,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResult'
     post:
       tags:
         - groups
@@ -389,10 +370,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResult'
 
 components:
   schemas:
+    ErrorResult:
+      type: object
+      required:
+        - error
+      properties:
+        status:
+          type: integer
+          format: int32
+        message:
+          type: string
+
     # Data Models
     AnyValue:
       anyOf:
@@ -403,13 +395,6 @@ components:
         - type: array
           items: { }
         - type: object
-    Error:
-      type: object
-      required:
-        - error
-      properties:
-        error:
-          type: string
     User:
       type: object
       required:
@@ -535,13 +520,17 @@ components:
             $ref: '#/components/schemas/Message'
 
     # HTTP Models
-    MeResponse:
+    ProfileResponse:
       type: object
-      required:
-        - user
       properties:
-        user:
-          $ref: '#/components/schemas/User'
+        error:
+          $ref: '#/components/schemas/ErrorResult'
+        result:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+
     LoginRequest:
       type: object
       required:
@@ -552,22 +541,33 @@ components:
           type: string
         password:
           type: string
+
     LoginResponse:
       type: object
-      required:
-        - user
       properties:
-        user:
-          $ref: '#/components/schemas/User'
-        token:
-          type: string
+        error:
+          $ref: '#/components/schemas/ErrorResult'
+        result:
+          type: object
+          required:
+            - user
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+
     LogoutResponse:
       type: object
-      required:
-        - id
       properties:
-        id:
-          type: string
+        error:
+          $ref: '#/components/schemas/ErrorResult'
+        result:
+          type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+
     RegisterRequest:
       type: object
       required:
@@ -581,16 +581,23 @@ components:
           type: string
         password:
           type: string
+
     RegisterResponse:
       type: object
-      required:
-        - user
-        - token
       properties:
-        user:
-          $ref: '#/components/schemas/User'
-        token:
-          type: string
+        error:
+          $ref: '#/components/schemas/ErrorResult'
+        result:
+          type: object
+          required:
+            - user
+            - token
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+            token:
+              type: string
+
     ArchiveRequest:
       type: object
       required:
@@ -598,13 +605,19 @@ components:
       properties:
         userID:
           type: number
+
     ArchiveResponse:
       type: object
-      required:
-        - userID
       properties:
-        userID:
-          type: number
+        error:
+          $ref: '#/components/schemas/ErrorResult'
+        result:
+          type: object
+          required:
+            - userID
+          properties:
+            userID:
+              type: number
 
     UpdateProfileRequest:
       type: object
@@ -616,6 +629,7 @@ components:
           type: string
         status:
           type: string
+
     UpdateSettingsRequest:
       type: object
       required:
@@ -623,6 +637,7 @@ components:
       properties:
         enabled:
           type: boolean
+
     CreateGroupRequest:
       type: object
       required:
@@ -635,6 +650,7 @@ components:
           type: array
           items:
             type: string
+
     SendMessageToGroupRequest:
       type: object
       required:

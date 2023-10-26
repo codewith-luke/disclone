@@ -86,9 +86,7 @@ export function createUserHandler(userAccess: UserAccess) {
             const result = await userAccess.registerUser(body);
 
             if (!result) {
-                const error = new ValidationError().createHttpResponse();
-                set.status = error.status;
-                return error;
+                return new ValidationError("Failed to register user");
             }
 
             const {sessionID} = result;
@@ -106,9 +104,7 @@ export function createUserHandler(userAccess: UserAccess) {
             const result = await userAccess.loginUser(body.username, body.password);
 
             if (!result) {
-                const error = new ValidationError().createHttpResponse();
-                set.status = error.status;
-                return error;
+                return new ValidationError("Invalid username or password");
             }
 
             const {sessionID} = result;
@@ -120,14 +116,7 @@ export function createUserHandler(userAccess: UserAccess) {
                 user: User.sanatize(result.user),
             }
         }, {
-            body: LoginRequest,
-            error({code, error}) {
-                switch (code) {
-                    case ErrorCodes.QUERY_ERROR: {
-                        return error.createHttpResponse();
-                    }
-                }
-            }
+            body: LoginRequest
         });
 
     const ProfileRouter = new Elysia()

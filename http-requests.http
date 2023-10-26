@@ -20,6 +20,12 @@ X-Trace-ID: 1234567890
   "password": "admin"
 }
 
+
+### /login
+GET http://127.0.0.1:{{port}}/auth/profile
+Accept: application/json
+
+
 ### /logout
 POST http://127.0.0.1:{{port}}/auth/logout
 Content-Type: application/json

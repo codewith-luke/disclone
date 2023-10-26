@@ -15,14 +15,17 @@
 
 import * as runtime from '../runtime';
 import type {
-  Profile,
+  ErrorResult,
+  ProfileResponse,
   Settings,
   UpdateProfileRequest,
   UpdateSettingsRequest,
 } from '../models/index';
 import {
-    ProfileFromJSON,
-    ProfileToJSON,
+    ErrorResultFromJSON,
+    ErrorResultToJSON,
+    ProfileResponseFromJSON,
+    ProfileResponseToJSON,
     SettingsFromJSON,
     SettingsToJSON,
     UpdateProfileRequestFromJSON,
@@ -47,25 +50,25 @@ export class ProfileApi extends runtime.BaseAPI {
     /**
      * Gets a user\'s profile
      */
-    async getProfileRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Profile>> {
+    async getProfileRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProfileResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/profile`,
+            path: `/auth/profile`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ProfileFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProfileResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets a user\'s profile
      */
-    async getProfile(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Profile> {
+    async getProfile(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProfileResponse> {
         const response = await this.getProfileRaw(initOverrides);
         return await response.value();
     }
@@ -79,7 +82,7 @@ export class ProfileApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/profile/settings`,
+            path: `/auth/profile/settings`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -99,7 +102,7 @@ export class ProfileApi extends runtime.BaseAPI {
     /**
      * Updates a user\'s profile
      */
-    async updateProfileRaw(requestParameters: UpdateProfileOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Profile>> {
+    async updateProfileRaw(requestParameters: UpdateProfileOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProfileResponse>> {
         if (requestParameters.updateProfileRequest === null || requestParameters.updateProfileRequest === undefined) {
             throw new runtime.RequiredError('updateProfileRequest','Required parameter requestParameters.updateProfileRequest was null or undefined when calling updateProfile.');
         }
@@ -111,20 +114,20 @@ export class ProfileApi extends runtime.BaseAPI {
         headerParameters['Content-Type'] = 'application/json';
 
         const response = await this.request({
-            path: `/profile`,
+            path: `/auth/profile`,
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
             body: UpdateProfileRequestToJSON(requestParameters.updateProfileRequest),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ProfileFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProfileResponseFromJSON(jsonValue));
     }
 
     /**
      * Updates a user\'s profile
      */
-    async updateProfile(requestParameters: UpdateProfileOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Profile> {
+    async updateProfile(requestParameters: UpdateProfileOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProfileResponse> {
         const response = await this.updateProfileRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -144,7 +147,7 @@ export class ProfileApi extends runtime.BaseAPI {
         headerParameters['Content-Type'] = 'application/json';
 
         const response = await this.request({
-            path: `/profile/settings`,
+            path: `/auth/profile/settings`,
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,

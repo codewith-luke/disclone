@@ -13,12 +13,18 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { User } from './User';
+import type { ErrorResult } from './ErrorResult';
 import {
-    UserFromJSON,
-    UserFromJSONTyped,
-    UserToJSON,
-} from './User';
+    ErrorResultFromJSON,
+    ErrorResultFromJSONTyped,
+    ErrorResultToJSON,
+} from './ErrorResult';
+import type { MeResponseResult } from './MeResponseResult';
+import {
+    MeResponseResultFromJSON,
+    MeResponseResultFromJSONTyped,
+    MeResponseResultToJSON,
+} from './MeResponseResult';
 
 /**
  * 
@@ -28,10 +34,16 @@ import {
 export interface MeResponse {
     /**
      * 
-     * @type {User}
+     * @type {ErrorResult}
      * @memberof MeResponse
      */
-    user: User;
+    error?: ErrorResult;
+    /**
+     * 
+     * @type {MeResponseResult}
+     * @memberof MeResponse
+     */
+    result?: MeResponseResult;
 }
 
 /**
@@ -39,7 +51,6 @@ export interface MeResponse {
  */
 export function instanceOfMeResponse(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "user" in value;
 
     return isInstance;
 }
@@ -54,7 +65,8 @@ export function MeResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     }
     return {
         
-        'user': UserFromJSON(json['user']),
+        'error': !exists(json, 'error') ? undefined : ErrorResultFromJSON(json['error']),
+        'result': !exists(json, 'result') ? undefined : MeResponseResultFromJSON(json['result']),
     };
 }
 
@@ -67,7 +79,8 @@ export function MeResponseToJSON(value?: MeResponse | null): any {
     }
     return {
         
-        'user': UserToJSON(value.user),
+        'error': ErrorResultToJSON(value.error),
+        'result': MeResponseResultToJSON(value.result),
     };
 }
 
