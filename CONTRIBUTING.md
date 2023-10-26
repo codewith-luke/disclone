@@ -47,34 +47,55 @@ Make sure to check out the [discord](https://discord.gg/46JKsxmSRJ) and ask ques
 
 ### How to effectively contribute
 
-**Security**
+**Security :**
 
-to remove sensitive files or leaked data from git, please check the following resources : 
-https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository, 
-https://www.baeldung.com/git-remove-file-without-deleting-it, 
+to remove sensitive files or leaked data from git, please check the following resources :
+https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository,
+https://www.baeldung.com/git-remove-file-without-deleting-it,
 https://www.baeldung.com/git-remove-file-commit-history
 
 if anything, don't panic, contact your Security Officer or repositories' owners.
 
-**requirements**
-though required, we recommend to install proto & moonrepo ( https://moonrepo.dev/docs/proto/install ).
+**Running the tests :**
 
-Need to have installed on your machine: Docker, Bun ( https://bun.sh ), pnpm ( https://pnpm.io/installation), and Go 1.21.0 ( installed with either https://moonrepo.dev/docs/proto/tools or https://go.dev/doc/install)
+.env files must have been created for your local setup
+Note: since coruscant_db binds to 0.0.0.0:5432, having a local install of PostgreSQL will clash with it.
+inside "disclone/apps/ds_auth", run 'bun test'
+
+**Requirements :**
+
+though not required, we recommend to install [proto](https://moonrepo.dev/docs/proto/install) and [moonrepo](https://moonrepo.dev/docs)
+
+Need to have installed on your machine: Docker, [Bun](https://bun.sh), [pnpm](https://pnpm.io/installation), 
+and Go 1.21.0 ( installed with either [proto](https://moonrepo.dev/docs/proto/tools) or [official go docs](https://go.dev/doc/install)
 
 Not sure: you may need versions of NodeJS for sveltekit and sveltekit installations scripts that rely on it
 
+**Steps :**
+
 1. Fork the repo
-2. take an issue and notify that you're working on it or log an issue
+2. take an issue and notify that you're working on it or log an issue and then fix it
 3. git clone your fork
-   ( if you already forked the repo, sync your fork with main and do 'git pull' to be sure to be up-to-date )
-   to install dependencies
-   a. at root level run : 'pnpm install'
-   b. inside disclone/apps/ds_auth, run : 'bun install'
+
+- if you already forked the repo, sync your fork with main and do 'git pull' to be sure to be up-to-date 
+to install dependencies
+
+- at root level run : 'pnpm install'
+
+- inside "disclone/apps/ds_auth", run : 'bun install'
+
 4. git branch fix/<"insert here number of the issue you fix"> or feat/<"name of the feat">
-   ( let's say it's fix/420 )
+
+
+( let's say it's fix/420 )
+
+
 5. git switch fix/420
-   ( work on your branch)
-   ( when done => review yourself => remove console.logs)
+
+- work on your branch
+
+- when done => review yourself => remove console.logs
+
 6. git add <"files affected"> or git add -A
 7. git commit -m "insert some meaningful message here"
 8. git push --set-upstream origin fix/420
