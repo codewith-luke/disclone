@@ -5,6 +5,7 @@ export const ErrorCodes = {
     INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
     QUERY_ERROR: "QUERY_ERROR",
     VALIDATION: "VALIDATION",
+    BAD_REQUEST: "BAD_REQUEST",
     PARSE: "PARSE",
     UNKNOWN: "UNKNOWN"
 } as const;
@@ -12,6 +13,7 @@ export const ErrorCodes = {
 export type ErrorCode = keyof typeof ErrorCodes;
 
 export interface IError extends Error {
+    status: number;
     code: ErrorCode;
     createHttpResponse: () => ErrorResponseMessage;
 }
@@ -27,6 +29,10 @@ export class BaseError extends Error implements IError {
         return this.statusCode;
     }
 
+    get status() {
+        return HttpErrorMessages[this.statusCode].status;
+    }
+
     createHttpResponse(message?: string) {
         const httpMessage = HttpErrorMessages[this.code];
         httpMessage.message = message || this.message;
@@ -37,6 +43,12 @@ export class BaseError extends Error implements IError {
 export class ValidationError extends BaseError {
     constructor(message?: string, code?: ErrorCode) {
         super(code || ErrorCodes.VALIDATION, message || "Validation Error");
+    }
+}
+
+export class BadRequestError extends BaseError {
+    constructor(message?: string) {
+        super(ErrorCodes.BAD_REQUEST, message || "Bad Request Error");
     }
 }
 
@@ -74,6 +86,10 @@ export const HttpErrorMessages: Record<keyof typeof ErrorCodes, ErrorResponseMes
     VALIDATION: {
         status: 401,
         message: "Validation Error",
+    },
+    BAD_REQUEST: {
+        status: 400,
+        message: "Bad Request Error",
     },
     PARSE: {
         status: 400,

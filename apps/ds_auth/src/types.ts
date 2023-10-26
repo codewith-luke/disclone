@@ -1,6 +1,8 @@
 import {t, UnwrapSchema} from "elysia";
+import {ProfileUpdateRequest} from "./user-handler";
 
 export type User = UnwrapSchema<typeof User>
+export type UserUpdateFields = UnwrapSchema<typeof ProfileUpdateRequest>
 
 export type ErrorResponseMessage = UnwrapSchema<typeof ErrorResponseMessage>;
 

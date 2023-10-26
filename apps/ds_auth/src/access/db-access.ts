@@ -2,7 +2,7 @@ import {type RegisterUserInput} from "../use-cases/user-access";
 import {type Logger} from "../util/logger";
 import {type DB} from "../db";
 import {QueryError} from "../util/error";
-import {User} from "../types";
+import {User, UserUpdateFields} from "../types";
 
 type RegisterUserAccess = {} & RegisterUserInput;
 
@@ -25,7 +25,8 @@ function createUserAccess(logger: Logger, db: DB) {
         registerUser,
         archive,
         sessionByUserID,
-        userFromSession
+        userFromSession,
+        updateUser
     }
 
     async function getUser(username: string) {
@@ -54,6 +55,25 @@ function createUserAccess(logger: Logger, db: DB) {
 
     async function getPermissions() {
         return ["read", "write"]
+    }
+
+    async function updateUser(userID: number, data: Partial<UserUpdateFields>) {
+        const keys = Object.keys(data) as (keyof Partial<UserUpdateFields>)[];
+
+        if (keys.length === 0) {
+            return;
+        }
+
+        try {
+            await db.query`
+                update users
+                set ${db.query(data, ...keys)}
+                where id = ${userID}
+            `
+        } catch (e) {
+            const message = `Failed to update user ${userID}`;
+            handleDBError(e, logger, message);
+        }
     }
 
     async function saveSession(userID: number, sessionID: string, token: string) {

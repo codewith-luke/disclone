@@ -7,9 +7,9 @@ import {
     validateUsername
 } from "../core/auth";
 import {AuthDB} from "../access/db-access";
-import {ErrorCodes, QueryError, ValidationError} from "../util/error";
+import {BadRequestError, ErrorCodes, QueryError, ValidationError} from "../util/error";
 import {Logger} from "../util/logger";
-import {JWTProfile, User} from "../types";
+import {JWTProfile, User, UserUpdateFields} from "../types";
 
 export type RegisterUserInput = {
     email: string;
@@ -27,7 +27,8 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
         registerUser,
         archive,
         validateSession,
-        saveUserSession
+        saveUserSession,
+        updateUser
     }
 
     async function getUserBySession(sessionID: string) {
@@ -55,6 +56,17 @@ export function createUserAccess(db: AuthDB, logger: Logger) {
         });
 
         return await loginUser(data.username, data.password);
+    }
+
+    async function updateUser(userID: number, data: Partial<UserUpdateFields>) {
+        const isEmpty = Object.values(data).every(v => v === undefined);
+
+        if (isEmpty) {
+            logger.error(`User ${userID} failed to update, no data provided.`);
+            throw new BadRequestError("No data provided");
+        }
+
+        await db.userAccess.updateUser(userID, data);
     }
 
     async function logoutUser(sessionID: string) {

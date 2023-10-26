@@ -42,6 +42,10 @@ const ArchiveRequest = t.Object({
     userID: t.Number(),
 });
 
+export const ProfileUpdateRequest = t.Object({
+    display_name: t.Optional(t.String()),
+});
+
 export const LoginResponse = t.Object({
     user: t.Omit(User, ['password', 'permissions'])
 });
@@ -122,7 +126,12 @@ export function createUserHandler(userAccess: UserAccess) {
     const ProfileRouter = new Elysia()
         .use(setupLogger)
         .use(setupRoutes)
-        .derive(({cookie, set, logger, jwt, removeCookie}) => ({
+        .state<{
+            user: User | null;
+        }>({
+            user: null,
+        })
+        .derive(({cookie, set, store, logger, jwt, removeCookie}) => ({
             validateAuth: async () => {
                 const sessionID = cookie[Cookies.sessionID];
                 const token = cookie[Cookies.sessionToken];
@@ -157,6 +166,8 @@ export function createUserHandler(userAccess: UserAccess) {
                         set.status = 401;
                         return false;
                     }
+
+                    store.user = user;
                 } catch (e) {
                     let errMessage = "Failed to verify session"
                     if (e instanceof Error) {
@@ -180,6 +191,21 @@ export function createUserHandler(userAccess: UserAccess) {
                     return {
                         user: User.sanatize(user),
                     }
+                })
+                .patch(Routes.profile.keys.me, async ({body, store, cookie}) => {
+                    if (!store.user) {
+                        return new ValidationError("User not found");
+                    }
+
+                    await userAccess.updateUser(store.user.id, {
+                        display_name: body.display_name,
+                    });
+
+                    return {
+                        success: true
+                    }
+                }, {
+                    body: ProfileUpdateRequest
                 })
                 .put(Routes.profile.keys.archive, async ({body, removeCookie, cookie}) => {
                     const sessionID = cookie[Cookies.sessionID];

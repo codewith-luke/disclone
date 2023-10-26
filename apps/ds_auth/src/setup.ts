@@ -1,5 +1,5 @@
 import {Elysia} from "elysia";
-import {ErrorCodes, InternalError, UnknownError, ValidationError} from "./util/error";
+import {BadRequestError, ErrorCodes, InternalError, UnknownError, ValidationError} from "./util/error";
 import {loggers, RequestLifeCycle} from "./util/logger";
 import {cookie} from "@elysiajs/cookie";
 import {UserCache} from "./core/user-cache";
@@ -45,6 +45,7 @@ export const setupRoutes = new Elysia({name: "setupRoutes"})
     .state('userCache', new UserCache())
     .error({
         [ErrorCodes.VALIDATION]: ValidationError,
+        [ErrorCodes.BAD_REQUEST]: BadRequestError,
         [ErrorCodes.UNKNOWN]: UnknownError,
         [ErrorCodes.INTERNAL_SERVER_ERROR]: InternalError,
         [ErrorCodes.QUERY_ERROR]: InternalError,

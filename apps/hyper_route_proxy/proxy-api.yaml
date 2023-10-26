@@ -622,12 +622,9 @@ components:
     UpdateProfileRequest:
       type: object
       required:
-        - profileImage
-        - status
+        - display_name
       properties:
-        profileImage:
-          type: string
-        status:
+        display_name:
           type: string
 
     UpdateSettingsRequest:

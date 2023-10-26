@@ -1,4 +1,4 @@
-### /register
+### POST /register
 POST http://127.0.0.1:{{port}}/auth/register
 Content-Type: application/json
 X-Trace-ID: 1234567890
@@ -9,7 +9,7 @@ X-Trace-ID: 1234567890
   "email": "user@test.com"
 }
 
-### /login
+### POST /login
 POST http://127.0.0.1:{{port}}/auth/login
 #POST http://127.0.0.1:{{port}}/login
 Content-Type: application/json
@@ -20,13 +20,18 @@ X-Trace-ID: 1234567890
   "password": "admin"
 }
 
-
-### /login
+### GET /profile
 GET http://127.0.0.1:{{port}}/auth/profile
 Accept: application/json
 
+### PATCH /profile
+PATCH http://127.0.0.1:{{port}}/auth/profile
+Content-Type: application/json
 
-### /logout
+{
+}
+
+### POST /logout
 POST http://127.0.0.1:{{port}}/auth/logout
 Content-Type: application/json
 X-Trace-ID: 1234567890
@@ -34,7 +39,7 @@ Cookie: session_id=eyJ1c2VybmFtZSI6InVzZXIxIiwiaWF0IjoxNTY0NjQ0NjQ2LCJleHAiOjE1N
 
 {}
 
-### /archive
+### PUT /archive
 PUT http://127.0.0.1:{{port}}/auth/archive
 Content-Type: application/json
 X-Trace-ID: 1234567890
@@ -43,10 +48,6 @@ Cookie: session_id=1kab7dUlVs9EaG9lKYziYA%3D%3D;session_token=agK2YEi2P%2Fiv54pn
 {
   "userID": 1
 }
-
-### /me
-GET http://127.0.0.1:{{port}}/auth/me
-Accept: application/json
 
 
 
