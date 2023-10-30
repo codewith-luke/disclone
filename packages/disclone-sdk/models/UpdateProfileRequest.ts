@@ -24,13 +24,7 @@ export interface UpdateProfileRequest {
      * @type {string}
      * @memberof UpdateProfileRequest
      */
-    profileImage: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof UpdateProfileRequest
-     */
-    status: string;
+    displayName: string;
 }
 
 /**
@@ -38,8 +32,7 @@ export interface UpdateProfileRequest {
  */
 export function instanceOfUpdateProfileRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "profileImage" in value;
-    isInstance = isInstance && "status" in value;
+    isInstance = isInstance && "displayName" in value;
 
     return isInstance;
 }
@@ -54,8 +47,7 @@ export function UpdateProfileRequestFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'profileImage': json['profileImage'],
-        'status': json['status'],
+        'displayName': json['display_name'],
     };
 }
 
@@ -68,8 +60,7 @@ export function UpdateProfileRequestToJSON(value?: UpdateProfileRequest | null):
     }
     return {
         
-        'profileImage': value.profileImage,
-        'status': value.status,
+        'display_name': value.displayName,
     };
 }
 

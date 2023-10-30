@@ -1,12 +1,14 @@
 <script lang="ts">
-    import HeaderActions from "./HeaderActions.svelte";
-    import UserProfileAvatar from "./UserProfileAvatar.svelte";
+    import {ProfileApi} from "disclone-sdk";
     import {Search} from "lucide-svelte";
     import {slide} from 'svelte/transition';
     import {Key} from "w3c-keys";
     import {getUserStore} from "$lib/stores/store";
+    import HeaderActions from "./HeaderActions.svelte";
+    import UserProfileAvatar from "./UserProfileAvatar.svelte";
 
     const user = getUserStore();
+    const profileApi = new ProfileApi();
 
     let searchIsVisible = false;
     let searchBarEl: HTMLInputElement;
@@ -22,12 +24,39 @@
         }
 
         if (event.key === Key.Escape) {
-            console.log(document.activeElement)
             if (!document?.activeElement ||
                 document.activeElement.isEqualNode(document.body) ||
                 document.activeElement.isEqualNode(searchBarEl)) {
                 searchIsVisible = false;
             }
+        }
+    }
+
+    async function handleDisplayNameChange(event: KeyboardEvent) {
+        if (event.key === Key.Enter) {
+            event.preventDefault();
+            const content = event.target as HTMLElement;
+            content.blur();
+
+            const response = await profileApi.updateProfile({
+                updateProfileRequest: {
+                    displayName: content.textContent
+                }
+            });
+
+            const {result, error} = response;
+
+            if (error) {
+                alert(error.message)
+                return;
+            }
+
+            if (!result || !result.success) {
+                alert("Something went wrong");
+                return;
+            }
+
+            $user.displayName = content.textContent;
         }
     }
 
@@ -52,7 +81,12 @@
 <header class="flex relative justify-between gap-x-4 min-h-[5rem] bg-surface-900 drop-shadow-lg z-10">
     <div class="flex items-center w-48 pl-5">
         <UserProfileAvatar/>
-        #{$user.displayName}
+        <span>
+            #
+            <span contenteditable="true" role="textbox" tabindex="0" on:keydown={handleDisplayNameChange}>
+                {$user.displayName}
+            </span>
+        </span>
     </div>
     <div class="flex flex-1 items-center">
         <div class="w-full flex items-center gap-x-4 justify-end">

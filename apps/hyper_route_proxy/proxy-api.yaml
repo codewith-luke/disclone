@@ -135,7 +135,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileResponse'
+                $ref: '#/components/schemas/ProfileGetResponse'
         default:
           description: unexpected error
           content:
@@ -160,7 +160,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProfileResponse'
+                $ref: '#/components/schemas/ProfileUpdateResponse'
         default:
           description: unexpected error
           content:
@@ -520,7 +520,7 @@ components:
             $ref: '#/components/schemas/Message'
 
     # HTTP Models
-    ProfileResponse:
+    ProfileGetResponse:
       type: object
       properties:
         error:
@@ -530,6 +530,17 @@ components:
           properties:
             user:
               $ref: '#/components/schemas/User'
+
+    ProfileUpdateResponse:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorResult'
+        result:
+          type: object
+          properties:
+            success:
+              type: boolean
 
     LoginRequest:
       type: object

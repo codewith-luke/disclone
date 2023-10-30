@@ -22,8 +22,10 @@ models/LogoutResponse.ts
 models/LogoutResponseResult.ts
 models/Message.ts
 models/Profile.ts
-models/ProfileResponse.ts
-models/ProfileResponseResult.ts
+models/ProfileGetResponse.ts
+models/ProfileGetResponseResult.ts
+models/ProfileUpdateResponse.ts
+models/ProfileUpdateResponseResult.ts
 models/RegisterRequest.ts
 models/RegisterResponse.ts
 models/RegisterResponseResult.ts
