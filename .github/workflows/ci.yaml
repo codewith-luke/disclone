@@ -45,7 +45,7 @@ jobs:
    # Downloads a copy of the code in your repository before running CI tests
    - name: copy code into runner
      # official github action => copy repository's code into runner
-     uses: actions/checkout@v4
+     uses: actions/checkout@v3
      id: some id
    - name: setting-up bun
      # official bun action => sets up bun
