@@ -1,6 +1,7 @@
 import createDBConn from "../db";
 import {createAuthDB} from "../access/db-access";
 import {loggers} from "../util/logger";
+import {Routes} from "../types";
 
 export async function deleteAllUsersBesidesAdmin() {
     const conn = createDBConn();

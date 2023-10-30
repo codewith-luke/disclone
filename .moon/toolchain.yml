@@ -28,8 +28,8 @@ node:
   # Version format to use when syncing dependencies within the project's `package.json`.
   # dependencyVersionFormat: 'workspace'
 
-  # Infer and automatically create moon tasks from `package.json` scripts, per project.
-  # BEWARE: Tasks and scripts are not 1:1 in functionality, so please refer to the documentation.
+  # Infer and automatically create moon tasks from `package.json` test-scripts, per project.
+  # BEWARE: Tasks and test-scripts are not 1:1 in functionality, so please refer to the documentation.
   inferTasksFromScripts: false
 
   # Sync a project's `dependsOn` as dependencies within the project's `package.json`.

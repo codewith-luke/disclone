@@ -63,5 +63,6 @@ INSERT into ds_auth.users
 values ('admin',
         'IAmAdmin',
         '$argon2id$v=19$m=65536,t=2,p=1$l8dOxo5QkVOiKKa+QNpEGNTgUkCrGrzj2CXFZ5xhPYs$0jyFFb643s0c/f2OsZ1gddtLXFxR4tqArkMUpN9xUwk',
-        'admin@localhost');
+        'admin@localhost.com');
+
 

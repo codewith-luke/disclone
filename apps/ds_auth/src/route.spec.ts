@@ -1,17 +1,46 @@
-import {afterAll, beforeAll, describe, expect, it} from 'bun:test'
-import {Elysia} from "elysia";
-import {Environments, Routes} from "./types";
+import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'bun:test'
+import {Routes} from "./types";
 import {createApp} from "./server";
 import {HttpErrorMessages} from "./util/error";
-import {createTestDB, deleteAllUsersBesidesAdmin} from "./scripts/delete-user";
+import {createTestDB, deleteAllUsersBesidesAdmin} from "./test-scripts";
 
 const domain = "http://localhost";
+
+const testUser = {
+    username: "test1",
+    password: "test!221T",
+    email: "test@test.com",
+    display_name: "test1"
+}
 
 function cookieSetter(cookieHeader: string[]) {
     return cookieHeader.reduce((acc, curr) => {
         const [value] = curr.split(';');
         return `${acc}${value};`;
     }, "");
+}
+
+async function loginTestUser(sut: any) {
+    let cookies = "";
+
+    await sut.handle(
+        new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.login}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: testUser.username,
+                password: testUser.password,
+            }),
+        })
+    ).then((res: Response) => {
+        const cookieHeader = res.headers.getSetCookie();
+        cookies = cookieSetter(cookieHeader)
+        return res.json();
+    });
+
+    return cookies;
 }
 
 describe("dsa", () => {
@@ -25,8 +54,8 @@ describe("dsa", () => {
 
     afterAll(function () {
         sut.stop();
-        dbAccess.dbConn.end();
         deleteAllUsersBesidesAdmin();
+        dbAccess.dbConn.end();
     });
 
     it(`[${Routes.heartbeat}] return an ok in response`, async () => {
@@ -39,12 +68,8 @@ describe("dsa", () => {
         expect(actual).toBe(expected);
     });
 
-    describe(`[${Routes.auth.keys.register}]`, function () {
-        afterAll(() => {
-            deleteAllUsersBesidesAdmin();
-        });
-
-        it(`mytest should return 400 if invalid email`, async () => {
+    describe(`Registration and archiving process`, function () {
+        it(`should return 400 if invalid email`, async () => {
             const {error: actual} = await sut.handle(
                 new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.register}`, {
                     method: 'POST',
@@ -120,10 +145,7 @@ describe("dsa", () => {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        username: "test1",
-                        password: "test!221T",
-                        email: "test@test.com",
-                        display_name: "test1"
+                        ...testUser
                     }),
                 })
             ).then((res: Response) => {
@@ -167,7 +189,7 @@ describe("dsa", () => {
             let cookies = "";
 
             // 1) Register user
-            const registerResult = await sut.handle(
+            const user = await sut.handle(
                 new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.register}`, {
                     method: 'POST',
                     headers: {
@@ -176,7 +198,8 @@ describe("dsa", () => {
                     body: JSON.stringify({
                         username: "test2",
                         password: "test!221T",
-                        email: "test2@test.com"
+                        email: "test2@test.com",
+                        display_name: "test2"
                     }),
                 })
             ).then((res: Response) => {
@@ -185,7 +208,7 @@ describe("dsa", () => {
                 return res.json();
             });
 
-            // 2) Archive admin user
+            // 2) Archive testuser user
             const {error: archiveResult} = await sut.handle(
                 new Request(`${domain}${Routes.profile.base}${Routes.profile.keys.archive}`, {
                     method: 'PUT',
@@ -202,12 +225,12 @@ describe("dsa", () => {
             expect(archiveResult.status).toBe(HttpErrorMessages.VALIDATION.status);
 
             // 3) Check if user is archived
-            const archivedUser = await dbAccess.authDB.userAccess.getUser("admin");
+            const archivedUser = await dbAccess.authDB.userAccess.getUser("test2");
             expect(archivedUser?.archived).toBeFalse();
         });
     });
 
-    describe(`${Routes.auth.keys.login} and ${Routes.auth.keys.logout}`, function () {
+    describe(`Login logout process`, function () {
         it(`should error on invalid user`, async () => {
             const actual = await sut.handle(
                 new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.login}`, {
@@ -228,15 +251,15 @@ describe("dsa", () => {
         it(`should login and set a cookie and logout, while clearing the session`, async () => {
             let cookies = "";
 
-            const actual = await sut.handle(
+            await sut.handle(
                 new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.login}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        username: "admin",
-                        password: "admin",
+                        username: testUser.username,
+                        password: testUser.password,
                     }),
                 })
             ).then((res: Response) => {
@@ -269,25 +292,8 @@ describe("dsa", () => {
         });
 
         it(`should login and retrieve user`, async () => {
-            const expected = 'admin';
-            let cookies = "";
-
-            await sut.handle(
-                new Request(`${domain}${Routes.auth.base}${Routes.auth.keys.login}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        username: "admin",
-                        password: "admin",
-                    }),
-                })
-            ).then((res: Response) => {
-                const cookieHeader = res.headers.getSetCookie();
-                cookies = cookieSetter(cookieHeader)
-                return res.json();
-            });
+            const expected = testUser.username;
+            let cookies = await loginTestUser(sut);
 
             const {result: actual} = await sut.handle(
                 new Request(`${domain}${Routes.profile.base}${Routes.profile.keys.me}`, {
@@ -302,6 +308,57 @@ describe("dsa", () => {
 
             const {user} = actual;
             expect(user.username).toEqual(expected);
+        });
+    });
+
+    describe('Profile updates', () => {
+        let cookies = '';
+
+        beforeEach(async () => {
+            cookies = await loginTestUser(sut);
+        });
+
+        it(`should update profile`, async () => {
+            const expected = {
+                display_name: "testname"
+            };
+
+            const userResult = await sut.handle(
+                new Request(`${domain}${Routes.profile.base}${Routes.profile.keys.me}`, {
+                    method: 'GET',
+                    headers: {
+                        'Cookie': cookies,
+                    }
+                })
+            ).then((res: Response) => res.json());
+
+            expect(userResult.result.user.display_name).toEqual('test1');
+
+            const userUpdateResult = await sut.handle(
+                new Request(`${domain}${Routes.profile.base}${Routes.profile.keys.me}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cookie': cookies,
+                    },
+                    body: JSON.stringify({
+                        display_name: "testname",
+                    }),
+                })
+            ).then((res: Response) => res.json());
+
+            expect(userUpdateResult.result.success).toBeTrue();
+
+            const updatedUserResult = await sut.handle(
+                new Request(`${domain}${Routes.profile.base}${Routes.profile.keys.me}`, {
+                    method: 'GET',
+                    headers: {
+                        'Cookie': cookies,
+                    }
+                })
+            ).then((res: Response) => res.json());
+
+            expect(updatedUserResult.result.user.display_name).toEqual(expected.display_name);
         });
     });
 });
