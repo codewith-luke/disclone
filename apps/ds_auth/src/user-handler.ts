@@ -197,7 +197,7 @@ export function createUserHandler(userAccess: UserAccess) {
                         user: User.sanatize(user),
                     }
                 })
-                .patch(Routes.profile.keys.me, async ({body, store, cookie}) => {
+                .post(Routes.profile.keys.me, async ({body, store, cookie}) => {
                     if (!store.user) {
                         return new ValidationError("User not found");
                     }

@@ -1,9 +1,10 @@
 import createDBConn from "./db";
 import {Elysia, ValidationError} from "elysia";
+import { cors } from '@elysiajs/cors'
 import {loggers, RequestLifeCycle} from "./util/logger";
 import {Routes} from "./types";
 import {createUserHandler} from "./user-handler";
-import {BadRequestError, BaseError, ErrorCodes} from "./util/error";
+import {BaseError, ErrorCodes} from "./util/error";
 import {createAuthDB} from "./access/db-access";
 import {createUserAccess} from "./use-cases/user-access";
 import {setupLogger, setupRoutes} from "./setup";
@@ -24,6 +25,9 @@ export function createApp() {
     const {dbConn, userHandler} = setupHandlers();
 
     return new Elysia()
+        .use(cors({
+            origin: false,
+        }))
         .use(setupRoutes)
         .use(setupLogger)
         .onAfterHandle((context) => {

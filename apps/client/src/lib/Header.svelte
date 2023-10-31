@@ -42,7 +42,20 @@
                 updateProfileRequest: {
                     displayName: content.textContent
                 }
+            }, {
+               credentials: "include"
             });
+
+            // const response = fetch("http://localhost:4020/profile", {
+            //     method: "POST",
+            //     credentials: "include",
+            //     headers: {
+            //         "Content-Type": "application/json"
+            //     },
+            //     body: JSON.stringify({
+            //         displayName: content.textContent
+            //     })
+            // }).then(response => response.json());
 
             const {result, error} = response;
 
@@ -52,7 +65,7 @@
             }
 
             if (!result || !result.success) {
-                alert("Something went wrong");
+                // alert("Something went wrong");
                 return;
             }
 
