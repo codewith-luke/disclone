@@ -10,22 +10,25 @@
 name: ds_auth_test
 
 on:
- push:
-  branches: [main]
+ workflow_dispatch:
  pull_request_review:
   types: [submitted]
  pull_request:
+  types: [closed]
   branches: [main]
 
 jobs:
- # Label of the container job
- first-job:
-  name:
-   first-job
+  approved:
+    if: github.event.review.state == 'APPROVED'
    # Containers must run in Linux based operating systems
-  runs-on: ubuntu-latest
+    runs-on: ubuntu-latest 
+    steps:
+      - 
+ # Label of the container job
   services:
-   postgres:
+   runs-on: ubuntu-latest
+  coruscant_db:
+    runs-on: ubuntu-latest
     image: postgres
     env:
      # See if this can reference env file
@@ -63,6 +66,7 @@ jobs:
      working-directory: "./apps/ds_auth"
      run: bun install
    - name: "step 4 - run bun test"
+     working-directory: "./apps/ds_auth"
      run: bun test
 env:
  # The hostname used to communicate with the PostgreSQL service container

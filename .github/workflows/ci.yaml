@@ -7,22 +7,21 @@
 name: ds_auth_test
 
 on:
- push:
-  branches: [main]
+ workflow_dispatch:
  pull_request_review:
   types: [submitted]
- pull_request:
+ pull_request_target:
   branches: [main]
 
 jobs:
  # Label of the container job
- first-job:
+ test-ds_auth:
   name:
-   first-job
+   testing-disclone/ds_auth
    # Containers must run in Linux based operating systems
   runs-on: ubuntu-latest
   services:
-   postgres:
+   coruscant_db:
     image: postgres
     env:
      # See if this can reference env file
@@ -52,24 +51,32 @@ jobs:
      uses: oven-sh/setup-bun@v1
      with:
       bun-version: latest
-   - run: cd "./apps/ds_auth"
-   - run: bun install
-   - name: Installing psql and seeding the database
+   - name: install dependencies"
+     working-directory: "./apps/ds_auth"
+     run: bun install
+   - name: Installing psql
      # using the directory
-     uses: "./db"
-   # install postresql-client aka psql
-   - run: |
+     # install postresql-client aka psql
+     run: |
       apt-get update
       apt-get install --yes postgresql-client
-   # translation : psql connect to host coruscant_db with user ds_auth on the port 5432 to database disclone
-   - run: psql -h coruscant_db -U ds_auth -p 5432 -d disclone
-   # inside psql shell import the file init_ds_auth.sql
-   - run: \i  init_ds_auth.sql
-   # quit psql shell
-   - run: \q
-   - run: bun test
+   - name: seeding the database via postgresql client
+     working-directory: "./db"
+     # translation : psql connect to host coruscant_db with user ds_auth on the port 5432 to database disclone
+     # inside psql shell import the file init_ds_auth.sql
+     # quit psql shell with \q
+     run: |
+      psql -h coruscant_db -U ds_auth -p 5432 -d disclone && \i  init_ds_auth.sql && \q
+   - name: run the goddamn tests for ds_auth
+     run: bun test
 env:
  # The hostname used to communicate with the PostgreSQL service container
- POSTGRES_HOST: localhost
+ POSTGRES_HOST: coruscant_db
  # The default PostgreSQL port
  POSTGRES_PORT: 5432
+ # the database we're talking to
+ POSTGRES_DB: disclone
+ # the database user running commands
+ POSTGRES_USER: ds_auth
+ # the password for our POSTGRES_USER
+ POSTGRES_PASSWORD: password
