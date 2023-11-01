@@ -7,28 +7,22 @@
 # Resources used:
 # - https://medium.com/chrisrbailey/github-actions-using-postgres-postgis-and-psql-e920a2aea7e1
 
-name: testing::disclone/apps/ds_auth
+name: APPROVED_PR::testing::ds_auth
 
 on:
- push:
-  branches: [main]
+ workflow_dispatch:
  pull_request_review:
   types: [submitted]
- pull_request:
   branches: [main]
 
 jobs:
- # Label of the container job
- testing_disclone_ds_auth:
-  name:
-   testing::ds_auth
-   # Containers must run in Linux based operating systems
+ approved:
+  if: github.event.review.state == 'APPROVED'
   runs-on: ubuntu-latest
   services:
-   postgres:
+   coruscant_db:
     image: postgres
     env:
-     # See if this can reference env file
      POSTGRES_PASSWORD: password
      POSTGRES_HOST: coruscant_db
      POSTGRES_PORT: 5432
@@ -36,26 +30,20 @@ jobs:
      POSTGRES_USER: ds_auth
     volumes:
      - "./db/init_ds_auth.sql:/docker-entrypoint-initdb.d/1.sql"
-    # Set health checks to wait until postgres has started
     options: >-
      --health-cmd pg_isready
      --health-interval 10s
      --health-timeout 5s
      --health-retries 5
     ports:
-     # Maps tcp port 5432 on service container to the host
      - 5432:5432
-
   steps:
-   # Downloads a copy of the code in your repository before running CI tests
    - name: "step 1 - copy code into the github action runner"
-     # official github action => copy repository's code into runner
      uses: actions/checkout@v4
      with:
       fetch-depth: 2
      id: some id
    - name: "step 2 - setting-up bun"
-     # official bun action => sets up bun ( see top of the file for doc)
      uses: oven-sh/setup-bun@v1
      with:
       bun-version: latest
@@ -63,6 +51,7 @@ jobs:
      working-directory: "./apps/ds_auth"
      run: bun install
    - name: "step 4 - run bun test"
+     working-directory: "./apps/ds_auth"
      run: bun test
 env:
  # The hostname used to communicate with the PostgreSQL service container
