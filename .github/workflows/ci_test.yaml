@@ -25,13 +25,11 @@ jobs:
    # Containers must run in Linux based operating systems
   runs-on: ubuntu-latest
   services:
-   postgres:
+   coruscant_db:
     image: postgres
     env:
      # See if this can reference env file
      POSTGRES_PASSWORD: password
-     POSTGRES_HOST: coruscant_db
-     POSTGRES_PORT: 5432
      POSTGRES_DB: disclone
      POSTGRES_USER: ds_auth
     volumes:
@@ -54,6 +52,35 @@ jobs:
      with:
       fetch-depth: 2
      id: some id
+   - name: "step 3 1/3 - downloading the postgresql client"
+     # needs the --yes to autoconfirm on install, in order to not prompt 'are you sure?' because it would hang the runner
+     run: |
+      sudo apt-get update
+      sudo apt-get install --yes postgresql-client
+   - name: "step 3 3/3 - seeding the son of b*tch "
+     working-directory: "db"
+     # needed env for psql #could also do: export PGPASSWORD=password or PGPASSWORD=password psql --host....
+     # --host localhost didn't work because it was trying to connect via IPv6 (::1) and not IPv4
+     env:
+      PGPASSWORD: password
+     run: |
+      psql --host postgres --username ds_auth --port 5432 --dbname disclone
+      \i init_ds_auth.sql
+     # \i init_ds_auth.sql
+   # psql --host localhost --username ds_auth --port 5432 --dbname disclone --file init_ds_auth.sql --echo-all --echo-errors --echo-queries
+   ########### test docker image first and try this if it doesn't work
+   #  # installing postgresql-client aka psql
+   #  - run: |
+   #     sudo apt-get update
+   #     sudo apt-get install postgresql-client
+   #  - name:
+   #     "step 4 seeding the database"
+   #     # translation : psql connect to host coruscant_db with user ds_auth on the port 5432 to database disclone with the file init_ds_auth as script to be ran.
+   #    working-directory: "./db"
+   #    # the pipe thingy indicates multiline command(s) incoming
+   #    run: |
+   #     psql --host coruscant_db --username ds_auth --port 5432 --dbname disclone --file init_ds_auth.sql --echo-all --echo-erros --echo-queries
+   ############ test docker image first ############
    - name: "step 2 - setting-up bun"
      # official bun action => sets up bun ( see top of the file for doc)
      uses: oven-sh/setup-bun@v1
@@ -63,12 +90,24 @@ jobs:
      working-directory: "./apps/ds_auth"
      run: bun install
    - name: "step 4 - run bun test"
-     run: bun test
+     working-directory: "./apps/ds_auth"
+     #.env.test will not be found because it's specified in the .gitignore, it's never moved to the runner
+     run: |
+      export NODE_ENV=development
+      export SECRET=supersecret
+      export PORT=4020
+      export POSTGRES_HOST=localhost
+      echo $POSTGRES_PORT
+      export POSTGRES_DB=disclone
+      export POSTGRES_USER=ds_auth
+      export POSTGRES_PASSWORD=password
+      export PASSWORD_PEPPER=pepper
+      bun run test
 env:
  # The hostname used to communicate with the PostgreSQL service container
  POSTGRES_HOST: coruscant_db
  # The default PostgreSQL port
- POSTGRES_PORT: 5432
+ POSTGRES_PORT: ${{ jobs.services.coruscant_db.ports[5432] }}
  # the database we're talking to
  POSTGRES_DB: disclone
  # the database user running commands

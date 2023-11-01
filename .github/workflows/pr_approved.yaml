@@ -52,7 +52,7 @@ jobs:
      run: bun install
    - name: "step 4 - run bun test"
      working-directory: "./apps/ds_auth"
-     run: bun test
+     run: bun run test
 env:
  # The hostname used to communicate with the PostgreSQL service container
  POSTGRES_HOST: coruscant_db
