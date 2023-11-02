@@ -118,7 +118,7 @@ export class ProfileApi extends runtime.BaseAPI {
 
         const response = await this.request({
             path: `/auth/profile`,
-            method: 'POST',
+            method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
             body: UpdateProfileRequestToJSON(requestParameters.updateProfileRequest),

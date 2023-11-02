@@ -142,7 +142,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResult'
-    post:
+    patch:
       tags:
         - profile
       description: Updates a user's profile

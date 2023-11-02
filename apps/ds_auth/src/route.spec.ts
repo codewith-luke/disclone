@@ -281,7 +281,7 @@ describe("dsa", () => {
                 const cookieHeader = res.headers.getSetCookie();
                 cookies = cookieSetter(cookieHeader)
             });
-            const user = await dbAccess.authDB.userAccess.getUser("admin");
+            const user = await dbAccess.authDB.userAccess.getUser(testUser.username);
             const session = await dbAccess.authDB.userAccess.sessionByUserID(user?.id ?? -1);
 
             const sessionID = cookies.split('; ')
