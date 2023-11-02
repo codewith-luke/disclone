@@ -4,10 +4,7 @@ import type {User} from "../../../../packages/disclone-sdk/models";
 
 export type UserStore = Writable<User>;
 
-const userStore = writable({
-    id: 0,
-    username: '',
-});
+const userStore = writable({});
 
 userStore.subscribe((user) => {
     console.log(user);

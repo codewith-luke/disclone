@@ -407,7 +407,7 @@ components:
         - updated_at
       properties:
         id:
-          type: string
+          type: number
         email:
           type: string
         username:

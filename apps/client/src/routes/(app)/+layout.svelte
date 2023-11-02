@@ -17,9 +17,7 @@
             };
         }
 
-        profileApi.getProfile({
-            credentials: "include"
-        }).then((res) => {
+        profileApi.getProfile().then((res) => {
             const {result, error} = res;
 
             if (error) {
