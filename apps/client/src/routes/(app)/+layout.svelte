@@ -2,14 +2,15 @@
     import {ProfileApi} from "disclone-sdk";
     import {Modal} from "@skeletonlabs/skeleton";
     import {onMount} from "svelte";
-    import Header from "$lib/Header.svelte";
-    import SideNav from "$lib/SideNav.svelte";
-    import {getUserStore} from "$lib/stores/store";
+    import Header from "$lib/components/Header.svelte";
+    import SideNav from "$lib/components/SideNav.svelte";
+    import {getUserStore} from "$lib/store";
+    import {createAPIBridge} from "$lib/api-bridge";
 
     const user = getUserStore();
 
     onMount(() => {
-        const profileApi = new ProfileApi();
+        const {profileApi} = createAPIBridge();
 
         if ($user.id) {
             return () => {

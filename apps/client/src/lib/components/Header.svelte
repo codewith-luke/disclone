@@ -1,14 +1,14 @@
 <script lang="ts">
-    import {ProfileApi} from "disclone-sdk";
     import {Search} from "lucide-svelte";
     import {slide} from 'svelte/transition';
     import {Key} from "w3c-keys";
-    import {getUserStore} from "$lib/stores/store";
+    import {getUserStore} from "$lib/store";
     import HeaderActions from "./HeaderActions.svelte";
     import UserProfileAvatar from "./UserProfileAvatar.svelte";
+    import {createAPIBridge} from "$lib/api-bridge";
 
     const user = getUserStore();
-    const profileApi = new ProfileApi();
+    const {profileApi} = createAPIBridge();
 
     let searchIsVisible = false;
     let searchBarEl: HTMLInputElement;
@@ -43,7 +43,7 @@
                     displayName: content.textContent
                 }
             }, {
-               credentials: "include"
+                credentials: "include"
             });
 
             // const response = fetch("http://localhost:4020/profile", {

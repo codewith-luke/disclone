@@ -1,6 +1,6 @@
 import {writable, type Writable} from "svelte/store";
 import {setContext} from "svelte";
-import type {User} from "disclone-sdk/models";
+import type {User} from "../../../../packages/disclone-sdk/models";
 
 export type UserStore = Writable<User>;
 

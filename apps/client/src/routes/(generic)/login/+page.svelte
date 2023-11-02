@@ -1,7 +1,7 @@
 <script lang="ts">
     import {enhance} from '$app/forms'
     import type {ActionData} from './$types';
-    import {getUserStore} from "$lib/stores/store";
+    import {getUserStore} from "$lib/store";
     import {goto} from "$app/navigation";
 
     export let form: ActionData;
