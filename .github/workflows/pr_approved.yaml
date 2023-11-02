@@ -5,7 +5,7 @@
 # https://github.com/oven-sh/setup-bun
 
 # Resources used:
-# - https://medium.com/chrisrbailey/github-actions-using-postgres-postgis-and-psql-e920a2aea7e1
+# - https://remarkablemark.org/blog/2021/03/14/setup-postgresql-in-github-actions/
 
 name: APPROVED_PR::testing::ds_auth
 
@@ -24,12 +24,8 @@ jobs:
     image: postgres
     env:
      POSTGRES_PASSWORD: password
-     POSTGRES_HOST: coruscant_db
-     POSTGRES_PORT: 5432
      POSTGRES_DB: disclone
      POSTGRES_USER: ds_auth
-    volumes:
-     - "./db/init_ds_auth.sql:/docker-entrypoint-initdb.d/1.sql"
     options: >-
      --health-cmd pg_isready
      --health-interval 10s
@@ -42,17 +38,41 @@ jobs:
      uses: actions/checkout@v4
      with:
       fetch-depth: 2
-     id: some id
+     id: someid
+   - name: "step 1 1/2 - downloading the postgresql client"
+# needs the --yes to autoconfirm on install, in order to not prompt 'are you sure?' because it would hang the runner
+     run: |
+      sudo apt-get update
+      sudo apt-get install --yes postgresql-client
+   - name: "step 1 2/2 - seeding the database"
+   # directory context important to find the --file
+     working-directory: "apps/db"
+     # needed env for psql #could also do: export PGPASSWORD=password or PGPASSWORD=password psql --host....
+     env:
+      PGPASSWORD: password
+     run: |
+      psql --host localhost --username ds_auth --port 5432 --dbname disclone --file init_ds_auth.sql --echo-all --echo-errors --echo-queries
    - name: "step 2 - setting-up bun"
      uses: oven-sh/setup-bun@v1
      with:
       bun-version: latest
    - name: "step 3 - installing dependencies"
-     working-directory: "./apps/ds_auth"
+     working-directory: "apps/ds_auth"
      run: bun install
    - name: "step 4 - run bun test"
-     working-directory: "./apps/ds_auth"
-     run: bun run test
+     working-directory: "apps/ds_auth"
+     #.env.test will not be found because it's specified in the .gitignore, it's never moved to the runner
+     run: |
+      export NODE_ENV=development
+      export SECRET=supersecret
+      export PORT=4020
+      export POSTGRES_HOST=localhost
+      echo $POSTGRES_PORT
+      export POSTGRES_DB=disclone
+      export POSTGRES_USER=ds_auth
+      export POSTGRES_PASSWORD=password
+      export PASSWORD_PEPPER=pepper
+      bun test
 env:
  # The hostname used to communicate with the PostgreSQL service container
  POSTGRES_HOST: coruscant_db
