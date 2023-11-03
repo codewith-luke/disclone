@@ -7,9 +7,11 @@
 # Resources used:
 # - https://remarkablemark.org/blog/2021/03/14/setup-postgresql-in-github-actions/
 
-name: testing::disclone/apps/ds_auth
+name: testing::/apps/ds_auth
 
 on:
+# workflow_call makes the whole job re-usable by other workflows
+ workflow_call:
  workflow_dispatch:
  push:
   branches: [main]
@@ -25,7 +27,6 @@ jobs:
    coruscant_db:
     image: postgres
     env:
-     # See if this can reference env file
      POSTGRES_PASSWORD: password
      POSTGRES_DB: disclone
      POSTGRES_USER: ds_auth
@@ -46,7 +47,6 @@ jobs:
      uses: actions/checkout@v4
      with:
       fetch-depth: 2
-     id: some_id
    - name: "step 1 1/2 - downloading the postgresql client"
      # needs the --yes to autoconfirm on install, in order to not prompt 'are you sure?' because it would hang the runner
      run: |
