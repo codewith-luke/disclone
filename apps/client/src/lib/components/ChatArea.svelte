@@ -66,7 +66,6 @@
 
 <svelte:window on:keydown={handleKeydown}/>
 <div class="h-full flex flex-col">
-    Username: {users.get(1)?.displayName}
     <div class="overflow-hidden flex-grow">
         <section bind:this={chatArea} class="overflow-y-auto h-full space-y-4 p-4">
             {#if messageFeed.length > 0 && $user?.id}
