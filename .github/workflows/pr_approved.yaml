@@ -7,15 +7,15 @@
 # Resources used:
 # - https://remarkablemark.org/blog/2021/03/14/setup-postgresql-in-github-actions/
 
-name: APPROVED_PR::testing::ds_auth
+name: 'APPROVED_PR::testing::ds_auth'
 
 on:
- workflow_dispatch:
- pull_request_review:
-  types: [submitted]
-  branches: [main]
+  workflow_dispatch:
+  pull_request_review:
+    types: [ submitted ]
+    branches: [ main ]
 
 jobs:
- approved:
-  if: github.event.review.state == 'APPROVED'
-  uses: ./.github/workflows/ci.yaml
+  approved:
+    if: github.event.review.state == 'APPROVED'
+    uses: ./.github/workflows/ci.yaml
