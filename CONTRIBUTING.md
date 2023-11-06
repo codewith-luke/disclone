@@ -58,16 +58,16 @@ if anything, don't panic, contact your Security Officer or repositories' owners.
 
 **Running the tests :**
 
-.env files must have been created for your local setup
+.env files that don't have a .example extension must have been created for your local setup, duplicate the example ones.
 Note: since coruscant_db binds to 0.0.0.0:5432, having a local install of PostgreSQL will clash with it.
-inside "disclone/apps/ds_auth", run 'bun test'
+inside "disclone/apps/ds_auth", run 'bun run test'
 
 **Requirements :**
 
 though not required, we recommend to install [proto](https://moonrepo.dev/docs/proto/install) and [moonrepo](https://moonrepo.dev/docs)
 
 Need to have installed on your machine: Docker, [Bun](https://bun.sh), [pnpm](https://pnpm.io/installation), 
-and Go 1.21.0 ( installed with either [proto](https://moonrepo.dev/docs/proto/tools) or [official go docs](https://go.dev/doc/install)
+and Go 1.21.0 installed with either [proto](https://moonrepo.dev/docs/proto/tools) or [official go docs](https://go.dev/doc/install)
 
 Not sure: you may need versions of NodeJS for sveltekit and sveltekit installations scripts that rely on it
 
