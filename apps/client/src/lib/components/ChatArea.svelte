@@ -1,4 +1,5 @@
 <script lang="ts">
+    import {tick} from 'svelte';
     import type {IMessage} from "$lib/components/Message.svelte";
     import FileUploadInput from "./FileUploadInput.svelte";
     import EmoteActions from "./EmoteActions.svelte";
@@ -33,7 +34,7 @@
         }
     }
 
-    function handleMessageSend() {
+    async function handleMessageSend() {
         const formData = new FormData(formEl);
         const message = formData.get("message") as string;
 
@@ -46,8 +47,9 @@
         }];
 
         formEl.reset();
-        // const height = chatArea.offsetHeight;
-        console.log("offsetHeight", chatArea.offsetHeight, "scrollHeight", chatArea.scrollHeight, "clientHeight", chatArea.clientHeight)
+
+        await tick();
+
         chatArea.scrollTo({top: chatArea.scrollHeight, behavior: "smooth"});
     }
 </script>
