@@ -6,10 +6,6 @@ export type UserStore = Writable<User>;
 
 const userStore = writable({});
 
-userStore.subscribe((user) => {
-    console.log(user);
-});
-
 export function getUserStore() {
     return setContext('user', userStore) as UserStore;
 }

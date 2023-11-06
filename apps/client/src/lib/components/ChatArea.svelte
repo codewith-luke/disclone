@@ -1,32 +1,43 @@
 <script lang="ts">
     import {tick} from 'svelte';
-    import type {IMessage} from "$lib/components/Message.svelte";
+    import {Key} from "w3c-keys";
+
     import FileUploadInput from "./FileUploadInput.svelte";
     import EmoteActions from "./EmoteActions.svelte";
     import Message from "./Message.svelte";
-    import {Key} from "w3c-keys";
     import {getUserStore} from "$lib/store";
 
     const user = getUserStore();
+
     let messageInputEl: HTMLInputElement;
     let formEl: HTMLFormElement;
     let chatArea: HTMLElement;
+    let users = new Map();
 
-    let messageFeed = new Array(5).fill({
-        userId: 21,
-        displayName: "Ricardo Cooper",
-        message: "Lorem ipsum dolor sit amet, consectetur adis",
-        timestamp: Date.now(),
-        profileImage: "https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=1024&h=1024&q=80",
-    }) as IMessage[];
-
-    messageFeed.push({
-        userId: 1,
-        displayName: "dasdas",
-        message: "Lorem ipsum dolor sit amet, consectetur adis",
-        timestamp: Date.now(),
-        profileImage: 'https://randomuser.me/api/portraits/men/76.jpg',
+    user.subscribe((updatedUser) => {
+        users.set(updatedUser.id, updatedUser);
+        users = users;
     });
+
+    let messageFeed = (function getMessages() {
+        users.set(21, {id: 21, displayName: "John Doe"})
+
+        let messages = new Array(5).fill({
+            userId: 21,
+            message: "Lorem ipsum dolor sit amet, consectetur adis",
+            timestamp: Date.now(),
+            profileImage: "https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=1024&h=1024&q=80",
+        });
+
+        messages.push({
+            userId: 1,
+            message: "Lorem ipsum dolor sit amet, consectetur adis",
+            timestamp: Date.now(),
+            profileImage: 'https://randomuser.me/api/portraits/men/76.jpg',
+        });
+
+        return messages;
+    })();
 
     function handleKeydown(event: KeyboardEvent) {
         if (event.key === Key.Space) {
@@ -40,7 +51,6 @@
 
         messageFeed = [...messageFeed, {
             userId: $user.id,
-            displayName: $user.displayName,
             profileImage: 'https://randomuser.me/api/portraits/men/76.jpg',
             message,
             timestamp: Date.now(),
@@ -56,20 +66,22 @@
 
 <svelte:window on:keydown={handleKeydown}/>
 <div class="h-full flex flex-col">
+    Username: {users.get(1)?.displayName}
     <div class="overflow-hidden flex-grow">
         <section bind:this={chatArea} class="overflow-y-auto h-full space-y-4 p-4">
             {#if messageFeed.length > 0 && $user?.id}
                 {#each messageFeed as message}
-                    <Message message="{message}" userId="{$user.id}"/>
+                    <Message message="{message}" userId="{$user.id}"
+                             displayName={users.get(message.userId)?.displayName || "Default"}/>
                 {/each}
             {/if}
         </section>
     </div>
 
-    <div class="flex justify-center items-center my-6 mx-8 gap-x-4 text-surface-300">
+    <div class="flex justify-between items-center my-6 mx-8 gap-x-4 text-surface-300">
         <FileUploadInput/>
 
-        <form bind:this={formEl} on:submit|preventDefault={handleMessageSend}>
+        <form class="flex-grow" bind:this={formEl} on:submit|preventDefault={handleMessageSend}>
             <label class="flex flex-1 label">
                 <input class="input p-2" type="text" name="message" placeholder="Input" bind:this={messageInputEl}/>
             </label>
