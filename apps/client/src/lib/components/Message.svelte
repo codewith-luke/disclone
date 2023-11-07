@@ -9,11 +9,10 @@
 
 <script lang="ts">
     import {Avatar} from "@skeletonlabs/skeleton";
+    import {getEmoteStore} from "$lib/store";
+    import {parseMessage} from "$lib/emote-parser";
 
-    const emotes = {
-        peepoDJ: 'https://cdn.7tv.app/emote/6102a37ba57eeb23c0e3e5cb/2x.avif',
-    }
-
+    const emotes = getEmoteStore();
     export let userId: number = 0;
     export let displayName: string = '';
 
@@ -24,20 +23,7 @@
         profileImage: ''
     }
 
-    function parseMessage(message: string) {
-        const emoteRegex = /:(\w+):/g;
-        const emoteMatches = message.matchAll(emoteRegex);
-        let parsedMessage = message;
-
-        for (const match of emoteMatches) {
-            const emote = match[1];
-
-            if (emotes[emote]) {
-                parsedMessage = parsedMessage.replace(match[0], `<img src="${emotes[emote]}" class="inline-block w-6 h-6" alt="">`);
-            }
-        }
-        return parsedMessage;
-    }
+    const parsedMessage = parseMessage($emotes, message.message);
 </script>
 
 <div class="grid grid-cols-[auto_1fr] gap-2">
@@ -49,7 +35,7 @@
                 {displayName}</p>
             <small class="opacity-50">{new Date(message.timestamp).toLocaleDateString('en-GB')}</small>
         </header>
-        <p>{@html parseMessage(message.message)}</p>
+        <p>{@html parsedMessage}</p>
     </div>
 </div>
 

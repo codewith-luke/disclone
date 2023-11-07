@@ -6,6 +6,7 @@
     import EmoteActions from "./EmoteActions.svelte";
     import Message from "./Message.svelte";
     import {getUserStore} from "$lib/store";
+    import {parseMessage} from "$lib/emote-parser";
 
     const user = getUserStore();
 
@@ -31,7 +32,7 @@
 
         messages.push({
             userId: 1,
-            message: "Lorem ipsum dolor sit amet, consectetur adis",
+            message: ":peepoDJ:",
             timestamp: Date.now(),
             profileImage: 'https://randomuser.me/api/portraits/men/76.jpg',
         });
@@ -49,12 +50,13 @@
         const formData = new FormData(formEl);
         const message = formData.get("message") as string;
 
-        messageFeed = [...messageFeed, {
+        messageFeed.push({
             userId: $user.id,
             profileImage: 'https://randomuser.me/api/portraits/men/76.jpg',
             message,
             timestamp: Date.now(),
-        }];
+        });
+        messageFeed = messageFeed;
 
         formEl.reset();
 
