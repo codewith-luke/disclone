@@ -71,7 +71,7 @@
     <div class="fixed top-0 left-0 h-full w-full z-20">
         <div class="fixed h-full w-full z-0 bg-surface-900 opacity-90"></div>
         <div class="relative flex mt-12 justify-center items-center w-full z-10">
-            <div class="w-8/12" transition:slide={{ duration: 200, axis: 'x' }}>
+            <div class="w-8/12" transition:slide|global={{ duration: 200, axis: 'x' }}>
                 <input class="input py-1 px-4" type="search" placeholder="Search..." bind:this={searchBarEl}/>
             </div>
         </div>
