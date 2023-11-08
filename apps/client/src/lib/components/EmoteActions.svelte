@@ -1,3 +1,21 @@
+
+<script lang="ts">
+    import {Sticker, Meh} from "lucide-svelte";
+    import {type PopupSettings, popup} from "@skeletonlabs/skeleton";
+
+    const popupGifOptions: PopupSettings = {
+        target: 'popupGifSettings',
+        event: 'click',
+        placement: 'top-end',
+    };
+
+    const popupEmoteOptions: PopupSettings = {
+        target: 'popupEmoteSettings',
+        event: 'click',
+        placement: 'top-end',
+    };
+</script>
+
 <div class="flex justify-around gap-x-2">
     <button use:popup={popupGifOptions}>
         <Sticker class="text-hover"/>
@@ -21,20 +39,3 @@
         <div class="arrow bg-surface-100-800-token"/>
     </div>
 </div>
-
-<script lang="ts">
-    import {Sticker, Meh} from "lucide-svelte";
-    import {type PopupSettings, popup} from "@skeletonlabs/skeleton";
-
-    const popupGifOptions: PopupSettings = {
-        target: 'popupGifSettings',
-        event: 'click',
-        placement: 'top-end',
-    };
-
-    const popupEmoteOptions: PopupSettings = {
-        target: 'popupEmoteSettings',
-        event: 'click',
-        placement: 'top-end',
-    };
-</script>
