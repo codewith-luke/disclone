@@ -3,6 +3,7 @@ import {fetchSevenTVEmotes} from "$lib/seven-tv-adapter";
 export type EmoteSet = Record<string, Emote>;
 
 export type Emote = {
+    id: string;
     name: string;
     host: string;
     files: Record<Sizes, EmoteFile>;
@@ -23,7 +24,7 @@ const sizes = {
 } as const;
 
 export function parseMessage(emotes: EmoteSet, message: string) {
-    const emoteRegex = /:(.*):/g;
+    const emoteRegex = /:(.*?):/gm;
     const emoteMatches = message.matchAll(emoteRegex);
     let parsedMessage = message;
 
@@ -40,6 +41,5 @@ export function parseMessage(emotes: EmoteSet, message: string) {
 
 export async function fetchEmotes() {
     const emotes = await fetchSevenTVEmotes();
-    console.log()
     return emotes;
 }

@@ -64,6 +64,16 @@
 
         chatArea.scrollTo({top: chatArea.scrollHeight, behavior: "smooth"});
     }
+
+    function handleEmoteClick(ev: CustomEvent) {
+        if (!messageInputEl || !ev.detail) {
+            console.error("Missing message input or emote detail");
+            return;
+        }
+
+        const {name} = ev.detail;
+        messageInputEl.value += `:${name}:`;
+    }
 </script>
 
 <svelte:window on:keydown={handleKeydown}/>
@@ -88,6 +98,6 @@
             </label>
         </form>
 
-        <EmoteActions/>
+        <EmoteActions on:change={handleEmoteClick}/>
     </div>
 </div>

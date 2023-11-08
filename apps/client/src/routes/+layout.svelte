@@ -13,7 +13,7 @@
     const emoteStore = getEmoteStore();
 
     async function init() {
-        const emotes = await fetchEmotes() as any;
+        const emotes = await fetchEmotes();
         emoteStore.set(emotes);
     }
 </script>

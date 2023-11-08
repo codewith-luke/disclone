@@ -5,6 +5,7 @@ type SevenTvEmoteSetResponse = {
 }
 
 type SevenTvEmoteSet = {
+    id: string;
     name: string;
     data: {
         host: {
@@ -44,6 +45,7 @@ export async function fetchSevenTVEmotes() {
         }, {} as Record<Sizes, EmoteFile>);
 
         acc[emote.name] = {
+            id: emote.id,
             name: emote.name,
             host: emote.data.host.url,
             files
