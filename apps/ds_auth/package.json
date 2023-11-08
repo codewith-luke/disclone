@@ -8,16 +8,16 @@
     "start": "bun run src/index.ts"
   },
   "dependencies": {
-    "@bogeychan/elysia-logger": "^0.0.9",
-    "@elysiajs/cookie": "^0.6.1",
-    "@elysiajs/cors": "^0.6.0",
+    "@bogeychan/elysia-logger": "^0.0.13",
+    "@elysiajs/cookie": "^0.7.0",
+    "@elysiajs/cors": "^0.7.1",
     "@elysiajs/jwt": "^0.7.0",
-    "@sinclair/typebox": "^0.31.17",
+    "@sinclair/typebox": "^0.31.23",
     "ajv": "^8.12.0",
     "ajv-errors": "^3.0.0",
     "ajv-formats": "^2.1.1",
     "elysia": "latest",
-    "postgres": "3.3.5",
+    "postgres": "3.4.3",
     "winston": "^3.10.0"
   },
   "devDependencies": {
