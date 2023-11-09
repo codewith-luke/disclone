@@ -3,42 +3,27 @@
     import {Key} from "w3c-keys";
 
     import FileUploadInput from "./FileUploadInput.svelte";
+    import TipTap from "./TipTap.svelte";
     import EmoteActions from "./EmoteActions.svelte";
     import Message from "./Message.svelte";
     import {getUserStore} from "$lib/store";
-    import {parseMessage} from "$lib/emote-parser";
 
     const user = getUserStore();
 
     let messageInputEl: HTMLInputElement;
-    let formEl: HTMLFormElement;
     let chatArea: HTMLElement;
     let users = new Map();
+    let messageFeed = [{
+        userId: 1,
+        profileImage: 'https://randomuser.me/api/portraits/men/76.jpg',
+        message: `Hello World! \n\n this is a new line <script>alert('hello')</\script> :peepoDJ:`,
+        timestamp: Date.now(),
+    }];
 
     user.subscribe((updatedUser) => {
         users.set(updatedUser.id, updatedUser);
         users = users;
     });
-
-    let messageFeed = (function getMessages() {
-        users.set(21, {id: 21, displayName: "John Doe"})
-
-        let messages = new Array(5).fill({
-            userId: 21,
-            message: "Lorem ipsum dolor sit amet, consectetur adis",
-            timestamp: Date.now(),
-            profileImage: "https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=1024&h=1024&q=80",
-        });
-
-        messages.push({
-            userId: 1,
-            message: ":peepoDJ:",
-            timestamp: Date.now(),
-            profileImage: 'https://randomuser.me/api/portraits/men/76.jpg',
-        });
-
-        return messages;
-    })();
 
     function handleKeydown(event: KeyboardEvent) {
         if (event.key === Key.Space) {
@@ -46,9 +31,13 @@
         }
     }
 
-    async function handleMessageSend() {
-        const formData = new FormData(formEl);
-        const message = formData.get("message") as string;
+    async function handleMessageSend(event: CustomEvent<string>) {
+        if (!event.detail) {
+            console.error("Missing message detail");
+            return;
+        }
+
+        const message = event.detail;
 
         messageFeed.push({
             userId: $user.id,
@@ -56,9 +45,8 @@
             message,
             timestamp: Date.now(),
         });
-        messageFeed = messageFeed;
 
-        formEl.reset();
+        messageFeed = messageFeed;
 
         await tick();
 
@@ -78,6 +66,7 @@
 
 <svelte:window on:keydown={handleKeydown}/>
 <div class="h-full flex flex-col">
+
     <div class="overflow-hidden flex-grow">
         <section bind:this={chatArea} class="overflow-y-auto h-full space-y-4 p-4">
             {#if messageFeed.length > 0 && $user?.id}
@@ -92,11 +81,7 @@
     <div class="flex justify-between items-center my-6 mx-8 gap-x-4 text-surface-300">
         <FileUploadInput/>
 
-        <form class="flex-grow" bind:this={formEl} on:submit|preventDefault={handleMessageSend}>
-            <label class="flex flex-1 label">
-                <input class="input p-2" type="text" name="message" placeholder="Input" bind:this={messageInputEl}/>
-            </label>
-        </form>
+        <TipTap on:send={handleMessageSend}/>
 
         <EmoteActions on:change={handleEmoteClick}/>
     </div>
