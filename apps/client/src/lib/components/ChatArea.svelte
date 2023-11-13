@@ -10,6 +10,7 @@
 
     const user = getUserStore();
 
+    let emoteAdded: (name: string) => void;
     let messageInputEl: HTMLInputElement;
     let chatArea: HTMLElement;
     let users = new Map();
@@ -54,13 +55,13 @@
     }
 
     function handleEmoteClick(ev: CustomEvent) {
-        if (!messageInputEl || !ev.detail) {
+        if (!ev.detail) {
             console.error("Missing message input or emote detail");
             return;
         }
 
         const {name} = ev.detail;
-        messageInputEl.value += `:${name}:`;
+        emoteAdded(name);
     }
 </script>
 
@@ -81,7 +82,7 @@
     <div class="flex justify-between items-center my-6 mx-8 gap-x-4 text-surface-300">
         <FileUploadInput/>
 
-        <TipTap on:send={handleMessageSend}/>
+        <TipTap on:send={handleMessageSend} bind:emoteAdded={emoteAdded}/>
 
         <EmoteActions on:change={handleEmoteClick}/>
     </div>

@@ -23,6 +23,11 @@ const sizes = {
     extraLarge: '4x',
 } as const;
 
+export function getEmoteUrl(emotes: EmoteSet, size: Sizes, emoteString: string) {
+    const emote = emoteString.split(':')[1] ? emoteString.split(':')[1] : emoteString;
+    return emotes[emote].files[size].url;
+}
+
 export function parseMessage(emotes: EmoteSet, message: string) {
     const emoteRegex = /:(.*?):/gm;
     const emoteMatches = message.matchAll(emoteRegex);
@@ -32,7 +37,8 @@ export function parseMessage(emotes: EmoteSet, message: string) {
         const emote = match[1];
 
         if (emotes[emote]) {
-            parsedMessage = parsedMessage.replace(match[0], `<img src="${emotes[emote].files.medium.url}" class="inline-block" alt="">`);
+            const url = getEmoteUrl(emotes, 'medium', emote);
+            parsedMessage = parsedMessage.replace(match[0], `<img src="${url}" class="inline-block" alt="">`);
         }
     }
 
