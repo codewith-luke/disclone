@@ -60,7 +60,18 @@ if anything, don't panic, contact your Security Officer or repositories' owners.
 
 .env files that don't have a .example extension must have been created for your local setup, duplicate the example ones.
 Note: since coruscant_db binds to 0.0.0.0:5432, having a local install of PostgreSQL will clash with it.
-inside "disclone/apps/ds_auth", run 'bun run test'
+
+Please run the tests locally on your machine before opening a Pull Request.
+To run the test
+at root level
+```shell
+docker compose up -d
+```
+inside "disclone/apps/ds_auth" run 
+```shell
+cd apps/ds_auth
+bun run test
+```
 
 **Requirements :**
 
@@ -74,32 +85,61 @@ Not sure: you may need versions of NodeJS for sveltekit and sveltekit installati
 **Steps :**
 
 1. Fork the repo
-2. take an issue and notify that you're working on it or log an issue and then fix it
+2. take an issue and notify that you're working on it OR log an issue and then fix it
 3. git clone your fork
-
+```shell
+git clone git@github.com:<yourUsernameGoesHere>/disclone.git
+```
 - if you already forked the repo, sync your fork with main and do 'git pull' to be sure to be up-to-date 
-to install dependencies
-
-- at root level run : 'pnpm install'
-
-- inside "disclone/apps/ds_auth", run : 'bun install'
-
-4. git branch fix/<"insert here number of the issue you fix"> or feat/<"name of the feat">
 
 
-( let's say it's fix/420 )
+```shell
+git pull
+```
+and to install dependencies
+- at root level run :
+```shell
+pnpm install
+```
+
+- inside "disclone/apps/ds_auth", run 
+
+ ```shell
+ bun install
+ ``` 
 
 
-5. git switch fix/420
+4. Create your working branch : git branch fix/<"insert here number of the issue you fix"> or feat/<"name of the feat">
+
+   ( let's say it's fix/420 )
+```shell
+git branch fix/420
+```
+
+5.  Go onto your working branch : git switch fix/420
+
+```shell
+git switch fix/420
+```
 
 - work on your branch
 
 - when done => review yourself => remove console.logs
 
-6. git add <"files affected"> or git add -A
-7. git commit -m "insert some meaningful message here"
-8. git push --set-upstream origin fix/420
-9. go to your forked repo and open a pull request
-10. write some edgy mean derogatory comment so we know what the Pull Request is about
-11. Click 'Create pull request'
-12. Done ! Write "OpenSource Core team contributor" on your resume
+6. Add and Save your modifications :
+git add <"files affected"> or git add -A
+
+```shell
+git add -A
+git commit -m "insert some meaningful message here"
+```
+7. Save work to your remote (GitHub) branch 
+
+```shell
+git push --set-upstream origin fix/420
+```
+
+8. go to your forked repo and open a pull request
+9. write some edgy mean derogatory comment, so we know what the Pull Request is about
+10. Click 'Create pull request'
+11. Done ! Write "OpenSource Core team contributor" on your resume
