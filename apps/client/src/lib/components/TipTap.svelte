@@ -1,7 +1,7 @@
 <script lang="ts">
     import {onMount, onDestroy, createEventDispatcher} from 'svelte';
     import {Key} from "w3c-keys";
-    import {Editor, Node, mergeAttributes, nodeInputRule} from '@tiptap/core'
+    import {Editor, Node, mergeAttributes, nodeInputRule, Extension} from '@tiptap/core'
     import StarterKit from '@tiptap/starter-kit'
     import {BulletList} from "@tiptap/extension-bullet-list";
     import {getEmoteUrl} from "$lib/emote-parser";
@@ -34,26 +34,11 @@
     })
 
     onMount(() => {
-        const CustomExtension = Node.create({
+        const Image = Node.create({
             name: 'image',
 
-            addOptions() {
-                return {
-                    inline: false,
-                    allowBase64: false,
-                    HTMLAttributes: {},
-                }
-            },
-
-            inline() {
-                return this.options.inline
-            },
-
-            group() {
-                return this.options.inline ? 'inline' : 'block'
-            },
-
-            draggable: true,
+            group: 'inline',
+            inline: true,
 
             addAttributes() {
                 return {
@@ -66,51 +51,44 @@
                     title: {
                         default: null,
                     },
+                    'data-tag': {
+                        default: null,
+                    },
+                    class: {
+                        default: 'inline',
+                    }
                 }
             },
 
             parseHTML() {
-                return [
-                    {
-                        tag: this.options.allowBase64
-                            ? 'img[src]'
-                            : 'img[src]:not([src^="data:"])',
-                    },
-                ]
+                return [{
+                    tag: 'img[src]'
+                }]
             },
 
-            renderText({node}) {
-                return node.attrs.alt || node.attrs.title || ''
+            renderHTML(data) {
+                return ['img', mergeAttributes(this.options.HTMLAttributes, data.HTMLAttributes), 0]
             },
-
-            renderHTML({HTMLAttributes}) {
-                return ['img', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes)]
-            },
-
-            // addCommands() {
-            //     return {
-            //         setImage: options => ({commands}) => {
-            //             return commands.insertContent({
-            //                 type: this.name,
-            //                 attrs: options,
-            //             })
-            //         },
-            //     }
-            // },
 
             addInputRules() {
-                const emoteRegex = /:(.*?):/gm;
+                const emoteRegex = /:.*?:/gm;
                 return [
                     nodeInputRule({
                         find: emoteRegex,
                         type: this.type,
                         getAttributes: (match) => {
-                            const [, name] = match;
-                            const src = getEmoteUrl($emotes, "small", name)
+                            const [name] = match;
+                            const src = getEmoteUrl($emotes, "small", name);
+
                             const alt = name;
                             const title = name;
 
-                            return {src, alt, title}
+                            return {
+                                'data-tag': `:${name}:`,
+                                src,
+                                alt,
+                                title
+                            }
                         },
                     }),
                 ]
@@ -121,10 +99,15 @@
             element,
             extensions: [
                 StarterKit.configure({
-                    bulletList: false
+                    bulletList: false,
+                    paragraph: {
+                        HTMLAttributes: {
+                            class: 'inline'
+                        }
+                    },
                 }),
                 CustomBulletList,
-                CustomExtension,
+                Image,
             ],
             content: '',
             autofocus: true,
