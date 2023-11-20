@@ -1,7 +1,7 @@
 <script lang="ts">
     import {onMount, onDestroy, createEventDispatcher} from 'svelte';
     import {Key} from "w3c-keys";
-    import {createEditor, SvelteNodeViewRenderer} from 'svelte-tiptap';
+    import {createEditor, SvelteNodeViewRenderer, BubbleMenu} from 'svelte-tiptap';
     import {Node, mergeAttributes, nodeInputRule} from '@tiptap/core'
     import StarterKit from '@tiptap/starter-kit'
     import {BulletList} from "@tiptap/extension-bullet-list";
@@ -41,8 +41,6 @@
             name: 'image',
 
             group: 'block',
-            // group: 'inline',
-            // inline: false,
             atom: true,
 
             addAttributes() {
@@ -53,15 +51,9 @@
                     alt: {
                         default: null,
                     },
-                    title: {
+                    tag: {
                         default: null,
                     },
-                    'data-tag': {
-                        default: null,
-                    },
-                    class: {
-                        default: 'inline',
-                    }
                 }
             },
 
@@ -69,11 +61,11 @@
                 return [{tag: 'TipTapEmote'}];
             },
 
-            // renderHTML(data) {
-            //     return ['img', mergeAttributes(this.options.HTMLAttributes, data.HTMLAttributes), 0]
-            // },
-
             renderHTML({HTMLAttributes}) {
+                if (!HTMLAttributes.src) {
+                    return
+                }
+
                 return ['TipTapEmote', mergeAttributes(HTMLAttributes)];
             },
 
@@ -91,14 +83,12 @@
                             const [name] = match;
                             const src = getEmoteUrl($emotes, "small", name);
 
-                            const alt = name;
-                            const title = name;
+                            const alt = name.split(":")[1];
 
                             return {
-                                'data-tag': name,
+                                tag: name,
                                 src,
                                 alt,
-                                title
                             }
                         },
                     }),
@@ -143,6 +133,4 @@
     #tippy {
         white-space: pre;
     }
-
-
 </style>

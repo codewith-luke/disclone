@@ -35,6 +35,11 @@ export async function fetchSevenTVEmotes() {
             return [] as SevenTvEmoteSet[];
         });
 
+    if (!emoteSetResponse.length) {
+        console.error('Failed to fetch 7TV emotes');
+        return {};
+    }
+
     return emoteSetResponse.reduce((acc: EmoteSet, emote: SevenTvEmoteSet) => {
         const files = emote.data.host.files.reduce((acc: Record<Sizes, EmoteFile>, file: SevenTvEmoteSetFile) => {
             const size = file.name.split('.')[0];

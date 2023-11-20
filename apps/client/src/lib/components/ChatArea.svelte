@@ -27,9 +27,9 @@
     });
 
     function handleKeydown(event: KeyboardEvent) {
-        if (event.key === Key.Space) {
-            messageInputEl.focus();
-        }
+        // if (event.key === Key.Space) {
+        //     messageInputEl.focus();
+        // }
     }
 
     async function handleMessageSend(event: CustomEvent<string>) {

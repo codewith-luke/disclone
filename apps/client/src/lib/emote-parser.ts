@@ -25,6 +25,8 @@ const sizes = {
 
 export function getEmoteUrl(emotes: EmoteSet, size: Sizes, emoteString: string) {
     const emote = emoteString.split(':')[1] ? emoteString.split(':')[1] : emoteString;
+    if (!emotes[emote]) return null;
+
     return emotes[emote].files[size].url;
 }
 
@@ -38,6 +40,7 @@ export function parseMessage(emotes: EmoteSet, message: string) {
 
         if (emotes[emote]) {
             const url = getEmoteUrl(emotes, 'medium', emote);
+            if (!url) continue;
             parsedMessage = parsedMessage.replace(match[0], `<img src="${url}" class="inline-block" alt="">`);
         }
     }
