@@ -57,6 +57,7 @@
 		"disclone-sdk": "workspace:^",
 		"lucide-svelte": "^0.292.0",
 		"set-cookie-parser": "^2.6.0",
+		"svelte-tiptap": "^1.1.2",
 		"w3c-keys": "^1.0.3"
 	},
 	"type": "module"

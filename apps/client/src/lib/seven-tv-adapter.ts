@@ -29,7 +29,11 @@ export const sevenTvToSizes = {
 export async function fetchSevenTVEmotes() {
     const emoteSetResponse = await fetch('https://7tv.io/v3/emote-sets/64ee458fd94c28b380c6b927')
         .then(r => r.json() as Promise<SevenTvEmoteSetResponse>)
-        .then(r => r.emotes);
+        .then(r => r.emotes)
+        .catch(() => {
+            console.error('Failed to fetch 7TV emotes');
+            return [] as SevenTvEmoteSet[];
+        });
 
     return emoteSetResponse.reduce((acc: EmoteSet, emote: SevenTvEmoteSet) => {
         const files = emote.data.host.files.reduce((acc: Record<Sizes, EmoteFile>, file: SevenTvEmoteSetFile) => {

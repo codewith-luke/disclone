@@ -1,20 +1,22 @@
 <script lang="ts">
     import {onMount, onDestroy, createEventDispatcher} from 'svelte';
     import {Key} from "w3c-keys";
-    import {Editor, Node, mergeAttributes, nodeInputRule, Extension} from '@tiptap/core'
+    import {createEditor, SvelteNodeViewRenderer} from 'svelte-tiptap';
+    import {Node, mergeAttributes, nodeInputRule} from '@tiptap/core'
     import StarterKit from '@tiptap/starter-kit'
     import {BulletList} from "@tiptap/extension-bullet-list";
     import {getEmoteUrl} from "$lib/emote-parser";
     import {getEmoteStore} from "$lib/store";
+    import TipTapEmote from "$lib/components/TipTapEmote.svelte";
 
-    let element
-    let editor
+    let element;
+    let editor;
 
     export const emoteAdded = function (data) {
         editor.commands.insertContent(`:${data}:`,
             {
                 parseOptions: {
-                    preserveWhitespace: false,
+                    preserveWhitespace: true,
                 }
             });
     }
@@ -27,6 +29,7 @@
             return {
                 [Key.Enter]: () => {
                     dispatch('send', this.editor.getText());
+
                     return this.editor.commands.clearContent();
                 },
             }
@@ -37,8 +40,10 @@
         const Image = Node.create({
             name: 'image',
 
-            group: 'inline',
-            inline: true,
+            group: 'block',
+            // group: 'inline',
+            // inline: false,
+            atom: true,
 
             addAttributes() {
                 return {
@@ -61,13 +66,19 @@
             },
 
             parseHTML() {
-                return [{
-                    tag: 'img[src]'
-                }]
+                return [{tag: 'TipTapEmote'}];
             },
 
-            renderHTML(data) {
-                return ['img', mergeAttributes(this.options.HTMLAttributes, data.HTMLAttributes), 0]
+            // renderHTML(data) {
+            //     return ['img', mergeAttributes(this.options.HTMLAttributes, data.HTMLAttributes), 0]
+            // },
+
+            renderHTML({HTMLAttributes}) {
+                return ['TipTapEmote', mergeAttributes(HTMLAttributes)];
+            },
+
+            addNodeView() {
+                return SvelteNodeViewRenderer(TipTapEmote);
             },
 
             addInputRules() {
@@ -84,7 +95,7 @@
                             const title = name;
 
                             return {
-                                'data-tag': `:${name}:`,
+                                'data-tag': name,
                                 src,
                                 alt,
                                 title
@@ -95,7 +106,7 @@
             },
         });
 
-        editor = new Editor({
+        editor = createEditor({
             element,
             extensions: [
                 StarterKit.configure({
@@ -112,7 +123,7 @@
             content: '',
             autofocus: true,
             editable: true,
-            injectCSS: false,
+            injectCSS: true,
             parseOptions: {
                 preserveWhitespace: 'full',
             }
@@ -132,4 +143,6 @@
     #tippy {
         white-space: pre;
     }
+
+
 </style>
